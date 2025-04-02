@@ -1,6 +1,6 @@
 module.exports = {
-    printWidth: 100, // Allow up to 100 characters per line for better readability
-    tabWidth: 2, // Indentation size of 2 spaces
+    printWidth: 100, 
+    tabWidth: 2, 
     useTabs: false, // Use spaces instead of tabs
     semi: true, // Use semicolons for clarity
     singleQuote: true, // Prefer single quotes for JavaScript/JSX
