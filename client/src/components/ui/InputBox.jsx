@@ -13,7 +13,10 @@ const InputBox = ({type, placeholder, style, title, labelShow, props}) => {
                     {...props}
                />
           </div>
+
+
+     
      );
 };
 
-export default InputBox;
+export default InputBox;   
