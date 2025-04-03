@@ -1,22 +1,30 @@
-import React from 'react';
+import React from "react";
 
-const InputBox = ({type, placeholder, style, title, labelShow, props}) => {
-     return (
-          <div>
-               {labelShow && <label className={''}>{title}</label>}
+const InputBox = ({ type, placeholder, style, title, labelShow, props }) => {
+    return (
+        <div>
+            {labelShow && <label className={""}>{title}</label>}
 
-               <input
-                    type={type}
-                    placeholder={placeholder}
-                    className=""
-                    style={style}
-                    {...props}
-               />
-          </div>
-
-
-     
-     );
+            <input
+                type={type}
+                placeholder={placeholder}
+                className=""
+                style={style}
+                {...props}
+            />
+            <input
+                id="email"
+                className={`w-full p-3 bg-white/20 text-white border ${
+                    error.email ? "border-red-500" : "border-gray-300 "
+                } rounded-md focus:outline-none placeholder-transparent`}
+                type="email"
+                name="email"
+                value={logInForm.email}
+                onChange={handleChange}
+                required
+            />
+        </div>
+    );
 };
 
-export default InputBox;   
+export default InputBox;

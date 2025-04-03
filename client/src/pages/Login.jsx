@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import InputBox from "../components/ui/InputBox";
 
 export const Login = () => {
     const [error, setError] = useState({ email: "", password: "" });
@@ -49,7 +50,7 @@ export const Login = () => {
     };
 
     return (
-        <div className="h-screen bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex justify-center items-center bg-gray-900">
+        <div className="h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex justify-center items-center bg-gray-900">
             <div className="flex flex-col items-center justify-center w-full h-full">
                 <div className="w-[400px] backdrop-blur-sm p-8 rounded-xl shadow-lg border border-white/20">
                     <h2 className="text-2xl font-bold text-white mb-6 text-center">
@@ -71,6 +72,11 @@ export const Login = () => {
                             >
                                 Enter email
                             </label>
+                            <InputBox
+                                type={"email"}
+                                placeholder={"Enter your email"}
+                                name="useremail"
+                            />
                             <input
                                 id="email"
                                 className={`w-full p-3 bg-white/20 text-white border ${
@@ -90,8 +96,7 @@ export const Login = () => {
                                 </p>
                             )}
                         </div>
-
-                        {/* Password Input Field */}
+                        {/* Password Input Field */}{" "}
                         <div className="relative">
                             <label
                                 htmlFor="password"
@@ -122,7 +127,6 @@ export const Login = () => {
                                 </p>
                             )}
                         </div>
-
                         {/* Forgot Password */}
                         <div
                             onClick={handleForgetUser}
@@ -130,7 +134,6 @@ export const Login = () => {
                         >
                             Forgot password?
                         </div>
-
                         {/* Login Button */}
                         <button
                             type="submit"
@@ -138,14 +141,12 @@ export const Login = () => {
                         >
                             Login
                         </button>
-
                         {/* Server Error Message */}
                         {serverError && (
                             <p className="text-red-400 text-sm mt-2 text-center">
                                 {serverError}
                             </p>
                         )}
-
                         {/* Register Link */}
                         <p className="text-center text-sm text-gray-300">
                             Don't have an account?
