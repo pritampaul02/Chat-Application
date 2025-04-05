@@ -1,7 +1,11 @@
-import React from 'react'
+import React from "react";
+import Sidebar from "../components/Sidebar";
 
-export const Status = () => {
-  return (
-    <div>Status</div>
-  )
-}
+const Status = () => {
+    return (
+        <div>
+            <Sidebar />
+        </div>
+    );
+};
+export default Status;

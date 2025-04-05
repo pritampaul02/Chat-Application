@@ -27,22 +27,46 @@ const Header = () => {
                         </NavLink>
                     </li>
                     <li className="text-2xl">
-                        <NavLink to="/status">
+                        <NavLink
+                            to="/status"
+                            title="Status"
+                            className={({ isActive }) =>
+                                isActive ? "text-blue-600" : ""
+                            }
+                        >
                             <LuCircleDashed />
                         </NavLink>
                     </li>
                     <li className="text-2xl">
-                        <NavLink to="/search">
+                        <NavLink
+                            to="/search"
+                            title="Search"
+                            className={({ isActive }) =>
+                                isActive ? "text-blue-600" : ""
+                            }
+                        >
                             <CiSearch />
                         </NavLink>
                     </li>
                     <li className="text-2xl">
-                        <NavLink to="/friends">
+                        <NavLink
+                            to="/friends"
+                            title="Friends"
+                            className={({ isActive }) =>
+                                isActive ? "text-blue-600" : ""
+                            }
+                        >
                             <FiUserPlus />
                         </NavLink>
                     </li>
                     <li className="text-2xl">
-                        <NavLink to="/settings">
+                        <NavLink
+                            to="/settings"
+                            title="Settings"
+                            className={({ isActive }) =>
+                                isActive ? "text-blue-600" : ""
+                            }
+                        >
                             <CiSettings />
                         </NavLink>
                     </li>
@@ -50,7 +74,17 @@ const Header = () => {
             </div>
 
             <div>
-                <div>profile</div>
+                <div>
+                    <NavLink
+                        to={"/profile"}
+                        title="Profile"
+                        className={({ isActive }) =>
+                            isActive ? "text-blue-600" : ""
+                        }
+                    >
+                        profile
+                    </NavLink>{" "}
+                </div>
                 <button>
                     <RiLogoutBoxLine />
                 </button>
