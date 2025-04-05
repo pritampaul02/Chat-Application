@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import InputBox from "../components/ui/InputBox";
 
-export const Login = () => {
+const Login = () => {
     const [error, setError] = useState({ email: "", password: "" });
     const [serverError, setServerError] = useState("");
     const [logInForm, setLogInForm] = useState({ email: "", password: "" });
@@ -72,11 +72,22 @@ export const Login = () => {
                             >
                                 Enter email
                             </label>
-                            <InputBox
-                                type={"email"}
-                                placeholder={"Enter your email"}
-                                name="useremail"
-                            />
+                            {/* <InputBox
+                                id="email"
+                                type="email"
+                                placeholder="Enter your email"
+                                name="email"
+                                className={`w-full p-3 bg-white/20 text-white border ${
+                                    error.email
+                                        ? "border-red-500"
+                                        : "border-gray-300 "
+                                } rounded-md focus:outline-none placeholder-transparent`}
+                                value={logInForm.email}
+                                onChange={handleChange}
+                                required
+                                labelShow={true}
+                            /> */}
+
                             <input
                                 id="email"
                                 className={`w-full p-3 bg-white/20 text-white border ${
@@ -163,3 +174,5 @@ export const Login = () => {
         </div>
     );
 };
+
+export default Login;
