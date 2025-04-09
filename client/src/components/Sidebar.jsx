@@ -14,7 +14,7 @@ const Sidebar = () => {
     pinChat.push(
       <div
         key={i}
-        className="w-full flex justify-center items-center pl-6 pr-6 hover:bg-[#00A3FF33]"
+        className="w-full flex justify-center items-center cursor-pointer pl-6 pr-6 hover:bg-[#00A3FF33]"
       >
         <div className="h-18 flex items-center  w-18">
           <img
@@ -30,7 +30,7 @@ const Sidebar = () => {
           </div>
           <div className="flex justify-between items-center">
             <span>Akash: hello there!</span>
-            <div className="bg-[#00A3FF] rounded-full h-4 w-4 flex justify-center items-center text-white">
+            <div className="bg-[#00A3FF] rounded-full h-auto w-auto  flex justify-center items-center text-white">
               1
             </div>
           </div>
@@ -43,7 +43,7 @@ const Sidebar = () => {
     allChat.push(
       <div
         key={i}
-        className="w-full flex justify-center items-center pl-6 pr-6 hover:bg-[#00A3FF33]"
+        className="w-full flex justify-center items-center pl-6 cursor-pointer pr-6 hover:bg-[#00A3FF33]"
       >
         <div className="h-18 flex items-center  w-18">
           <img
