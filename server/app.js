@@ -18,6 +18,7 @@ server.use(bodyParser.urlencoded( { limit : "50mb" , extended : true }) )
 
 server.use('/api/v1/todo' , todoRouter)
 server.use('api/v1/user' , userRouter)
+
 server.get("/" , (req , res)=>{
      res.send("application is run ").json({
         message : "all ok "
