@@ -6,21 +6,26 @@ export const Register = () => {
      const [email, setEmail] = useState('');
      const [password, setPassword] = useState('');
      const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState({ username: "", email: "", password: "", confirmpassword: "" });
+     const [profilePic, setProfilePic] = useState('');
+    const [error, setError] = useState({ profilepic: "", username: "", email: "", password: "", confirmpassword: "" });
     const [serverError, setServerError] = useState("");
-    const [registerForm, setRegisterForm] = useState({ username: "", email: "", password: "", confirmpassword: "" });
+    const [registerForm, setRegisterForm] = useState({ profilepic: "", username: "", email: "", password: "", confirmpassword: "" });
     const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
      event.preventDefault();
-     const { username, email, password, confirmpassword } = registerForm;
-
-     if (username.trim() === "") {
-        setError({ ...error, username: "Email is required" });
+     const { profilepic, username, email, password, confirmpassword } = registerForm;
+      
+     if (profilepic.trim() === "") {
+      setError({ ...error, profilepic: "Profilepic is required" });
+      return;
+  }
+       if (username.trim() === "") {
+        setError({ ...error, username: "Username is required" });
         return;
     }
     setError({ ...error, username: "" });
-     if (!/^[a-z]+$/.test(userName)) {
+     if (!/^[a-z]+$/.test(username)) {
          setError({
             ...error,
             username: "Username can only contain characters (no numbers)" 
@@ -61,7 +66,6 @@ export const Register = () => {
             ...error,
             password: "",
         });
-
         // setError({ username: "", email: "", password: "", confirmpassword: "" });
         // Simulating API Call
 
@@ -73,44 +77,197 @@ export const Register = () => {
  };
 
  const handleChange = (e) => {
-     setLogInForm({ ...registerForm, [e.target.name]: e.target.value });
+     setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
  };
 
  return (
-    <div className="registration-page">
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Username (only characters, no numbers):</label>
-          <input
-            type="text"
-            value={ registerForm.userName}
-            onChange= { handleChange } 
-          />
-        </div>
-        <div className="form-group">
-          <label>Email:</label>
-          <input
-            type="email"
-            value={registerForm.email} onChange= { handleChange }/>
-        </div>
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            type="password"
-            value={registerForm.password} onChange= {handleChange}/>
-        </div>
-        <div className="form-group">
-          <label>Confirm Password:</label>
-          <input
-            type="password"
-            value={registerForm.confirmPassword}onChange= {handleChange}/>
-        </div>
-        {error.confirmpassword && (
-          <p style={{ color: 'red' }}>{error.confirmpassword}</p>
-        )}
-        <button type="submit">Register</button>
-      </form>
-    </div>
-  );
+  <div className="h-screen bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex justify-center items-center bg-gray-900">
+        <div className="h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex justify-center items-center bg-gray-900">
+            <div className="flex flex-col items-center justify-center w-full h-full">
+                <div className="w-[400px] backdrop-blur-sm p-8 rounded-xl shadow-lg border border-white/20">
+                    <h2 className="text-2xl font-bold text-white mb-6 text-center">
+                        Register
+                    </h2>
+    <form onSubmit={handleSubmit}
+    className="flex flex-col gap-5" >
+           {/* Profile Picture Upload */}
+<div className="relative">
+    <label
+        htmlFor="profilePic"
+        className="block text-sm font-medium text-white mb-2"
+    >
+       {/* Upload Profile Picture*/}
+    </label>
+    <input
+        type="file"
+        id="profilePic"
+        name="profilepic"
+        accept="image/*"
+        onChange={handleChange}
+        className="w-full bg-white/20 text-white rounded-md p-2 border border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-teal-400 file:text-white hover:file:bg-teal-400"
+    />
+    {error.profilepic && (
+        <p className="text-red-400 text-sm mt-1">{error.profilepic}</p>
+    )}
+    {profilePic && (
+        <img
+            src={profilePic}
+            alt="Preview"
+            className="w-20 h-20 mt-3 object-cover rounded-full"
+        />
+    )}
+</div>
+              {/*UserName Input Field*/}
+      <div className="relative">
+                            <label
+                                htmlFor="username"
+                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
+                                    registerForm.username
+                                        ? "top-[-10px] text-xs text-white bg-gray-600 px-1"
+                                        : "top-3"
+                                }`}
+                            >
+                                Enter username
+                            </label>
+                             <input
+                                id="username"
+                                className={`w-full p-3 bg-white/20 text-white border ${
+                                    error.username
+                                        ? "border-red-500"
+                                        : "border-gray-300 "
+                                } rounded-md focus:outline-none placeholder-transparent`}
+                                type="username"
+                                name="username"
+                                value={registerForm.username}
+                                onChange={handleChange}
+                                required
+                            />
+                            {error.username && (
+                                <p className="text-red-400 text-sm mt-1">
+                                    {error.username}
+                                </p>
+                            )}
+                        </div>
+      {/* Email Input Field */}
+      <div className="relative">
+                            <label
+                                htmlFor="email"
+                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
+                                    registerForm.email
+                                        ? "top-[-10px] text-xs text-white bg-gray-600 px-1"
+                                        : "top-3"
+                                }`}
+                            >
+                                Enter email
+                            </label>
+     <input
+                                id="email"
+                                className={`w-full p-3 bg-white/20 text-white border ${
+                                    error.email
+                                        ? "border-red-500"
+                                        : "border-gray-300 "
+                                } rounded-md focus:outline-none placeholder-transparent`}
+                                type="email"
+                                name="email"
+                                value={registerForm.email}
+                                onChange={handleChange}
+                                required
+                            />
+                            {error.email && (
+                                <p className="text-red-400 text-sm mt-1">
+                                    {error.email}
+                                </p>
+                            )}
+                        </div>
+                         {/* Password Input Field */}
+                        <div className="relative">
+                            <label
+                                htmlFor="password"
+                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
+                                    registerForm.password
+                                        ? "top-[-10px] text-xs text-white  bg-gray-600 px-1"
+                                        : "top-3"
+                                }`}
+                            >
+                                Enter password
+                            </label>
+                            <input
+                                id="password"
+                                className={`w-full p-3 bg-white/20 text-white border ${
+                                    error.password
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                } rounded-md focus:outline-none placeholder-transparent`}
+                                type="password"
+                                name="password"
+                                value={registerForm.password}
+                                onChange={handleChange}
+                                required
+                            />
+                            {error.password && (
+                                <p className="text-red-400 text-sm mt-1">
+                                    {error.password}
+                                </p>
+                            )}
+                        </div>
+                         {/* confirmpassword Input Field */}
+                        <div className="relative">
+                            <label
+                                htmlFor="confirmpassword"
+                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
+                                    registerForm.confirmpassword
+                                        ? "top-[-10px] text-xs text-white  bg-gray-600 px-1"
+                                        : "top-3"
+                                }`}
+                            >
+                                Enter confirmpassword
+                            </label>
+                            <input
+                                id="confirmpassword"
+                                className={`w-full p-3 bg-white/20 text-white border ${
+                                    error.confirmpassword
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                } rounded-md focus:outline-none placeholder-transparent`}
+                                type="password"
+                                name="confirmpassword"
+                                value={registerForm.confirmpassword}
+                                onChange={handleChange}
+                                required
+                            />
+                            {error.confirmpassword && (
+                                <p className="text-red-400 text-sm mt-1">
+                                    {error.confirmpassword}
+                                </p>
+                            )}
+                        </div>
+     {/* Register Button */}
+     <button
+        type="submit"
+         className="w-full flex justify-center bg-teal-500 hover:bg-teal-400 text-white font-semibold py-3 rounded-md cursor-pointer transition"
+           >
+           Register
+       </button>
+        {/* Server Error Message */}
+        {serverError && (
+           <p className="text-red-400 text-sm mt-2 text-center">
+               {serverError}
+           </p>
+         )}
+         {/* Register Link */}
+         <p className="text-center text-sm text-gray-300">
+             Already have an account?
+             <Link
+               to="/Login"
+                 className="text-teal-300 hover:underline"
+                >
+               Login now 
+             </Link>
+        </p>
+    </form>
+  </div>
+  </div>
+  </div>
+  </div>
+);
 }

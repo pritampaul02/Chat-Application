@@ -1,19 +1,24 @@
-import React from 'react';
-import InputBox from './components/ui/InputBox';
+import React from "react";
+import InputBox from "./components/ui/InputBox";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Chat, Login, Register, Search, Settings, Status } from "./pages/Index";
+import Layout from "./layout/Layout";
 
 const App = () => {
-     return (
-          <div className="text-xl">
-               <h1>Try</h1>
-               <InputBox
-                    type="password"
-                    placeholder="Text"
-                    className="bg-gray-500"
-                    title="Text"
-                    labelShow={true}
-               />
-          </div>
-     );
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/" element={<Layout />}>
+                    <Route path="/chat" element={<Chat />} />
+                    <Route path="/setting" element={<Settings />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/status" element={<Status />} />
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    );
 };
 
 export default App;
