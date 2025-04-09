@@ -9,7 +9,7 @@ import userValidation from "../validations/user.validation.js"
 const router = express.Router()
 
 router
-    .post("/create", validate(userValidation.createUser),  createUser)
+    .post("/create", validate(userValidation.createUser) ,  createUser)
     .post("/login", validate(userSchemas.login),  logInUser)
     .post("/send-otp", validate(userSchemas.sendOtp),  sendOtpForVerifyAccount)
     .post("/verify-otp", validate(userSchemas.verifyOtp),  VerifyOtpWithExpiry)

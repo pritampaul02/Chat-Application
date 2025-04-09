@@ -6,34 +6,6 @@ import todoService from "../services/todo.service.js";
 import { sendResponse } from "../utils/response.handler.js";
 
 class TodoController {
-    
-    // async createTodo(req, res) {
-    //     try {
-    //         console.log("body", req.body);
-    //         const { title, description } = req.body;
-            
-    //         if (!title) {
-    //             return res.status(400).json({
-    //                 success: false,
-    //                 message: "Title is required"
-    //             });
-    //         }
-
-    //         const todo = await Todos.create({ title, description });
-
-    //         return res.status(201).json({
-    //             success: true,
-    //             message: "Todo created successfully",
-    //             todo
-    //         });
-    //     } catch (error) {
-    //         console.error("Error =>", error);
-    //         return res.status(500).json({
-    //             success: false,
-    //             message: "Internal Server Error"
-    //         });
-    //     }
-    // }
 
     async createTodo(req , res){
         try {
