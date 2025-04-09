@@ -10,17 +10,17 @@
 .customScrollbar {
     height: calc(100% - 88px);
 }
-.customScrollbar::-webkit-scrollbar {
+*::-webkit-scrollbar {
     width: 5.5px;
     height: calc(100%-88px);
 }
-.customScrollbar::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 10px;
 }
-.customScrollbar::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
-.customScrollbar::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
     background-color: transparent;
 }
