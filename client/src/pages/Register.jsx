@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export const Register = () => {
+ const Register = () => {
      const [userName, setUserName] = useState('');
      const [email, setEmail] = useState('');
      const [password, setPassword] = useState('');
@@ -11,6 +11,8 @@ export const Register = () => {
     const [serverError, setServerError] = useState("");
     const [registerForm, setRegisterForm] = useState({ profilepic: "", username: "", email: "", password: "", confirmpassword: "" });
     const navigate = useNavigate();
+
+
 
     const handleSubmit = async (event) => {
      event.preventDefault();
@@ -271,3 +273,4 @@ export const Register = () => {
   </div>
 );
 }
+export difault Register
