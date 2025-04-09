@@ -1,0 +1,68 @@
+### Project WEB CS🌍(Akash, Soma, Sabuj)
+
+Chat Application
+
+Features:  
+  - Connection request with message
+  - individual message system
+  - Status system
+  - Real time notification
+  - Group messaging system
+
+Technology use:
+  - ReactJS  --------------------> Frontend Library
+  - Node with Express.JS  -------> Backend and API creation
+  - MongoDB  --------------------> DB connection
+  - Socket.io  ------------------> Realtime communication
+  - Cloudinary  -----------------> Storage 
+  - Nodemailer  -----------------> Mail service
+  - Zod -------------------------> Validation 
+  - Redux  ----------------------> State Management
+  - Tailwind CSS ----------------> CSS library
+  - Lucide React  ---------------> Icon packs
+  - Lottie files  ---------------> Animated files
+  - BcryptJS --------------------> Password Hashing
+
+
+
+------------------------------------ Model creation ----------------------------------------
+
+1. user(complete)
+
+2.message( soma ) :
+  -sender
+  -reciver
+  -message 
+
+3. status ( akash ) :
+  - user
+  - type 
+  - media :{
+     url : ,
+     public_id : ,
+  }
+  - likes : [
+    {
+       user
+    }
+  ]
+ 
+ - expiary :{
+   date : Date ,
+   defult : Date.now() * 24 * 1000 
+ }
+ 
+
+ 4. groups ( sabuj ): 
+
+     - name 
+     - description 
+     - mambers : [
+      {
+        user
+      }
+     ] 
+     - image :{
+
+     }
+
