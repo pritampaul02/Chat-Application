@@ -1,5 +1,9 @@
-import Login from "./Login";
-import Register from "./Register";
+
+import { Login } from "./Login";
+import {Register} from "./Register";
+
+
+
 import Chat from "./Chat";
 import Search from "./Search";
 import Settings from "./Settings";
