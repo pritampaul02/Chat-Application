@@ -5,7 +5,7 @@ import RightMenu from "../components/RightMenu";
 
 const Profile = () => {
     return (
-        <section className="flex flex-row w-screen overflow-hidden">
+        <section className="flex flex-row w-full overflow-hidden">
             <Sidebar />
             <ChatScreen />
             <RightMenu />
