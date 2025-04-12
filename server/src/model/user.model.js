@@ -138,3 +138,13 @@ userSchema.methods.comparePassword = async function (password) {
 };
 
 export const Users = model("user", userSchema);
+
+// Feature	            Benefit
+//
+// username	            Unique handle for profile link or tagging.
+// bio	                Short intro for profile.
+// isVerified	          For email or KYC verification.
+// status	              To manage banned or deactivated accounts.
+// twoFactorEnabled	    Future-proof for security.
+// deviceTokens	        For FCM/OneSignal push notifications.
+// deletedAt	          Soft delete support.
