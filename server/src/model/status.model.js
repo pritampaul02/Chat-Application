@@ -103,12 +103,10 @@ const statusSchema = new mongoose.Schema(
 );
 export const Status = mongoose.model("Status", statusSchema);
 
-// Feature	            Benefit
-//
-// username	            Unique handle for profile link or tagging.
-// bio	                Short intro for profile.
-// isVerified	          For email or KYC verification.
-// status	              To manage banned or deactivated accounts.
-// twoFactorEnabled	    Future-proof for security.
-// deviceTokens	        For FCM/OneSignal push notifications.
-// deletedAt	          Soft delete support.
+// Feature	            Description
+// views	              Track which users saw the status and when.
+// poll	                Add interactive polls inside status (like Instagram).
+// allowedUsers	        Fine-grained privacy – only selected users can view.
+// background	          Useful for text statuses with styled backgrounds.
+// isPublic toggle	    Allow public/private status sharing.
+// text field	          Now supports both media & text combo (for captions).
