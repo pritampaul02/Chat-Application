@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 
 const Chat = () => {
     return (
-        <section className="flex flex-row">
+        <section className="flex w-full flex-row overflow-hidden">
             <Sidebar />
             <ChatScreen />
         </section>

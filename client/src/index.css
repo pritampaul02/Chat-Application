@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@theme {
+    --color-primary: oklch(0.69 0.174067 245.0123);
+}
+
+.customScrollbar {
+    appearance: none;
+}
+.customScrollbar {
+    height: calc(100% - 88px);
+}
+*::-webkit-scrollbar {
+    width: 5.5px;
+    height: calc(100%-88px);
+}
+*::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+*::-webkit-scrollbar-track {
+    background-color: transparent;
+}
