@@ -2,8 +2,9 @@ import express from "express"
 import bodyParser from "body-parser"
 
 import corsConfig from "./src/config/cors.config.js"
-import { todoRouter } from "./src/routes/todo.routes.js"
+
 import { userRouter } from "./src/routes/user.router.js"
+import { messageRouter } from "./src/routes/message.routes.js"
 
 
 
@@ -16,8 +17,9 @@ server.use(bodyParser.urlencoded( { limit : "50mb" , extended : true }) )
 
 // all routes 
 
-server.use('/api/v1/todo' , todoRouter)
-server.use('api/v1/user' , userRouter)
+
+server.use('/api/v1/user' , userRouter)
+server.use('/api/v1/message' , messageRouter)
 
 server.get("/" , (req , res)=>{
      res.send("application is run ").json({
