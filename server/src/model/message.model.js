@@ -4,7 +4,7 @@ const messageSchema = new mongoose.Schema(
     {
         sender: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             required: true,
         },
 
@@ -53,7 +53,7 @@ const messageSchema = new mongoose.Schema(
         reactions: [
             {
                 emoji: String,
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
                 reactedAt: { type: Date, default: Date.now },
             },
         ],
@@ -65,26 +65,26 @@ const messageSchema = new mongoose.Schema(
 
         readBy: [
             {
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
                 readAt: { type: Date, default: Date.now },
             },
         ],
 
         replyTo: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Message",
+            ref: "message",
             default: null,
         },
 
         forwardedFrom: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             default: null,
         },
 
         mentions: [
             {
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
             },
         ],
 
@@ -93,7 +93,7 @@ const messageSchema = new mongoose.Schema(
             options: [String],
             votes: [
                 {
-                    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                    user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
                     optionIndex: Number,
                 },
             ],
@@ -121,4 +121,4 @@ const messageSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-export const Message = mongoose.model("Message", messageSchema);
+export const Messages = mongoose.model("message", messageSchema);

@@ -46,6 +46,7 @@ Technology use:
        user
     }
   ]
+  -message
  
  - expiary :{
    date : Date ,
@@ -65,4 +66,28 @@ Technology use:
      - image :{
 
      }
+
+   --- complete
+
+
+
+  --------- api creation --------------------
+
+
+  ........... status section ...............
+
+  base url : - "/api/v1/status"
+
+  1. status create 
+     - user 
+     - type 
+     - message : string , optional 
+     - media : string , optional 
+  
+  2. status delete 
+     - user 
+     - statusId 
+
+  3.all status show 
+    
 
