@@ -1,29 +1,33 @@
-import { Messages } from "../model/message.model.js"
-
+import { Messages } from "../model/message.model.js";
 
 class MessageService {
+    async create(body, user) {
+        // authication
+        const { receiver, message } = body;
+        const { id, friends } = user;
 
-    async create(body , user){
-        // authication 
-        const { receiver , message } = body
-        const { id , friends } = user 
+        // is friends
 
-        // is friends 
-        
-        const isExist = friends.find((item) => String(item) === receiver ) 
-        if(!isExist){
-          throw new Error(" reciver not your friend ")
+        const isExist = friends.find((item) => String(item) === receiver);
+        if (!isExist) {
+            throw new Error(" reciver not your friend ");
         }
 
         const chat = await Messages.create({
-            sender : id ,
-            ...body 
-        })
+            sender: id,
+            ...body,
+        });
 
-        // socket.io , reciver message ... 
+        // socket.io , reciver message ...
 
-        return chat
-    } 
+        return chat;
+    }
+    async delete(id) {
+        const isExist = Messages.findByIdAndDelete(id);
+        if (!isExist) {
+            throw new Error("invalid message id");
+        }
+    }
 }
 
-export default new MessageService()
+export default new MessageService();
