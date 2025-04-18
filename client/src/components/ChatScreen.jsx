@@ -45,16 +45,11 @@ const ChatScreen = () => {
                             <div className="h-[1.25rem] w-auto text-[1.25rem] text-left flex items-center">
                                 sdfs
                             </div>
-                            <div className="h-auto relative bg-[#FFFFFF] border p-3 border-[#E7E7E7]">
-                                Lorem ipsum, dolor sit amet consectetur
-                                adipisicing elit. Fugit animi, tenetur natus
-                                perferendis aliquid tempora, ea a magnam. Ex,
-                                sit illum pariatur nemo maxime commodi deleniti
-                                excepturi praesentium! Sapiente eos quos
-                                architecto quasi? Possimus cupiditate
-                                repellendus suscipit voluptates blanditiis optio
-                                perspiciatis, fugit eveniet. Harum magnam
-                                quisquam saepe nemo.
+                            <div className="h-auto relative bg-[#FFFFFF] border p-3 rounded-2xl border-[#E7E7E7]">
+                                Lorem ipsum dolor sit amet consectetur iusto
+                                deleniti consequuntur obcaecati ue, quibusdam
+                                expedita, dolorem, soluta nesciunt a qui
+                                corrupti beatae corporis ab debitis. In!
                             </div>
                         </div>
                     </div>
