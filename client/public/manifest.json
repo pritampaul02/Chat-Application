@@ -1,0 +1,61 @@
+{
+    "name": "Chat App",
+    "short_name": "Chat",
+    "description": "A modern messaging application for seamless communication",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#ffffff",
+    "theme_color": "#00A3FF",
+    "categories": [
+        "social",
+        "communication"
+    ],
+    "lang": "en-US",
+    "dir": "ltr",
+    "icons": [
+        {
+            "src": "/icons/android-icon-36x36.png",
+            "sizes": "36x36",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/android-icon-48x48.png",
+            "sizes": "48x48",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/android-icon-72x72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/android-icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/android-icon-144x144.png",
+            "sizes": "128x128 144x144",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/android-icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon.png",
+            "sizes": "256x256 384x384 512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
