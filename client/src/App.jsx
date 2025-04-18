@@ -1,5 +1,4 @@
 import React from "react";
-import InputBox from "./components/ui/InputBox";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
     Chat,
@@ -12,6 +11,8 @@ import {
     Status,
 } from "./pages/Index";
 import Layout from "./layout/Layout";
+import ChatScreen from "./pages/ChatScreen";
+import ChatLayout from "./layout/ChatLayout";
 
 const App = () => {
     return (
@@ -20,7 +21,10 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/" element={<Layout />}>
-                    <Route path="/chat" element={<Chat />} />
+                    <Route path="/chat" element={<ChatLayout />}>
+                        <Route index element={<Chat />} />
+                        <Route path=":chatId" element={<ChatScreen />} />
+                    </Route>
                     <Route path="/friends" element={<Friends />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/search" element={<Search />} />
