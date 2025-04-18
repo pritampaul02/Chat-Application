@@ -176,7 +176,7 @@ const Register = () => {
                                 </p>
                             )}
                         </div>
-                        {/*UserName Input Field*/}
+                        {/UserName Input Field/}
                         <div className="relative">
                             <label
                                 htmlFor="username"
