@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import Sidebar from "../components/Sidebar";
+// import Sidebar from "../components/Sidebar";
 import StatusPopup from "../components/StatusComponent/StatusPopup";
-
 
 const Status = () => {
     const [showPopup, setShowPopup] = useState(false);
     return (
         <section className="flex w-full ">
-            <Sidebar />
+            {/* <Sidebar /> */}
 
             <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
                 <button

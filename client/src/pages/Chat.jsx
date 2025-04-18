@@ -1,11 +1,11 @@
 import React from "react";
 import ChatScreen from "../components/ChatScreen";
-import Sidebar from "../components/Sidebar-common";
+import Sidebar from "../components/sidebar/SidebarChat";
 
 const Chat = () => {
     return (
         <section className="flex w-full flex-row overflow-hidden">
-            <Sidebar mode="chat" />
+            <Sidebar />
             <ChatScreen />
         </section>
     );

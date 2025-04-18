@@ -1,12 +1,12 @@
 import React from "react";
-import Sidebar from "../components/Sidebar";
+// import Sidebar from "../components/Sidebar";
 import ChatScreen from "../components/ChatScreen";
 import RightMenu from "../components/RightMenu";
 
 const Profile = () => {
     return (
         <section className="flex flex-row w-full overflow-hidden">
-            <Sidebar />
+            {/* <Sidebar /> */}
             <ChatScreen />
             <RightMenu />
         </section>
