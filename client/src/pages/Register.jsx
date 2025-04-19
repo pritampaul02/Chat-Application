@@ -1,332 +1,332 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FiUser, FiMail, FiLock, FiCamera, FiArrowRight } from "react-icons/fi";
 
 const Register = () => {
-    const [userName, setUserName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    // const [profilePic, setProfilePic] = useState("");
-    const [previewImage, setPreviewImage] = useState(null);
+    const [formData, setFormData] = useState({
+        profilepic: null,
+        username: "",
+        email: "",
+        password: "",
+        confirmpassword: "",
+    });
 
-    const [error, setError] = useState({
-        profilepic: "",
+    const [errors, setErrors] = useState({
         username: "",
         email: "",
         password: "",
         confirmpassword: "",
     });
+
     const [serverError, setServerError] = useState("");
-    const [registerForm, setRegisterForm] = useState({
-        profilepic: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmpassword: "",
-    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const { profilepic, username, email, password, confirmpassword } =
-            registerForm;
-        if (!profilepic) {
-            const proceed = window.confirm(
-                "You have not picked a profile picture!\nDo you want to proceed without uploading one?"
-            );
-            if (!proceed) return; // Let user pick again
-        }
-
-        if (username.trim() === "") {
-            setError({ ...error, username: "Username is required" });
-            return;
-        }
-        setError({ ...error, username: "" });
-        if (!/^[a-zA-Z_ ]+$/.test(username)) {
-            setError({
-                ...error,
-                username:
-                    "Username must contain only letters, spaces, or underscores",
-            });
-            return;
-        }
-        setError({ ...error, username: "" });
-
-        if (email.trim() === "") {
-            setError({ ...error, email: "Email is required" });
-            return;
-        }
-        setError({ ...error, email: "" });
-        if (password.trim() === "") {
-            setError({ ...error, password: "Password is required" });
-            return;
-        }
-        setError({ ...error, password: "" });
-        if (password.length < 8) {
-            setError({
-                ...error,
-                password: "Password must be at least 8 characters",
-            });
-            return;
-        }
-        setError({ ...error, password: "" });
-        if (confirmpassword.trim() === "") {
-            setError({
-                ...error,
-                confirmpassword: "confirmpassword is required",
-            });
-            return;
-        }
-        setError({ ...error, confirmpassword: "" });
-        if (password !== confirmpassword) {
-            setError({
-                ...error,
-                confirmpassword: "password do not match",
-            });
-            return;
-        }
-        setError({
-            ...error,
+    const validateForm = () => {
+        let isValid = true;
+        const newErrors = {
+            username: "",
+            email: "",
+            password: "",
             confirmpassword: "",
-        });
-        // setError({ username: "", email: "", password: "", confirmpassword: "" });
-        // Simulating API Call
+        };
 
-        console.log("Register in", registerForm);
+        // Username validation
+        if (!formData.username.trim()) {
+            newErrors.username = "Username is required";
+            isValid = false;
+        } else if (!/^[a-zA-Z_ ]+$/.test(formData.username)) {
+            newErrors.username = "Only letters, spaces, or underscores allowed";
+            isValid = false;
+        }
+
+        // Email validation
+        if (!formData.email.trim()) {
+            newErrors.email = "Email is required";
+            isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = "Please enter a valid email";
+            isValid = false;
+        }
+
+        // Password validation
+        if (!formData.password) {
+            newErrors.password = "Password is required";
+            isValid = false;
+        } else if (formData.password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters";
+            isValid = false;
+        }
+
+        // Confirm password validation
+        if (formData.password !== formData.confirmpassword) {
+            newErrors.confirmpassword = "Passwords do not match";
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
     };
 
-    // const handleChange = (e) => {
-    // setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
-    // console.log(registerForm.profilepic);
-    // }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        setIsSubmitting(true);
+
+        try {
+            // Simulate API call
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            console.log("Registration data:", formData);
+            navigate("/"); // Redirect after successful registration
+        } catch (error) {
+            setServerError("Registration failed. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value, files } = e.target;
 
         if (name === "profilepic") {
-            if (files.length > 0) {
-                const file = files[0];
-                const reader = new FileReader();
-
-                reader.onloadend = () => {
-                    setPreviewImage(reader.result);
-                };
-
-                reader.readAsDataURL(file);
-
-                setRegisterForm((prev) => ({
-                    ...prev,
-                    profilepic: file,
-                }));
-            } else {
-                // File dialog closed without selection
-                setPreviewImage(null);
-                setRegisterForm((prev) => ({
-                    ...prev,
-                    profilepic: "",
-                }));
-            }
+            setFormData((prev) => ({
+                ...prev,
+                profilepic: files[0] || null,
+            }));
         } else {
-            setRegisterForm((prev) => ({
+            setFormData((prev) => ({
                 ...prev,
                 [name]: value,
             }));
+
+            // Clear error when user starts typing
+            if (errors[name]) {
+                setErrors((prev) => ({
+                    ...prev,
+                    [name]: "",
+                }));
+            }
         }
     };
 
-    return (
-        <div className="h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex justify-center items-center bg-gray-900">
-            <div className="flex flex-col items-center justify-center w-full h-full">
-                <div className="w-[400px] backdrop-blur-sm p-8 rounded-xl shadow-lg border border-white/20">
-                    <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                        Register
-                    </h2>
-                    <form
-                        onSubmit={handleSubmit}
-                        className="flex flex-col gap-5"
-                    >
-                        {/* Profile Picture Upload */}
-                        <div className="relative">
-                            {previewImage && (
-                                <div className="flex justify-center mb-2">
-                                    <img
-                                        src={previewImage}
-                                        alt="Preview"
-                                        className="w-20 h-20 object-cover rounded-full border border-gray-300"
-                                    />
-                                </div>
-                            )}
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
+        if (!file.type.match("image.*")) {
+            setErrors((prev) => ({
+                ...prev,
+                profilepic: "Please select an image file",
+            }));
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            setErrors((prev) => ({
+                ...prev,
+                profilepic: "Image must be less than 2MB",
+            }));
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setFormData((prev) => ({
+                ...prev,
+                profilepicPreview: event.target.result,
+                profilepic: file,
+            }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    return (
+        <div className="min-h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/10">
+                <div className="p-8">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-white mb-2">
+                            Create Account
+                        </h1>
+                        <p className="text-white/70">
+                            Join our community today
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Profile Picture Upload */}
+                        <div className="flex flex-col items-center">
                             <label
                                 htmlFor="profilePic"
-                                className="block text-sm font-medium text-white mb-2"
+                                className="relative cursor-pointer group"
                             >
-                                Upload Profile Picture
+                                <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-white/20 group-hover:border-teal-400 transition-all">
+                                    {formData.profilepicPreview ? (
+                                        <img
+                                            src={formData.profilepicPreview}
+                                            alt="Profile preview"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <FiCamera className="text-3xl text-white/50 group-hover:text-teal-400" />
+                                    )}
+                                </div>
+                                <div className="absolute bottom-0 right-0 bg-teal-500 rounded-full p-2">
+                                    <FiCamera className="text-white text-sm" />
+                                </div>
                             </label>
                             <input
-                                type="file"
                                 id="profilePic"
+                                type="file"
                                 name="profilepic"
                                 accept="image/*"
-                                onChange={handleChange}
-                                className="w-full bg-white/20 text-white rounded-md p-2 border border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-teal-400 file:text-white hover:file:bg-teal-400"
+                                onChange={handleImageUpload}
+                                className="hidden"
                             />
-                            {error.profilepic && (
-                                <p className="text-red-400 text-sm mt-1">
-                                    {error.profilepic}
+                            {errors.profilepic && (
+                                <p className="text-red-400 text-sm mt-2">
+                                    {errors.profilepic}
                                 </p>
                             )}
                         </div>
-                        {/*UserName Input Field*/}
-                        <div className="relative">
-                            <label
-                                htmlFor="username"
-                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
-                                    registerForm.username
-                                        ? "top-[-10px] text-xs text-white bg-gray-600 px-1"
-                                        : "top-3"
-                                }`}
-                            >
-                                Enter username
-                            </label>
-                            <input
-                                id="username"
-                                className={`w-full p-3 bg-white/20 text-white border ${
-                                    error.username
-                                        ? "border-red-500"
-                                        : "border-gray-300 "
-                                } rounded-md focus:outline-none placeholder-transparent`}
-                                type="username"
-                                name="username"
-                                value={registerForm.username}
-                                onChange={handleChange}
-                                required
-                            />
-                            {error.username && (
-                                <p className="text-red-400 text-sm mt-1">
-                                    {error.username}
+
+                        {/* Username Field */}
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    placeholder="Username"
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                        errors.username
+                                            ? "border-red-500"
+                                            : "border-white/10"
+                                    } text-white placeholder-white/30`}
+                                />
+                            </div>
+                            {errors.username && (
+                                <p className="text-red-400 text-sm">
+                                    {errors.username}
                                 </p>
                             )}
                         </div>
-                        {/* Email Input Field */}
-                        <div className="relative">
-                            <label
-                                htmlFor="email"
-                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
-                                    registerForm.email
-                                        ? "top-[-10px] text-xs text-white bg-gray-600 px-1"
-                                        : "top-3"
-                                }`}
-                            >
-                                Enter email
-                            </label>
-                            <input
-                                id="email"
-                                className={`w-full p-3 bg-white/20 text-white border ${
-                                    error.email
-                                        ? "border-red-500"
-                                        : "border-gray-300 "
-                                } rounded-md focus:outline-none placeholder-transparent`}
-                                type="email"
-                                name="email"
-                                value={registerForm.email}
-                                onChange={handleChange}
-                                required
-                            />
-                            {error.email && (
-                                <p className="text-red-400 text-sm mt-1">
-                                    {error.email}
+
+                        {/* Email Field */}
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="Email address"
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                        errors.email
+                                            ? "border-red-500"
+                                            : "border-white/10"
+                                    } text-white placeholder-white/30`}
+                                />
+                            </div>
+                            {errors.email && (
+                                <p className="text-red-400 text-sm">
+                                    {errors.email}
                                 </p>
                             )}
                         </div>
-                        {/* Password Input Field */}
-                        <div className="relative">
-                            <label
-                                htmlFor="password"
-                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
-                                    registerForm.password
-                                        ? "top-[-10px] text-xs text-white  bg-gray-600 px-1"
-                                        : "top-3"
-                                }`}
-                            >
-                                Enter password
-                            </label>
-                            <input
-                                id="password"
-                                className={`w-full p-3 bg-white/20 text-white border ${
-                                    error.password
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                } rounded-md focus:outline-none placeholder-transparent`}
-                                type="password"
-                                name="password"
-                                value={registerForm.password}
-                                onChange={handleChange}
-                                required
-                            />
-                            {error.password && (
-                                <p className="text-red-400 text-sm mt-1">
-                                    {error.password}
+
+                        {/* Password Field */}
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Password"
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                        errors.password
+                                            ? "border-red-500"
+                                            : "border-white/10"
+                                    } text-white placeholder-white/30`}
+                                />
+                            </div>
+                            {errors.password && (
+                                <p className="text-red-400 text-sm">
+                                    {errors.password}
                                 </p>
                             )}
                         </div>
-                        {/* confirmpassword Input Field */}
-                        <div className="relative">
-                            <label
-                                htmlFor="confirmpassword"
-                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
-                                    registerForm.confirmpassword
-                                        ? "top-[-10px] text-xs text-white  bg-gray-600 px-1"
-                                        : "top-3"
-                                }`}
-                            >
-                                Enter confirmpassword
-                            </label>
-                            <input
-                                id="confirmpassword"
-                                className={`w-full p-3 bg-white/20 text-white border ${
-                                    error.confirmpassword
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                } rounded-md focus:outline-none placeholder-transparent`}
-                                type="password"
-                                name="confirmpassword"
-                                value={registerForm.confirmpassword}
-                                onChange={handleChange}
-                                required
-                            />
-                            {error.confirmpassword && (
-                                <p className="text-red-400 text-sm mt-1">
-                                    {error.confirmpassword}
+
+                        {/* Confirm Password Field */}
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
+                                <input
+                                    type="password"
+                                    name="confirmpassword"
+                                    value={formData.confirmpassword}
+                                    onChange={handleChange}
+                                    placeholder="Confirm password"
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                        errors.confirmpassword
+                                            ? "border-red-500"
+                                            : "border-white/10"
+                                    } text-white placeholder-white/30`}
+                                />
+                            </div>
+                            {errors.confirmpassword && (
+                                <p className="text-red-400 text-sm">
+                                    {errors.confirmpassword}
                                 </p>
                             )}
                         </div>
-                        {/* Register Button */}
+
+                        {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full flex justify-center bg-teal-500 hover:bg-teal-400 text-white font-semibold py-3 rounded-md cursor-pointer transition"
+                            disabled={isSubmitting}
+                            className={`w-full flex items-center justify-center py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all ${
+                                isSubmitting
+                                    ? "opacity-70 cursor-not-allowed"
+                                    : ""
+                            }`}
                         >
-                            Register
+                            {isSubmitting ? (
+                                "Creating account..."
+                            ) : (
+                                <>
+                                    Register <FiArrowRight className="ml-2" />
+                                </>
+                            )}
                         </button>
-                        {/* Server Error Message */}
+
                         {serverError && (
-                            <p className="text-red-400 text-sm mt-2 text-center">
+                            <div className="text-red-400 text-center text-sm py-2">
                                 {serverError}
-                            </p>
+                            </div>
                         )}
-                        {/* Register Link */}
-                        <p className="text-center text-sm text-gray-300">
-                            Already have an account?
+
+                        <div className="text-center text-white/70 text-sm">
+                            Already have an account?{" "}
                             <Link
                                 to="/login"
-                                className="text-teal-300 hover:underline"
+                                className="text-teal-400 hover:underline font-medium"
                             >
-                                Login now
+                                Sign in
                             </Link>
-                        </p>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     );
 };
+
 export default Register;
