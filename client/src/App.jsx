@@ -9,7 +9,7 @@ import {
     Search,
     Settings,
     Status,
-} from "./pages/Index";
+} from "./pages/index";
 import Layout from "./layout/Layout";
 import ChatScreen from "./pages/ChatScreen";
 import ChatLayout from "./layout/ChatLayout";
