@@ -1,5 +1,5 @@
 import React from "react";
-import { RiChatNewLine } from "react-icons/ri";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { BsChatLeftTextFill } from "react-icons/bs";
 import { Filter, Plus, Search } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -8,46 +8,46 @@ import { AllChat } from "../../mockData/AllChat";
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
-const SidebarChat = () => {
+const StatusSidebar = () => {
     const location = useLocation();
 
     // Generate chat items with proper routing
     const allChat = AllChat.map((el, i) => {
-        const chatId = i + 1;
-        const isActive = location.pathname === `/chat/${chatId}`;
+        const statusId = i + 1;
+        const isActive = location.pathname === `/status/${statusId}`;
 
         return (
             <NavLink
-                to={`/chat/${chatId}`}
-                key={chatId}
+                to={`/status/${statusId}`}
+                key={statusId}
                 className={`w-full flex items-center pl-6 pr-6 py-3 hover:bg-[#00A3FF22] ${
                     isActive ? "bg-[#00A3FF33]" : ""
                 }`}
             >
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 border-gray-300 border-3 rounded-full">
                     <img
                         src={el.imgLink}
                         alt="User avatar"
-                        className="object-cover rounded-full h-12 w-12 bg-[#f0f2f5]"
+                        className="object-cover rounded-full h-12 w-12  "
                     />
                 </div>
                 <div className="ml-3 flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between flex-col ">
                         <span className="text-[1rem] truncate">
-                            {el.name} {chatId}
+                            {el.name} {statusId}
                         </span>
-                        <div className="text-[12px] text-gray-500">
+                        <span className="text-[1rem] truncate text-gray-600">
                             {el.time}
-                        </div>
+                        </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 truncate">
+                    {/* <div className="flex justify-between items-center">
+                        <span className="text-sm  truncate">
                             {el.message}
                         </span>
                         <div className="bg-primary rounded-full h-4 w-4 flex justify-center items-center text-white text-xs">
                             {el.msgNotification}
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </NavLink>
         );
@@ -58,10 +58,13 @@ const SidebarChat = () => {
             {/* Header */}
             <div className="flex flex-col w-full px-6 pb-3 pt-4">
                 <div className="flex justify-between items-center h-16">
-                    <h1 className="text-2xl font-medium">Chats</h1>
+                    <h1 className="text-2xl font-medium">Status</h1>
                     <div className="flex gap-4">
-                        <RiChatNewLine className="text-xl cursor-pointer" />
-                        <Filter size={20} className="cursor-pointer" />
+                        <Plus size={20} className=" cursor-pointer" />
+                        <BsThreeDotsVertical
+                            size={20}
+                            className="cursor-pointer"
+                        />
                     </div>
                 </div>
 
@@ -95,4 +98,4 @@ const SidebarChat = () => {
     );
 };
 
-export default SidebarChat;
+export default StatusSidebar;
