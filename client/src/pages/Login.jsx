@@ -1,173 +1,196 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import InputBox from "../components/ui/InputBox";
+import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
 
 const Login = () => {
-    const [error, setError] = useState({ email: "", password: "" });
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
+
+    const [errors, setErrors] = useState({
+        email: "",
+        password: "",
+    });
+
     const [serverError, setServerError] = useState("");
-    const [logInForm, setLogInForm] = useState({ email: "", password: "" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const { email, password } = logInForm;
-
-        if (email.trim() === "") {
-            setError({ ...error, email: "Email is required" });
-            return;
-        }
-        setError({ ...error, email: "" });
-        if (password.trim() === "") {
-            setError({ ...error, password: "Password is required" });
-            return;
-        }
-        setError({ ...error, password: "" });
-        if (password.length < 8) {
-            setError({
-                ...error,
-                password: "Password must be at least 8 characters",
-            });
-            return;
-        }
-        setError({
-            ...error,
+    const validateForm = () => {
+        let isValid = true;
+        const newErrors = {
+            email: "",
             password: "",
-        });
+        };
 
-        // setError({ email: "", password: "" });
+        // Email validation
+        if (!formData.email.trim()) {
+            newErrors.email = "Email is required";
+            isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = "Please enter a valid email";
+            isValid = false;
+        }
 
-        // Simulating API Call
+        // Password validation
+        if (!formData.password) {
+            newErrors.password = "Password is required";
+            isValid = false;
+        } else if (formData.password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters";
+            isValid = false;
+        }
 
-        console.log("Logging in", logInForm);
+        setErrors(newErrors);
+        return isValid;
     };
 
-    const handleForgetUser = () => {
-        navigate("/request-password-reset");
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        setIsSubmitting(true);
+
+        try {
+            // Simulate API call
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            console.log("Login data:", formData);
+            navigate("/"); // Redirect after successful login
+        } catch (error) {
+            setServerError("Login failed. Please check your credentials.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e) => {
-        setLogInForm({ ...logInForm, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: "",
+            }));
+        }
+    };
+
+    const handleForgotPassword = () => {
+        navigate("/request-password-reset");
     };
 
     return (
-        <div className="h-screen  bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex justify-center items-center bg-gray-900">
-            <div className="flex flex-col items-center justify-center w-full h-full">
-                <div className="w-[400px] backdrop-blur-sm p-8 rounded-xl shadow-lg border border-white/20">
-                    <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                        Login
-                    </h2>
-                    <form
-                        onSubmit={handleSubmit}
-                        className="flex flex-col gap-5"
-                    >
-                        {/* Email Input Field */}
-                        <div className="relative">
-                            <label
-                                htmlFor="email"
-                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
-                                    logInForm.email
-                                        ? "top-[-10px] text-xs text-white bg-gray-600 px-1"
-                                        : "top-3"
-                                }`}
-                            >
-                                Enter email
-                            </label>
-                            {/* <InputBox
-                                id="email"
-                                type="email"
-                                placeholder="Enter your email"
-                                name="email"
-                                className={`w-full p-3 bg-white/20 text-white border ${
-                                    error.email
-                                        ? "border-red-500"
-                                        : "border-gray-300 "
-                                } rounded-md focus:outline-none placeholder-transparent`}
-                                value={logInForm.email}
-                                onChange={handleChange}
-                                required
-                                labelShow={true}
-                            /> */}
+        <div className="min-h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/10">
+                <div className="p-8">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-white mb-2">
+                            Welcome Back
+                        </h1>
+                        <p className="text-white/70">Sign in to continue</p>
+                    </div>
 
-                            <input
-                                id="email"
-                                className={`w-full p-3 bg-white/20 text-white border ${
-                                    error.email
-                                        ? "border-red-500"
-                                        : "border-gray-300 "
-                                } rounded-md focus:outline-none placeholder-transparent`}
-                                type="email"
-                                name="email"
-                                value={logInForm.email}
-                                onChange={handleChange}
-                                required
-                            />
-                            {error.email && (
-                                <p className="text-red-400 text-sm mt-1">
-                                    {error.email}
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Email Field */}
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="Email address"
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                        errors.email
+                                            ? "border-red-500"
+                                            : "border-white/10"
+                                    } text-white placeholder-white/30`}
+                                />
+                            </div>
+                            {errors.email && (
+                                <p className="text-red-400 text-sm">
+                                    {errors.email}
                                 </p>
                             )}
                         </div>
-                        {/* Password Input Field */}{" "}
-                        <div className="relative">
-                            <label
-                                htmlFor="password"
-                                className={`absolute left-3 top-3 transition-all text-gray-300 text-sm ${
-                                    logInForm.password
-                                        ? "top-[-10px] text-xs text-white  bg-gray-600 px-1"
-                                        : "top-3"
-                                }`}
+
+                        {/* Password Field */}
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Password"
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                        errors.password
+                                            ? "border-red-500"
+                                            : "border-white/10"
+                                    } text-white placeholder-white/30`}
+                                />
+                            </div>
+                            {errors.password && (
+                                <p className="text-red-400 text-sm">
+                                    {errors.password}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Forgot Password Link */}
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                onClick={handleForgotPassword}
+                                className="text-sm text-teal-400 hover:underline focus:outline-none"
                             >
-                                Enter password
-                            </label>
-                            <input
-                                id="password"
-                                className={`w-full p-3 bg-white/20 text-white border ${
-                                    error.password
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                } rounded-md focus:outline-none placeholder-transparent`}
-                                type="password"
-                                name="password"
-                                value={logInForm.password}
-                                onChange={handleChange}
-                                required
-                            />
-                            {error.password && (
-                                <p className="text-red-400 text-sm mt-1">
-                                    {error.password}
-                                </p>
-                            )}
+                                Forgot password?
+                            </button>
                         </div>
-                        {/* Forgot Password */}
-                        <div
-                            onClick={handleForgetUser}
-                            className="text-teal-300 cursor-pointer hover:underline"
-                        >
-                            Forgot password?
-                        </div>
-                        {/* Login Button */}
+
+                        {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full flex justify-center bg-teal-500 hover:bg-teal-400 text-white font-semibold py-3 rounded-md cursor-pointer transition"
+                            disabled={isSubmitting}
+                            className={`w-full flex items-center justify-center py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all ${
+                                isSubmitting
+                                    ? "opacity-70 cursor-not-allowed"
+                                    : ""
+                            }`}
                         >
-                            Login
+                            {isSubmitting ? (
+                                "Signing in..."
+                            ) : (
+                                <>
+                                    Login <FiArrowRight className="ml-2" />
+                                </>
+                            )}
                         </button>
-                        {/* Server Error Message */}
+
                         {serverError && (
-                            <p className="text-red-400 text-sm mt-2 text-center">
+                            <div className="text-red-400 text-center text-sm py-2">
                                 {serverError}
-                            </p>
+                            </div>
                         )}
-                        {/* Register Link */}
-                        <p className="text-center text-sm text-gray-300">
-                            Don't have an account?
+
+                        <div className="text-center text-white/70 text-sm">
+                            Don't have an account?{" "}
                             <Link
                                 to="/register"
-                                className="text-teal-300 hover:underline"
+                                className="text-teal-400 hover:underline font-medium"
                             >
-                                Register Now
+                                Sign up
                             </Link>
-                        </p>
+                        </div>
                     </form>
                 </div>
             </div>
