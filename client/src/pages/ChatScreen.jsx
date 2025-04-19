@@ -4,6 +4,7 @@ import { TiAttachment } from "react-icons/ti";
 import { IoMicOutline, IoSend } from "react-icons/io5";
 import { FaUser } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
+import { AllChat } from "../mockData/AllChat";
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
@@ -29,7 +30,15 @@ const MessageBubble = ({ message, isSender }) => {
                         isSender ? "text-primary-100" : "text-gray-500"
                     }`}
                 >
-                    <span>{message.time}</span>
+                    <div
+                        className={`flex w-full
+                             justify-end
+                        `}
+                    >
+                        {" "}
+                        <span>{message.time}</span>
+                    </div>
+
                     {isSender && (
                         <span className="ml-1">
                             {message.read ? (
@@ -62,7 +71,7 @@ const ChatHeader = ({ contact }) => {
             </div>
             <div className="ml-3 flex-1">
                 <h2 className="font-medium">{contact.name}</h2>
-                <p className="text-xs text-gray-500">Online</p>
+                <p className="text-xs text-gray-500">{contact.status}</p>
             </div>
             <button className="p-2 rounded-full hover:bg-gray-100">
                 <CiSearch className="text-lg" />
@@ -107,7 +116,7 @@ const MessageInput = () => {
 const ChatScreen = () => {
     // Mock data - replace with real data
     const contact = {
-        name: "Akash Paul",
+        name: "Akash Mondal",
         avatar: IMG_LINK,
         status: "Online",
     };
@@ -140,6 +149,119 @@ const ChatScreen = () => {
             time: "10:35 AM",
             sender: true,
             read: false,
+        },
+        {
+            id: 5,
+            text: "Let's catch up this weekend.",
+            time: "10:40 AM",
+            sender: false,
+            read: true,
+        },
+        {
+            id: 6,
+            text: "Sure, Saturday works for me.",
+            time: "10:41 AM",
+            sender: true,
+            read: true,
+        },
+        {
+            id: 7,
+            text: "I'll bring snacks 😄",
+            time: "10:42 AM",
+            sender: false,
+            read: true,
+        },
+        {
+            id: 8,
+            text: "Awesome! Can't wait.",
+            time: "10:44 AM",
+            sender: true,
+            read: false,
+        },
+        {
+            id: 9,
+            text: "Can you share that PDF again?",
+            time: "11:00 AM",
+            sender: false,
+            read: true,
+        },
+        {
+            id: 10,
+            text: "Sent it to your email.",
+            time: "11:01 AM",
+            sender: true,
+            read: true,
+        },
+
+        {
+            id: 11,
+            text: "Got it, thanks!",
+            time: "11:03 AM",
+            sender: false,
+            read: true,
+        },
+        {
+            id: 12,
+            text: "Any progress on the design?",
+            time: "11:10 AM",
+            sender: true,
+            read: true,
+        },
+        {
+            id: 13,
+            text: "Yeah, I made a few updates.",
+            time: "11:12 AM",
+            sender: false,
+            read: true,
+        },
+        {
+            id: 14,
+            text: "Looking forward to seeing it.",
+            time: "11:13 AM",
+            sender: true,
+            read: true,
+        },
+        {
+            id: 15,
+            text: "Check your inbox now.",
+            time: "11:15 AM",
+            sender: false,
+            read: true,
+        },
+        {
+            id: 16,
+            text: "Wow, that looks clean!",
+            time: "11:17 AM",
+            sender: true,
+            read: true,
+        },
+        {
+            id: 17,
+            text: "Appreciate it!",
+            time: "11:18 AM",
+            sender: false,
+            read: true,
+        },
+        {
+            id: 18,
+            text: "Will you join the meeting today?",
+            time: "11:20 AM",
+            sender: true,
+            read: false,
+        },
+        {
+            id: 19,
+            text: "Yes, I'll be there by 2.",
+            time: "11:21 AM",
+            sender: false,
+            read: false,
+        },
+        {
+            id: 20,
+            text: "Perfect. See you then!",
+            time: "11:22 AM",
+            sender: true,
+            read: true,
         },
     ];
 
