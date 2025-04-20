@@ -42,9 +42,9 @@ const MessageBubble = ({ message, isSender }) => {
                     {isSender && (
                         <span className="ml-1">
                             {message.read ? (
-                                <BsCheck2All className="text-blue-300" />
+                                <BsCheck2All className="text-blue-100  text-[16px]" />
                             ) : (
-                                <BsCheck2 />
+                                <BsCheck2 className="text-blue-100  text-[16px]" />
                             )}
                         </span>
                     )}

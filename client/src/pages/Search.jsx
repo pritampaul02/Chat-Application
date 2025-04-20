@@ -21,6 +21,9 @@ const Search = () => {
         <div className="w-[400px] h-full bg-[#f1f3f5] border-r overflow-y-auto">
             {/* Sticky Header */}
             <div className="sticky top-0 z-20 bg-white shadow-sm">
+                <div className="flex px-4 py-4 justify-between items-center h-16">
+                    <h1 className="text-2xl font-medium ">Search</h1>
+                </div>
                 <div className="px-4 py-4">
                     <div className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow">
                         <input
