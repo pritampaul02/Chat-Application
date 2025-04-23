@@ -6,7 +6,7 @@ const SearchLayout = () => {
     return (
         <section className="flex w-full h-screen overflow-hidden">
             <Search />
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 flex justify-center   overflow-y-auto">
                 <Outlet />
             </div>
         </section>
