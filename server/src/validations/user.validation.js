@@ -11,8 +11,8 @@ class UserValidation  {
 
   login = z.object({
     body: z.object({
-      email: z.string().email("Invalid email format").min(1 , "email is required "),
-      password: z.string().min(1, "Password is required"),
+      email: z.string().trim().email("Invalid email format").min(1 , "email is required "),
+      password: z.string().trim().min(1, "Password is required"),
     }),
   })
 

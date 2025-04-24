@@ -42,6 +42,8 @@ export const isAuthenticate = async (req, res, next) => {
     });
   }
 };
+
+
 export const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
       const { role } = req.user;

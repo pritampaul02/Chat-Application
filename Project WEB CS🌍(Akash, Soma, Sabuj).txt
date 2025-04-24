@@ -90,4 +90,44 @@ Technology use:
 
   3.all status show 
     
+    show status of all friends if any status exist 
+
+
+  4. like on status 
+
+    - user 
+    - statusId 
+
+    push userId in like array of status table 
+
+
+
+
+    .............. message .................
+
+    base url "/api/v1/message" 
+
+    1. create message :
+       - sender 
+       - reciver
+       - message : string , optional 
+       - type 
+       - media : optional , string
+  
+    2. edit message :
+       // only sender can edit the message 
+       - sender 
+       - messageId ,
+       - message 
+
+    3. delete message :
+       // only sender can delete the message 
+       - messageId 
+       - sender 
+
+    4. like message :
+       - user 
+       - messageID 
+    
+    5. 
 

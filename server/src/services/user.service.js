@@ -7,15 +7,17 @@ import { Users } from "../model/user.model.js"
 import { manageFriendRequest, sendFriendRequest } from "../controller/user.controller.js"
 import mongoose from "mongoose"
 import { getSocketId, io } from "../socket/socket.js"
+import { Socket } from "socket.io"
 
 export const UserService = {
+  
   async createUser(userData) {
     console.log("ok created account ");
     
     const user = await Users.create(userData)
     const otp = genarate6DigitOtp()
     user.otp = otp
-    user.otpExpiary = Date.now() + 5 * 60 * 1000 // OTP valid for 5 minutes
+    user.otpExpiry = Date.now() + 5 * 60 * 1000 // OTP valid for 5 minutes
     await user.save()
 
     await sendEmail(
@@ -251,23 +253,23 @@ export const UserService = {
       throw new Error("User Not Found (Receiver)");
     }
   
-    // ✅ Check if already friends
+    //  Check if already friends
     if (sender.friends.includes(receiverId) || receiver.friends.includes(userId)) {
       throw new Error("User is already in your friend list!");
     }
   
-    // ✅ Check if friend request already sent
-    if (sender.sendFriendRequst.includes(receiverId) || receiver.friendsRequast.includes(userId)) {
+    // Check if friend request already sent
+    if (sender.sentFriendRequests.includes(receiverId) || receiver.friendRequests.includes(userId)) {
       throw new Error("Friend request already sent!");
     }
   
-    if (receiver.sendFriendRequst.includes(userId) || sender.friendsRequast.includes(receiverId)) {
+    if (receiver.sentFriendRequests.includes(userId) || sender.friendRequests.includes(receiverId)) {
       throw new Error("This user already sent you a friend request!");
     }
   
-    // ✅ Add to pending requests
-    sender.sendFriendRequst.push(receiverId);
-    receiver.friendsRequast.push(userId);
+    //  Add to pending requests
+    sender.sentFriendRequests.push(receiverId);
+    receiver.friendRequests.push(userId);
   
     await sender.save();
     await receiver.save();
@@ -311,10 +313,10 @@ export const UserService = {
       }
     }
     if (body["action"] === "reject" || body["action"] === "accept") {
-      // ✅ Remove from pending requests
+      //  Remove from pending requests
     
-       sender.friendsRequast = sender.friendsRequast.filter((item) => String(item) !== receiverId);
-       receiver.sendFriendRequst = receiver.sendFriendRequst.filter((item) => String(item) !== userId);
+       sender.friendRequests = sender.friendRequests.filter((item) => String(item) !== receiverId);
+       receiver.sentFriendRequests = receiver.sentFriendRequests.filter((item) => String(item) !== userId);
  
       //  console.log(sender.sendFriendRequst);
       //  console.log(receiver.friendsRequast);
@@ -342,6 +344,44 @@ export const UserService = {
       throw new Error("Invalid action");
     }
   } , 
-  
+
+  async  userStatusChanger(userId, status) {
+    try {
+      
+      const user = await Users.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+    
+      if (status === "offline") {
+        user.lastSeen = Date.now();
+      } else {
+        user.lastSeen = null;
+      }
+    
+      user.status = status;
+      await user.save();
+    
+      // Emit message using socket.io
+      const message =
+        status === "online"
+          ? `${user.name} is now online`
+          : `${user.name} went offlin`;
+    
+      Socket.emit("user-status-change", {
+        uuser : user ,
+        status: status,
+        message: message,
+        lastSeen: user.lastSeen,
+      });
+    
+      return user;
+
+    } catch (error) {
+      console.error("somthing went wrong" , error);
+      
+    }
+  }
+    
 }
 

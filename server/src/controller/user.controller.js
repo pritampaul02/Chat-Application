@@ -1,9 +1,9 @@
-
 import { UserService } from "../services/user.service.js";
 import { sendCookie } from "../utils/sendCookie.js";
-import { HTTP_STATUS } from "../constants/httpStatus.js";
-import { RESPONSE_MESSAGES } from "../constants/responseMessages.js";
+
 import { sendResponse } from "../utils/response.handler.js";
+import { HTTP_STATUS } from "../constants/statusCode.constants.js";
+import { RESPONSE_MESSAGES } from "../constants/responseMessage.constants.js";
 
 export const createUser = async (req, res) => {
   try {
