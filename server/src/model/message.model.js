@@ -4,7 +4,7 @@ const messageSchema = new mongoose.Schema(
     {
         sender: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user",
+            ref: "User",
             required: true,
         },
 
@@ -53,7 +53,7 @@ const messageSchema = new mongoose.Schema(
         reactions: [
             {
                 emoji: String,
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
                 reactedAt: { type: Date, default: Date.now },
             },
         ],
@@ -65,7 +65,7 @@ const messageSchema = new mongoose.Schema(
 
         readBy: [
             {
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
                 readAt: { type: Date, default: Date.now },
             },
         ],
@@ -78,13 +78,13 @@ const messageSchema = new mongoose.Schema(
 
         forwardedFrom: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user",
+            ref: "User",
             default: null,
         },
 
         mentions: [
             {
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
             },
         ],
 
@@ -93,7 +93,7 @@ const messageSchema = new mongoose.Schema(
             options: [String],
             votes: [
                 {
-                    user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+                    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
                     optionIndex: Number,
                 },
             ],
