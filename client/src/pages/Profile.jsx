@@ -1,9 +1,13 @@
-import React, { useState } from "react";
-import { CircleUser, Camera } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { CircleUser, Camera, Pencil } from "lucide-react";
+import { CiLocationOn } from "react-icons/ci";
+import axios from "axios";
 
 const Profile = () => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [bio, setBio] = useState("Life is not same for everyone 😔😔");
+    const [location, setLocation] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
     const [profileImage, setProfileImage] = useState(null);
     const [coverImage, setCoverImage] = useState(null);
 
@@ -15,6 +19,41 @@ const Profile = () => {
     const handleCoverPicChange = (e) => {
         const file = e.target.files[0];
         if (file) setCoverImage(URL.createObjectURL(file));
+    };
+
+    // Fetch location suggestions
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (location.trim().length < 2) return setSuggestions([]);
+
+            try {
+                const res = await axios.get(
+                    "https://api.opencagedata.com/geocode/v1/json",
+                    {
+                        params: {
+                            key: import.meta.env.VITE_SEARCH_LOCATION_API_KEY, // Replace with your key
+                            q: location,
+                            limit: 5,
+                            language: "en",
+                        },
+                    }
+                );
+                const results = res.data.results.map(
+                    (result) => result.formatted
+                );
+                setSuggestions(results);
+            } catch (err) {
+                console.error("Error fetching location:", err);
+            }
+        };
+
+        const debounce = setTimeout(fetchSuggestions, 400);
+        return () => clearTimeout(debounce);
+    }, [location]);
+
+    const handleSelectSuggestion = (place) => {
+        setLocation(place);
+        setSuggestions([]);
     };
 
     return (
@@ -43,7 +82,7 @@ const Profile = () => {
                     </label>
                 </div>
 
-                {/* === Profile Picture - Facebook Style === */}
+                {/* === Profile Picture === */}
                 <div className="absolute left-8 top-[calc(22rem-4rem)] z-30">
                     <div className="relative w-40 h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-200">
                         {profileImage ? (
@@ -77,13 +116,14 @@ const Profile = () => {
                         </p>
                     </div>
                     <div className="mt-4 sm:mt-0 flex gap-2">
-                        <button className="px-4 py-2 rounded-md bg-blue-600 text-white shadow hover:bg-blue-700 transition">
+                        <button className="px-4 py-2 rounded-md bg-primary text-white shadow hover:bg-blue-700 transition">
                             Add to Story
                         </button>
                         <button
                             className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 transition shadow"
                             onClick={() => setIsEditOpen(true)}
                         >
+                            <Pencil className="inline mr-2" />
                             Edit Profile
                         </button>
                     </div>
@@ -110,6 +150,11 @@ const Profile = () => {
                                 <span className="font-medium">
                                     High School 123
                                 </span>
+                            </li>
+                            <li>
+                                <CiLocationOn className="inline text-2xl" />{" "}
+                                From{" "}
+                                <span className="font-medium">{location}</span>
                             </li>
                         </ul>
                         <button
@@ -194,7 +239,38 @@ const Profile = () => {
                                 />
                             </div>
 
-                            {/* Save Button */}
+                            {/* Location Field with Suggestion */}
+                            <div className="mb-4 relative">
+                                <label className="block text-sm font-medium mb-1">
+                                    Location
+                                </label>
+                                <input
+                                    type="text"
+                                    value={location}
+                                    placeholder="City or country"
+                                    onChange={(e) =>
+                                        setLocation(e.target.value)
+                                    }
+                                    className="w-full border px-3 py-2 rounded-md text-sm"
+                                />
+                                {suggestions.length > 0 && (
+                                    <ul className="absolute z-50 bg-white border w-full mt-1 rounded shadow max-h-40 overflow-y-auto">
+                                        {suggestions.map((s, idx) => (
+                                            <li
+                                                key={idx}
+                                                onClick={() =>
+                                                    handleSelectSuggestion(s)
+                                                }
+                                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                            >
+                                                {s}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+
+                            {/* Save */}
                             <div className="flex justify-end">
                                 <button
                                     onClick={() => setIsEditOpen(false)}
