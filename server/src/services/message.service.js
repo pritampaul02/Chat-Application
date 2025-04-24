@@ -1,33 +1,69 @@
 import { Messages } from "../model/message.model.js";
 
+import { Users } from "../model/user.model.js";
+import { getSocketId, io } from "../socket/socket.js";
+
 class MessageService {
-    async create(body, user) {
-        // authication
-        const { receiver, message } = body;
-        const { id, friends } = user;
 
-        // is friends
+    sendMessage = async(id , body)=>{
 
-        const isExist = friends.find((item) => String(item) === receiver);
-        if (!isExist) {
-            throw new Error(" reciver not your friend ");
+        const sender = await Users.findById(id)
+        const reciver = await Users.findById(body.reciverId)
+
+        if(!sender && !reciver){
+            
+            throw new Error("User not found")
+
+        }
+    
+
+        const data = await Messages.create({
+            senderId : id ,
+            receiverId : body.reciverId ,
+            message : body.message                      
+        })
+        
+        const chat = await Messages.findById(data._id).populate("senderId" , "name profile_pic _id email")
+          .populate("receiverId" , "name profile_pic _id email")
+
+        const reciverSocketId = getSocketId(body.reciverId)
+        console.log("reciver id" , reciverSocketId);
+        const senderSocketId = getSocketId(id)
+        
+        io.to(reciverSocketId).emit("send-message", { reciverId: body.reciverId , chat  });
+        io.to(senderSocketId).emit("meg-sent" , { sender : id , chat })
+        return chat
+    }
+
+    fetchMessage = async(id , reciverId)=>{
+       
+        const sender = await Users.findById(id)
+        const reciver = await Users.findById(reciverId)
+
+        // console.log("sender , reciver" , sender , reciver)
+        
+
+        if(!sender && !reciver){
+            
+            throw new Error("User not found")
+
         }
 
-        const chat = await Messages.create({
-            sender: id,
-            ...body,
-        });
+        const messages = await Messages.find({
+            $or : [
+                {senderId : id , receiverId : reciverId} ,
+                {senderId : reciverId , receiverId : id}
+            ]
+        })
+        .populate("senderId" , "name profile_pic _id email")
+        .populate("receiverId" , "name profile_pic _id email")
 
-        // socket.io , reciver message ...
+        console.log("messaeg" , messages)
+        return messages
 
-        return chat;
     }
-    async delete(id) {
-        const isExist = Messages.findByIdAndDelete(id);
-        if (!isExist) {
-            throw new Error("invalid message id");
-        }
-    }
+
 }
 
 export default new MessageService();
+
