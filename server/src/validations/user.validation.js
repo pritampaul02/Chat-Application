@@ -19,7 +19,10 @@ class UserValidation {
                 .email("Invalid email format")
                 .trim()
                 .min(1, "email is required "),
-            password: z.string().trim().min(1, "Password is required"),
+            password: z
+                .string()
+                .trim()
+                .min(8, "Password must be at least 8 characters"),
         }),
     });
 

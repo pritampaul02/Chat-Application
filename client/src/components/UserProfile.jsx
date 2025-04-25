@@ -19,32 +19,32 @@ const UserProfile = () => {
     return (
         <>
             {isloading ? (
-                <div class="flex flex-col w-[60rem] h-full bg-white overflow-y-auto animate-pulse">
-                    <div class="relative h-96 w-full ">
-                        <div class="w-full h-full relative rounded-2xl bg-gray-200 "></div>
-                        <div class="absolute bottom-[-60px] left-10">
-                            <div class="w-32 h-32 rounded-full border-4 border-white bg-gray-200"></div>
+                <div className="flex flex-col w-[60rem] h-full bg-white overflow-y-auto animate-pulse">
+                    <div className="relative h-96 w-full ">
+                        <div className="w-full h-full relative rounded-2xl bg-gray-200 "></div>
+                        <div className="absolute bottom-[-60px] left-10">
+                            <div className="w-32 h-32 rounded-full border-4 border-white bg-gray-200"></div>
                         </div>
                     </div>
 
-                    <div class="mt-20 px-10 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="mt-20 px-10 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
-                            <div class="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                            <div class="h-3 bg-gray-200 rounded w-2/5"></div>
+                            <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-2/5"></div>
                         </div>
 
-                        <div class="flex space-x-3">
-                            <div class="h-10 bg-gray-200 rounded w-1/4"></div>
-                            <div class="h-10 bg-gray-200 rounded w-1/4"></div>
+                        <div className="flex space-x-3">
+                            <div className="h-10 bg-gray-200 rounded w-1/4"></div>
+                            <div className="h-10 bg-gray-200 rounded w-1/4"></div>
                         </div>
                     </div>
 
-                    <div class="px-10 py-6 space-y-2">
-                        <div class="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                    <div className="px-10 py-6 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
                         <div>
-                            <div class="h-3 bg-gray-200 rounded w-full mt-1"></div>
-                            <div class="h-3 bg-gray-200 rounded w-3/4 mt-2"></div>
-                            <div class="h-3 bg-gray-200 rounded w-1/2 mt-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-full mt-1"></div>
+                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2 mt-2"></div>
                         </div>
                     </div>
                 </div>
