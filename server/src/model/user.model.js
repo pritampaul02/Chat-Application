@@ -98,6 +98,10 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
         },
+        isTwoStepAuth: {
+            type: Boolean,
+            default: false,
+        },
 
         otp: {
             type: String,
