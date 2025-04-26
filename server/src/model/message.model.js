@@ -1,23 +1,24 @@
 import mongoose from "mongoose";
+import { Users } from "./user.model.js";
 
 const messageSchema = new mongoose.Schema(
     {
         sender: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             required: true,
         },
 
         receiver: {
             type: mongoose.Schema.Types.ObjectId,
-            refPath: "receiverModel", // "User" or "Group"
+            refPath: "receiverModel", // "user" or "Group"
             required: true,
         },
 
         receiverModel: {
             type: String,
             required: true,
-            enum: ["User", "Group"],
+            enum: ["user", "Group"],
         },
 
         message: {
@@ -53,7 +54,7 @@ const messageSchema = new mongoose.Schema(
         reactions: [
             {
                 emoji: String,
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
                 reactedAt: { type: Date, default: Date.now },
             },
         ],
@@ -65,7 +66,7 @@ const messageSchema = new mongoose.Schema(
 
         readBy: [
             {
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
                 readAt: { type: Date, default: Date.now },
             },
         ],
@@ -78,13 +79,13 @@ const messageSchema = new mongoose.Schema(
 
         forwardedFrom: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             default: null,
         },
 
         mentions: [
             {
-                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
             },
         ],
 
@@ -93,7 +94,10 @@ const messageSchema = new mongoose.Schema(
             options: [String],
             votes: [
                 {
-                    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                    user: {
+                        type: mongoose.Schema.Types.ObjectId,
+                        ref: "user",
+                    },
                     optionIndex: Number,
                 },
             ],
@@ -116,9 +120,11 @@ const messageSchema = new mongoose.Schema(
         },
 
         edited: { type: Boolean, default: false },
+        editedAt: { type: Date },
+
         deleted: { type: Boolean, default: false },
     },
     { timestamps: true }
 );
 
-export const  Messages = mongoose.model("message", messageSchema);
+export const Messages = mongoose.model("message", messageSchema);
