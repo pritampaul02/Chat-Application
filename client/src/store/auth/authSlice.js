@@ -7,7 +7,7 @@ export const registerUser = createAsyncThunk(
     async (formData, { rejectWithValue }) => {
         try {
             const { data } = await axios.post(
-                "http://localhost:5000/api/v1/user/register",
+                "https://chat-application-vzlq.vercel.app/api/v1/user/register",
                 formData,
                 {
                     headers: {
@@ -31,7 +31,7 @@ export const loginUser = createAsyncThunk(
     async (formData, { rejectWithValue }) => {
         try {
             const { data } = await axios.post(
-                "http://localhost:5000/api/v1/user/login",
+                "https://chat-application-vzlq.vercel.app/api/v1/user/login",
                 formData,
                 {
                     headers: {
@@ -54,7 +54,7 @@ export const logOutUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const { data } = await axios.get(
-                "http://localhost:5000/api/v1/user/logout",
+                "https://chat-application-vzlq.vercel.app/api/v1/user/logout",
                 {
                     withCredentials: true,
                 }
@@ -76,7 +76,7 @@ export const loadUser = createAsyncThunk(
         try {
             console.log("api calling me");
             const { data } = await axios.get(
-                "http://localhost:5000/api/v1/user/me", // API endpoint to get current user
+                "https://chat-application-vzlq.vercel.app/api/v1/user/me", // API endpoint to get current user
                 { withCredentials: true } // Make sure cookies are included
             );
             return data; // Return the user data
