@@ -1,4 +1,7 @@
 {
+  "engines":{
+    "node":"22.13.0"
+  },
   "name": "chatbuddies",
   "version": "1.0.0",
   "description": "A beautifull chat application",
