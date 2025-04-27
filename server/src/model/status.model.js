@@ -4,7 +4,7 @@ const statusSchema = new mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             required: true,
         },
 
@@ -40,7 +40,7 @@ const statusSchema = new mongoose.Schema(
             {
                 user: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
+                    ref: "user",
                 },
                 viewedAt: {
                     type: Date,
@@ -53,7 +53,7 @@ const statusSchema = new mongoose.Schema(
             {
                 user: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
+                    ref: "user",
                 },
                 likedAt: {
                     type: Date,
@@ -69,7 +69,7 @@ const statusSchema = new mongoose.Schema(
                 {
                     user: {
                         type: mongoose.Schema.Types.ObjectId,
-                        ref: "User",
+                        ref: "user",
                     },
                     optionIndex: Number,
                     votedAt: {
@@ -88,20 +88,22 @@ const statusSchema = new mongoose.Schema(
         allowedUsers: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
+                ref: "user",
             },
         ],
 
         expiry: {
             type: Date,
-            default: () => new Date(Date.now() + 24 * 60 * 60 * 1000),
+            default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // remove after 1 day
+
+            index: { expires: 0 },
         },
     },
     {
         timestamps: true,
     }
 );
-export const Status = mongoose.model("Status", statusSchema);
+export const Status = mongoose.model("Statu", statusSchema);
 
 // Feature	            Description
 // views	              Track which users saw the status and when.

@@ -14,11 +14,15 @@ router.post(
 );
 router.get("/", isAuthenticate, statusController.getStatuses);
 // Like a status
-router.post("/:statusId/like", isAuthenticate, statusController.likeStatus);
+router.post("/like/:statusId", isAuthenticate, statusController.likeStatus);
 
 // View a status
-router.post("/:statusId/view", isAuthenticate, statusController.viewStatus);
+router.get("/view/:statusId", isAuthenticate, statusController.viewStatus);
 // Delete a status
-router.delete("/:statusId", isAuthenticate, statusController.deleteStatus);
+router.delete(
+    "/delete/:statusId",
+    isAuthenticate,
+    statusController.deleteStatus
+);
 
 export const statusRoute = router;

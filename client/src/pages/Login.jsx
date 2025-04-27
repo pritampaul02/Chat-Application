@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../store/auth/authSlice";
+import { clearError } from "../store/auth/authSlice";
+
+// adjust import if needed
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -13,9 +18,25 @@ const Login = () => {
         password: "",
     });
 
-    const [serverError, setServerError] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const { loading, error, user } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if (user) {
+            navigate("/chat"); // redirect to home page after login
+        }
+    }, [user, navigate]);
+
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                dispatch(clearError());
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [error, dispatch]);
 
     const validateForm = () => {
         let isValid = true;
@@ -24,7 +45,6 @@ const Login = () => {
             password: "",
         };
 
-        // Email validation
         if (!formData.email.trim()) {
             newErrors.email = "Email is required";
             isValid = false;
@@ -33,7 +53,6 @@ const Login = () => {
             isValid = false;
         }
 
-        // Password validation
         if (!formData.password) {
             newErrors.password = "Password is required";
             isValid = false;
@@ -46,23 +65,10 @@ const Login = () => {
         return isValid;
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-
         if (!validateForm()) return;
-
-        setIsSubmitting(true);
-
-        try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            console.log("Login data:", formData);
-            navigate("/"); // Redirect after successful login
-        } catch (error) {
-            setServerError("Login failed. Please check your credentials.");
-        } finally {
-            setIsSubmitting(false);
-        }
+        dispatch(loginUser(formData));
     };
 
     const handleChange = (e) => {
@@ -73,7 +79,6 @@ const Login = () => {
             [name]: value,
         }));
 
-        // Clear error when user starts typing
         if (errors[name]) {
             setErrors((prev) => ({
                 ...prev,
@@ -87,7 +92,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg)] flex items-center justify-center p-4">
             <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/10">
                 <div className="p-8">
                     <div className="text-center mb-8">
@@ -160,14 +165,12 @@ const Login = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full flex items-center justify-center py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all ${
-                                isSubmitting
-                                    ? "opacity-70 cursor-not-allowed"
-                                    : ""
+                            disabled={loading}
+                            className={`w-full flex items-center justify-center cursor-pointer py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all ${
+                                loading ? "opacity-70 cursor-not-allowed" : ""
                             }`}
                         >
-                            {isSubmitting ? (
+                            {loading ? (
                                 "Signing in..."
                             ) : (
                                 <>
@@ -176,9 +179,9 @@ const Login = () => {
                             )}
                         </button>
 
-                        {serverError && (
+                        {error && (
                             <div className="text-red-400 text-center text-sm py-2">
-                                {serverError}
+                                {error}
                             </div>
                         )}
 

@@ -1,46 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiLock, FiCamera, FiArrowRight } from "react-icons/fi";
-
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "../store/auth/authSlice"; // update path if needed
 const Register = () => {
     const [formData, setFormData] = useState({
         profilepic: null,
-        username: "",
+        profilepicPreview: null,
+        name: "",
         email: "",
         password: "",
         confirmpassword: "",
     });
 
-    const [errors, setErrors] = useState({
-        username: "",
-        email: "",
-        password: "",
-        confirmpassword: "",
-    });
-
-    const [serverError, setServerError] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState({});
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    // Redux state
+    const { loading, error, user } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if (user) {
+            navigate("/chat"); // redirect after successful registration
+        }
+    }, [user, navigate]);
 
     const validateForm = () => {
         let isValid = true;
-        const newErrors = {
-            username: "",
-            email: "",
-            password: "",
-            confirmpassword: "",
-        };
+        const newErrors = {};
 
-        // Username validation
-        if (!formData.username.trim()) {
-            newErrors.username = "Username is required";
+        if (!formData.name.trim()) {
+            newErrors.name = "Username is required";
             isValid = false;
-        } else if (!/^[a-zA-Z_ ]+$/.test(formData.username)) {
-            newErrors.username = "Only letters, spaces, or underscores allowed";
-            isValid = false;
-        }
+        } // else if (!/^[a-z0-9_ ]+$/.test(formData.username)) {
+        //     newErrors.username = "Only letters, spaces, or underscores allowed";
+        //     isValid = false;
+        // }
 
-        // Email validation
         if (!formData.email.trim()) {
             newErrors.email = "Email is required";
             isValid = false;
@@ -49,7 +46,6 @@ const Register = () => {
             isValid = false;
         }
 
-        // Password validation
         if (!formData.password) {
             newErrors.password = "Password is required";
             isValid = false;
@@ -58,7 +54,6 @@ const Register = () => {
             isValid = false;
         }
 
-        // Confirm password validation
         if (formData.password !== formData.confirmpassword) {
             newErrors.confirmpassword = "Passwords do not match";
             isValid = false;
@@ -72,36 +67,48 @@ const Register = () => {
         e.preventDefault();
 
         if (!validateForm()) return;
-
-        setIsSubmitting(true);
-
-        try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            console.log("Registration data:", formData);
-            navigate("/"); // Redirect after successful registration
-        } catch (error) {
-            setServerError("Registration failed. Please try again.");
-        } finally {
-            setIsSubmitting(false);
-        }
+        // console.log(formData.name);
+        // const form = new FormData();
+        // form.append("name", formData.name);
+        // form.append("email", formData.email);
+        // form.append("password", formData.password);
+        // if (formData.profilepic) {
+        //     form.append("profilepic", formData.profilepic);
+        // }
+        // console.log(form);
+        // console.log(formData);
+        const userData = {
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            // don't send profilepic if backend doesn't expect it yet
+        };
+        console.log(userData);
+        dispatch(registerUser(userData));
     };
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
 
         if (name === "profilepic") {
-            setFormData((prev) => ({
-                ...prev,
-                profilepic: files[0] || null,
-            }));
+            const file = files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setFormData((prev) => ({
+                        ...prev,
+                        profilepic: file,
+                        profilepicPreview: reader.result,
+                    }));
+                };
+                reader.readAsDataURL(file);
+            }
         } else {
             setFormData((prev) => ({
                 ...prev,
                 [name]: value,
             }));
 
-            // Clear error when user starts typing
             if (errors[name]) {
                 setErrors((prev) => ({
                     ...prev,
@@ -109,37 +116,6 @@ const Register = () => {
                 }));
             }
         }
-    };
-
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        if (!file.type.match("image.*")) {
-            setErrors((prev) => ({
-                ...prev,
-                profilepic: "Please select an image file",
-            }));
-            return;
-        }
-
-        if (file.size > 2 * 1024 * 1024) {
-            setErrors((prev) => ({
-                ...prev,
-                profilepic: "Image must be less than 2MB",
-            }));
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            setFormData((prev) => ({
-                ...prev,
-                profilepicPreview: event.target.result,
-                profilepic: file,
-            }));
-        };
-        reader.readAsDataURL(file);
     };
 
     return (
@@ -156,17 +132,17 @@ const Register = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Profile Picture Upload */}
+                        {/* Profile Pic Upload */}
                         <div className="flex flex-col items-center">
                             <label
-                                htmlFor="profilePic"
+                                htmlFor="profilepic"
                                 className="relative cursor-pointer group"
                             >
                                 <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-white/20 group-hover:border-teal-400 transition-all">
                                     {formData.profilepicPreview ? (
                                         <img
                                             src={formData.profilepicPreview}
-                                            alt="Profile preview"
+                                            alt="Preview"
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
@@ -178,45 +154,40 @@ const Register = () => {
                                 </div>
                             </label>
                             <input
-                                id="profilePic"
+                                id="profilepic"
                                 type="file"
                                 name="profilepic"
                                 accept="image/*"
-                                onChange={handleImageUpload}
+                                onChange={handleChange}
                                 className="hidden"
                             />
-                            {errors.profilepic && (
-                                <p className="text-red-400 text-sm mt-2">
-                                    {errors.profilepic}
-                                </p>
-                            )}
                         </div>
 
-                        {/* Username Field */}
+                        {/* Username */}
                         <div className="space-y-1">
                             <div className="relative">
                                 <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
                                 <input
                                     type="text"
-                                    name="username"
-                                    value={formData.username}
+                                    name="name"
+                                    value={formData.name}
                                     onChange={handleChange}
                                     placeholder="Username"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
-                                        errors.username
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
+                                        errors.name
                                             ? "border-red-500"
                                             : "border-white/10"
-                                    } text-white placeholder-white/30`}
+                                    }`}
                                 />
                             </div>
-                            {errors.username && (
+                            {errors.name && (
                                 <p className="text-red-400 text-sm">
-                                    {errors.username}
+                                    {errors.name}
                                 </p>
                             )}
                         </div>
 
-                        {/* Email Field */}
+                        {/* Email */}
                         <div className="space-y-1">
                             <div className="relative">
                                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
@@ -226,11 +197,11 @@ const Register = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder="Email address"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
                                         errors.email
                                             ? "border-red-500"
                                             : "border-white/10"
-                                    } text-white placeholder-white/30`}
+                                    }`}
                                 />
                             </div>
                             {errors.email && (
@@ -240,7 +211,7 @@ const Register = () => {
                             )}
                         </div>
 
-                        {/* Password Field */}
+                        {/* Password */}
                         <div className="space-y-1">
                             <div className="relative">
                                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
@@ -250,11 +221,11 @@ const Register = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     placeholder="Password"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
                                         errors.password
                                             ? "border-red-500"
                                             : "border-white/10"
-                                    } text-white placeholder-white/30`}
+                                    }`}
                                 />
                             </div>
                             {errors.password && (
@@ -264,7 +235,7 @@ const Register = () => {
                             )}
                         </div>
 
-                        {/* Confirm Password Field */}
+                        {/* Confirm Password */}
                         <div className="space-y-1">
                             <div className="relative">
                                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
@@ -274,11 +245,11 @@ const Register = () => {
                                     value={formData.confirmpassword}
                                     onChange={handleChange}
                                     placeholder="Confirm password"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
                                         errors.confirmpassword
                                             ? "border-red-500"
                                             : "border-white/10"
-                                    } text-white placeholder-white/30`}
+                                    }`}
                                 />
                             </div>
                             {errors.confirmpassword && (
@@ -288,17 +259,13 @@ const Register = () => {
                             )}
                         </div>
 
-                        {/* Submit Button */}
+                        {/* Submit button */}
                         <button
                             type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full flex items-center justify-center py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all ${
-                                isSubmitting
-                                    ? "opacity-70 cursor-not-allowed"
-                                    : ""
-                            }`}
+                            disabled={loading}
+                            className="w-full flex items-center justify-center py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? (
+                            {loading ? (
                                 "Creating account..."
                             ) : (
                                 <>
@@ -307,9 +274,10 @@ const Register = () => {
                             )}
                         </button>
 
-                        {serverError && (
+                        {/* Server error */}
+                        {error && (
                             <div className="text-red-400 text-center text-sm py-2">
-                                {serverError}
+                                {error}
                             </div>
                         )}
 
