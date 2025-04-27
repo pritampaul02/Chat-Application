@@ -1,7 +1,7 @@
 import cors from "cors";
 
 const corsConfig = cors({
-    origin: [process.env.FRONTEND_URI, "*"],
+    origin: ["https://chat-application-delta-nine.vercel.app/", "*"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
 });
