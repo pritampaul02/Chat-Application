@@ -4,7 +4,7 @@ import { Users } from "../model/user.model.js";
 
 export const isAuthenticate = async (req, res, next) => {
   try {
-    let token = req.headers?.authorization || req?.cookies?.token ;
+    let token =  req?.cookies?.token ? req?.cookies?.token :  req.headers?.authorization ;
    console.log("token====>" , token );
    
     if (!token) {
