@@ -96,7 +96,7 @@ const Search = () => {
                                                 Message
                                             </button>
                                         ) : (
-                                            <button className="bg-primary text-white text-sm px-3 py-1 rounded-md hover:bg-blue-700">
+                                            <button className="bg-primary text-white cursor-pointer text-sm px-3 py-1 rounded-md hover:bg-blue-700">
                                                 <UserRoundPlus className="inline mr-1 w-4 h-4" />
                                                 Add Friend
                                             </button>

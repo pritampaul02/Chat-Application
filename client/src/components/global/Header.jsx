@@ -9,8 +9,22 @@ import {
     LogOut,
     CircleFadingPlus,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logOutUser } from "../../store/auth/authSlice";
 
 const Header = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await dispatch(logOutUser()).unwrap();
+            navigate("/login"); // redirect to login after logout
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
     return (
         <nav className="h-screen w-14 bg-slate-50 flex flex-col items-center justify-between py-6 pb-8">
             <div className="flex flex-col items-center justify-center gap-6">
@@ -50,7 +64,11 @@ const Header = () => {
                 <ul>
                     <IconLink to="/profile" title="Profile" icon={<User />} />
                 </ul>
-                <button title="Logout">
+                <button
+                    title="Logout"
+                    className="cursor-pointer"
+                    onClick={handleLogout}
+                >
                     <LogOut className="text-2xl" />
                 </button>
             </div>

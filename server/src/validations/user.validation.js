@@ -44,6 +44,24 @@ class UserValidation {
         }),
     });
 
+    changeCover = z.object({
+        body: z.object({
+            file: z.any(), // You might want to use a more specific validation for files
+        }),
+    });
+
+    changeBio = z.object({
+        body: z.object({
+            bio: z.string().trim().min(1, "bio is required"), // You might want to use a more specific validation for files
+        }),
+    });
+
+    changeLocation = z.object({
+        body: z.object({
+            place: z.string().trim().min(1, "bio is required"), // You might want to use a more specific validation for files
+        }),
+    });
+
     updateUserRole = z.object({
         params: z.object({
             userId: z.string().min(1, "User ID is required"),

@@ -12,14 +12,6 @@ const userSchema = new Schema(
             trim: true,
         },
 
-        username: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-        },
-
         email: {
             type: String,
             required: [true, "Email is required"],
@@ -43,6 +35,17 @@ const userSchema = new Schema(
                 type: String,
                 default:
                     "https://res.cloudinary.com/dab0ekhmy/image/upload/v1728130610/thik-ai/gvjpvq3xljmnw2vwdkag.avif",
+            },
+            public_id: {
+                type: String,
+                default: null,
+            },
+        },
+        coverPhoto: {
+            url: {
+                type: String,
+                default:
+                    "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwallpapercave.com%2Fnature-laptop-wallpapers&psig=AOvVaw3NYwdNJQiooWKqgBTSBS5-&ust=1745733552378000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMCbsbiC9YwDFQAAAAAdAAAAABAJ",
             },
             public_id: {
                 type: String,
@@ -74,8 +77,9 @@ const userSchema = new Schema(
         },
 
         location: {
-            city: String,
-            country: String,
+            // city: String,
+            // country: String,
+            place: String,
         },
 
         deviceTokens: [String], // for push notifications
