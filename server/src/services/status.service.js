@@ -145,7 +145,9 @@ class StatusService {
             throw new Error("You are not authorized to delete this status");
         }
 
-        await Status.findByIdAndDelete(statusId); // or Status.findByIdAndDelete(statusId);
+        const delet = await Status.findByIdAndDelete(statusId); // or Status.findByIdAndDelete(statusId);
+
+        return status;
     };
 }
 

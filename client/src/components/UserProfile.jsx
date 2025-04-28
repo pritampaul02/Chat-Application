@@ -14,7 +14,7 @@ const UserProfile = () => {
             </div>
         );
     }
-    let isloading = true;
+    let isloading = false;
 
     return (
         <>

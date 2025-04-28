@@ -70,6 +70,7 @@ class StatusController {
         try {
             const { id: userId } = req.user;
             const { statusId } = req.params;
+            console.log("status id", statusId, req.params);
             const data = await statusService.viewStatus(userId, statusId);
 
             sendResponse(res, {
@@ -92,9 +93,9 @@ class StatusController {
         try {
             const { id: userId } = req.user;
             const { statusId } = req.params;
-
-            const status = await statusService.getStatusById(statusId);
-
+            console.log("status id", statusId, req.params);
+            const status = await statusService.deleteStatus(userId, statusId);
+            console.log("controller status", status);
             if (!status) {
                 return sendResponse(res, {
                     status: HTTP_STATUS.NOT_FOUND,
@@ -112,7 +113,7 @@ class StatusController {
                 });
             }
 
-            await statusService.deleteStatus(userId, statusId);
+            // await statusService.deleteStatus(userId, statusId);
 
             sendResponse(res, {
                 status: HTTP_STATUS.OK,
