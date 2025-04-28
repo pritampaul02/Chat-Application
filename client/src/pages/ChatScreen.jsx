@@ -36,7 +36,7 @@ const MessageBubble = ({ message, isSender }) => {
                         `}
                     >
                         {" "}
-                        <span>{message.time}</span>
+                        <span className="select-none">{message.time}</span>
                     </div>
 
                     {isSender && (

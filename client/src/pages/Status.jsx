@@ -4,7 +4,7 @@ import StatusPopup from "../components/StatusComponent/StatusPopup";
 
 const Status = () => {
     return (
-        <div className="flex items-center justify-center h-full bg-gray-50">
+        <div className="flex items-center justify-center h-full bg-gray-50 select-none">
             <div className="text-center p-8">
                 <p className="text-gray-600 mb-6">
                     Click on a contact to view their status updates

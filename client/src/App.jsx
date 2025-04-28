@@ -40,7 +40,7 @@ const App = () => {
                                     onClose={() => setShowPopup(false)}
                                     status={{
                                         type: "image", // "image" | "video" | "text"
-                                        src: "../public/assets/preview1.jpg",
+                                        src: "/assets/preview1.jpg",
                                         text: "Parindon ki tarah", // Only for text type
                                         caption: "nayagra waterfall",
                                         bottomText: "Abb to aaja... 🥺😌🌧️",
