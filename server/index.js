@@ -28,9 +28,7 @@ app.use("/api/v1/message", messageRouter);
 app.use("/api/v1/status", statusRoute);
 
 app.get("/", (req, res) => {
-    res.send("application is run ").json({
-        message: "all ok ",
-    });
+    res.send("application is run ");
 });
 
 const PORT = process.env.PORT || 5000;

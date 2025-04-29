@@ -64,8 +64,13 @@ export const UserService = {
 
         user.otp = null;
         user.otpExpiry = null;
-        user.isVerify = true;
+        user.isVerified = true;
+        console.log(user);
         await user.save();
+        console.log(
+            "================================================================="
+        );
+        console.log(user);
         return user;
     },
 

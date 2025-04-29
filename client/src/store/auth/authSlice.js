@@ -7,7 +7,7 @@ export const registerUser = createAsyncThunk(
     async (formData, { rejectWithValue }) => {
         try {
             const { data } = await axios.post(
-                "https://akash-server-chat-app.onrender.com/api/v1/user/register",
+                "http://localhost:5050/api/v1/user/register",
                 formData,
                 {
                     headers: {
@@ -31,7 +31,7 @@ export const loginUser = createAsyncThunk(
     async (formData, { rejectWithValue }) => {
         try {
             const { data } = await axios.post(
-                "https://akash-server-chat-app.onrender.com/api/v1/user/login",
+                "http://localhost:5050/api/v1/user/login",
                 formData,
                 {
                     headers: {
@@ -54,7 +54,7 @@ export const logOutUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const { data } = await axios.get(
-                "https://akash-server-chat-app.onrender.com/api/v1/user/logout",
+                "http://localhost:5050/api/v1/user/logout",
                 {
                     withCredentials: true,
                 }
@@ -76,7 +76,7 @@ export const loadUser = createAsyncThunk(
         try {
             console.log("api calling me");
             const { data } = await axios.get(
-                "https://akash-server-chat-app.onrender.com/api/v1/user/me", // API endpoint to get current user
+                "http://localhost:5050/api/v1/user/me", // API endpoint to get current user
                 { withCredentials: true } // Make sure cookies are included
             );
             return data; // Return the user data

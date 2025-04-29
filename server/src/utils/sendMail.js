@@ -1,10 +1,10 @@
-import nodeMailer from 'nodemailer';
+import nodeMailer from "nodemailer";
 
 export const sendEmail = async (receiver, subject, message) => {
     console.log(process.env.MAIL_HOST);
     try {
         const transporter = nodeMailer.createTransport({
-            host: process.env.MAIL_HOST ,
+            host: process.env.MAIL_HOST,
             port: process.env.MAIL_PORT,
             service: process.env.MAIL_SERVICE,
             secure: false,
@@ -118,7 +118,10 @@ export const sendEmail = async (receiver, subject, message) => {
         `;
 
         const mailOptions = {
-            from: `CodeCanvas <${process.env.MAIL_NAME}>`,
+            from: {
+                name: "Chat-buddies",
+                address: process.env.MAIL_NAME,
+            },
             to: receiver,
             subject: subject,
             html: htmlContent,
