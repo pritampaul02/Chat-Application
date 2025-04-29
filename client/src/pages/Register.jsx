@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiLock, FiCamera, FiArrowRight } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { registerUser } from "../store/auth/authSlice"; // update path if needed
+import { registerUser } from "../store/auth/auth.controller"; // update path if needed
 const Register = () => {
     const [formData, setFormData] = useState({
         profilepic: null,

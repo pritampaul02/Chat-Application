@@ -19,8 +19,10 @@ import SearchLayout from "./layout/SearchLayout";
 import UserProfile from "./components/UserProfile";
 import ProtectedRoute from "./private/ProtectedRoute";
 
-import { loadUser } from "./store/auth/authSlice";
+import { loadUser } from "./store/auth/auth.controller";
 import { useDispatch } from "react-redux";
+import RequestPasswordReset from "./pages/ReqPasswordReset";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -34,6 +36,12 @@ const App = () => {
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route
+                    path="/request-password-reset"
+                    element={<RequestPasswordReset />}
+                />
+
+                <Route path="/reset-password" element={<ResetPassword />} />
 
                 <Route element={<ProtectedRoute />}>
                     <Route path="/" element={<Layout />}>

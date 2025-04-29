@@ -1,18 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { IoSend } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
-export default function StatusPopup({ onClose, status, autoCloseAfter = 10 }) {
+export default function StatusPopup({ onClose, status, autoCloseAfter = 60 }) {
     const navigate = useNavigate();
+    const [progressWidth, setProgressWidth] = useState("0%");
 
-    // Auto close status after some seconds
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigate(-1); // or use onClose()
-            // onClose();
+            navigate(-1);
         }, autoCloseAfter * 1000);
 
-        return () => clearTimeout(timer); // cleanup
+        const animationTrigger = setTimeout(() => {
+            setProgressWidth("100%");
+        }, 50);
+
+        return () => {
+            clearTimeout(timer);
+            clearTimeout(animationTrigger);
+        };
     }, [autoCloseAfter, navigate]);
 
     const renderMedia = () => {
@@ -56,16 +62,13 @@ export default function StatusPopup({ onClose, status, autoCloseAfter = 10 }) {
                 <div className="absolute inset-0 flex flex-col justify-between z-10">
                     {/* Header */}
                     <div className="bg-white/10 backdrop-blur-md border-b border-white/20 px-4 pt-3 pb-1">
-                        {/* Progress bar */}
+                        {/* Smooth linear progress bar */}
                         <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden mb-3">
                             <div
-                                className="h-full bg-white animate-pulse"
+                                className="h-full bg-white"
                                 style={{
-                                    width: `${
-                                        ((autoCloseAfter - 1) /
-                                            autoCloseAfter) *
-                                        100
-                                    }%`,
+                                    width: progressWidth,
+                                    transition: `width ${autoCloseAfter}s linear`,
                                 }}
                             ></div>
                         </div>

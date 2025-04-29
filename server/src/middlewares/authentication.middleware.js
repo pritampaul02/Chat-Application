@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { Users } from "../model/user.model.js";
 
 export const isAuthenticate = async (req, res, next) => {
+
     try {
         let token = req?.cookies?.token
             ? req?.cookies?.token
@@ -40,7 +41,7 @@ export const isAuthenticate = async (req, res, next) => {
             success: false,
             message: "User not authenticated",
             error: error.message,
-        });
+        })
     }
 };
 

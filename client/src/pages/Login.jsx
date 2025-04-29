@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../store/auth/authSlice";
+
 import { clearError } from "../store/auth/authSlice";
+import { loginUser } from "../store/auth/auth.controller";
 
 // adjust import if needed
 

@@ -204,8 +204,8 @@ export const forgotPassword = async (req, res) => {
 
 export const changePassWithOtp = async (req, res) => {
     try {
-        const { otp, password } = req.body;
-        await UserService.resetPasswordWithOtp(otp, password);
+        const { otp, email, password } = req.body;
+        await UserService.resetPasswordWithOtp(otp, email, password);
         sendResponse(res, {
             status: HTTP_STATUS.OK,
             success: true,

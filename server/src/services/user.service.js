@@ -286,9 +286,12 @@ export const UserService = {
         return user;
     },
 
-    async resetPasswordWithOtp(otp, newPassword) {
-        const user = await Users.findOne({ otp }).select("+password");
-        if (!user || timeExpire(user.expireAt)) {
+    async resetPasswordWithOtp(otp, email, newPassword) {
+        const user = await Users.findOne({ email }).select("+password");
+        if (!user || user.otp !== otp) {
+            throw new Error("Invalid otp");
+        }
+        if (timeExpire(user.otpExpiry)) {
             throw new Error("Invalid or expired OTP");
         }
         user.password = newPassword;
@@ -379,6 +382,7 @@ export const UserService = {
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");
         }
+
         if (body["action"] === "accept") {
             // Add to friends only if not already friends
             if (!sender.friends.includes(receiverId)) {
@@ -388,6 +392,7 @@ export const UserService = {
                 receiver.friends.push(userId);
             }
         }
+
         if (body["action"] === "reject" || body["action"] === "accept") {
             //  Remove from pending requests
 

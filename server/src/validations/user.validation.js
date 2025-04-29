@@ -100,6 +100,7 @@ class UserValidation {
     changePasswordWithOtp = z.object({
         body: z.object({
             otp: z.string().length(6, "OTP must be 6 digits"),
+            email: z.string().trim().min(1, "email is required"),
             password: z
                 .string()
                 .min(8, "Password must be at least 8 characters"),

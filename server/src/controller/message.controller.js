@@ -3,6 +3,7 @@ import messageService from "../services/message.service.js";
 import { sendResponse } from "../utils/response.handler.js";
 
 class MessageController {
+
     sendMessage = async (req, res) => {
         try {
             const { id } = req.user;
@@ -23,6 +24,8 @@ class MessageController {
             });
         }
     };
+
+
 
     fetchMessage = async (req, res) => {
         try {
@@ -49,6 +52,8 @@ class MessageController {
             });
         }
     };
+
+
     editMessage = async (req, res) => {
         const { id: userId } = req.user;
         const { messageId } = req.params;
@@ -97,6 +102,8 @@ class MessageController {
             data: updated,
         });
     };
+    
+
     updateReactToMessage = async (req, res) => {
         const { id: userId } = req.user;
         const { messageId } = req.params;
