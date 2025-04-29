@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logOutUser } from "../../store/auth/authSlice";
+import { logOutUser } from "../../store/auth/authActions";
 
 const Header = () => {
     const dispatch = useDispatch();
