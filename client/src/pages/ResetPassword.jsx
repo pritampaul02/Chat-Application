@@ -29,10 +29,14 @@ const ResetPassword = () => {
 
     // Countdown logic
     useEffect(() => {
-        console.log(timer);
-        if (timer === 299) {
+        if (timer === 0) {
+            return;
+        }
+
+        if (timer === 239) {
             setResendVisible(true);
         }
+
         const interval = setInterval(() => {
             setTimer((prev) => prev - 1);
         }, 1000);
@@ -104,13 +108,15 @@ const ResetPassword = () => {
                     />
                     <div className="flex justify-between items-center text-sm">
                         <span className={timerColor}>
-                            OTP expires in: {formatTime(timer)}
+                            {timer === 0
+                                ? "OTP expired"
+                                : `OTP expires in: ${formatTime(timer)}`}
                         </span>
                         {resendVisible && (
                             <button
                                 type="button"
                                 onClick={handleResendOtp}
-                                className="text-teal-300 hover:underline"
+                                className="text-teal-300 hover:underline cursor-pointer"
                             >
                                 Resend OTP
                             </button>
@@ -149,7 +155,7 @@ const ResetPassword = () => {
                     <button
                         type="submit"
                         disabled={loading.resetPassword}
-                        className="w-full py-3 bg-teal-600 hover:bg-teal-700 rounded-lg text-white font-medium flex items-center justify-center"
+                        className="w-full cursor-pointer py-3 bg-teal-600 hover:bg-teal-700 rounded-lg text-white font-medium flex items-center justify-center"
                     >
                         {loading.resetPassword
                             ? "Resetting..."
