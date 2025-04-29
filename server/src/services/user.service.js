@@ -40,6 +40,7 @@ export const UserService = {
         return user;
     },
 
+
     async sendOtpForVerification(email) {
         const user = await Users.findOne({ email });
         if (!user) {
@@ -53,6 +54,7 @@ export const UserService = {
         await sendEmail(email, "Verify Account - OTP", otp);
     },
 
+    
     async verifyOtp(otp) {
         const user = await Users.findOne({
             otp,
@@ -374,6 +376,7 @@ export const UserService = {
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");
         }
+
         if (body["action"] === "accept") {
             // Add to friends only if not already friends
             if (!sender.friends.includes(receiverId)) {
@@ -383,6 +386,7 @@ export const UserService = {
                 receiver.friends.push(userId);
             }
         }
+
         if (body["action"] === "reject" || body["action"] === "accept") {
             //  Remove from pending requests
 

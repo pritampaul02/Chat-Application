@@ -56,6 +56,7 @@ class MessageService {
         console.log("messaeg", messages);
         return messages;
     };
+    
     editMessage = async (userId, messageId, text) => {
         const message = await Messages.findById(messageId);
         if (!message || message.sender.toString() !== userId) {
@@ -64,7 +65,6 @@ class MessageService {
 
         message.message = text;
         message.edited = true;
-        message.editedAt = new Date();
         await message.save();
 
         io.to(getSocketId(message.receiver)).emit("message:updated", {
