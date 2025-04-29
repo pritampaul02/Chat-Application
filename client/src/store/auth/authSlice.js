@@ -1,4 +1,5 @@
-import { loadUser, loginUser, logOutUser, registerUser } from "./auth.controller";
+import { createSlice } from "@reduxjs/toolkit";
+import { registerUser, loginUser, logOutUser, loadUser } from "./authActions.js";
 
 const initialState = {
     user: {},
@@ -9,7 +10,7 @@ const initialState = {
         loadUser: false,
     },
     isAuthenticated: false,
-    } ,
+     
     error: null,
 }
 // AUTH SLICE
