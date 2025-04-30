@@ -13,9 +13,7 @@ import { Socket } from "socket.io";
 
 export const UserService = {
     async createUser(userData) {
-        console.log("ok created account ");
         const { email } = userData;
-        console.log(email, "for veryfy email exist user");
 
         const existUser = await Users.findOne({ email });
         if (existUser) {
@@ -40,7 +38,6 @@ export const UserService = {
         return user;
     },
 
-
     async sendOtpForVerification(email) {
         const user = await Users.findOne({ email });
         if (!user) {
@@ -54,7 +51,6 @@ export const UserService = {
         await sendEmail(email, "Verify Account - OTP", otp);
     },
 
-    
     async verifyOtp(otp) {
         const user = await Users.findOne({
             otp,
@@ -66,8 +62,13 @@ export const UserService = {
 
         user.otp = null;
         user.otpExpiry = null;
-        user.isVerify = true;
+        user.isVerified = true;
+        console.log(user);
         await user.save();
+        console.log(
+            "================================================================="
+        );
+        console.log(user);
         return user;
     },
 
@@ -283,9 +284,12 @@ export const UserService = {
         return user;
     },
 
-    async resetPasswordWithOtp(otp, newPassword) {
-        const user = await Users.findOne({ otp }).select("+password");
-        if (!user || timeExpire(user.expireAt)) {
+    async resetPasswordWithOtp(otp, email, newPassword) {
+        const user = await Users.findOne({ email }).select("+password");
+        if (!user || user.otp !== otp) {
+            throw new Error("Invalid otp");
+        }
+        if (timeExpire(user.otpExpiry)) {
             throw new Error("Invalid or expired OTP");
         }
         user.password = newPassword;

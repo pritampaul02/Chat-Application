@@ -67,24 +67,23 @@ const Register = () => {
         e.preventDefault();
 
         if (!validateForm()) return;
-        // console.log(formData.name);
-        // const form = new FormData();
-        // form.append("name", formData.name);
-        // form.append("email", formData.email);
-        // form.append("password", formData.password);
-        // if (formData.profilepic) {
-        //     form.append("profilepic", formData.profilepic);
-        // }
-        // console.log(form);
-        // console.log(formData);
-        const userData = {
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            // don't send profilepic if backend doesn't expect it yet
-        };
-        console.log(userData);
-        dispatch(registerUser(userData));
+        console.log(formData.name);
+        const form = new FormData();
+        form.append("name", formData.name);
+        form.append("email", formData.email);
+        form.append("password", formData.password);
+        if (formData.profilepic) {
+            form.append("profilepic", formData.profilepic);
+        }
+        console.log(form);
+        console.log(formData);
+        // const userData = {
+        //     name: formData.name,
+        //     email: formData.email,
+        //     password: formData.password,
+        //     // don't send profilepic if backend doesn't expect it yet
+        // };
+        dispatch(registerUser(form));
     };
 
     const handleChange = (e) => {

@@ -21,13 +21,14 @@ import ProtectedRoute from "./private/ProtectedRoute";
 
 import { loadUser } from "./store/auth/authActions";
 import { useDispatch } from "react-redux";
+import RequestPasswordReset from "./pages/ReqPasswordReset";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
     const dispatch = useDispatch();
 
     React.useEffect(() => {
         dispatch(loadUser());
-        
     }, [dispatch]);
 
     return (
@@ -35,6 +36,12 @@ const App = () => {
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route
+                    path="/request-password-reset"
+                    element={<RequestPasswordReset />}
+                />
+
+                <Route path="/reset-password" element={<ResetPassword />} />
 
                 <Route element={<ProtectedRoute />}>
                     <Route path="/" element={<Layout />}>

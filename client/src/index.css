@@ -12,7 +12,7 @@
 }
 *::-webkit-scrollbar {
     width: 5.5px;
-    height: calc(100%-88px);
+    height: calc(100% - 88px);
 }
 *::-webkit-scrollbar-thumb {
     background-color: #ccc;
