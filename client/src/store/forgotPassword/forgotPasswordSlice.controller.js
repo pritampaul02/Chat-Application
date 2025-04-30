@@ -9,7 +9,7 @@ export const sendResetOtp = createAsyncThunk(
             console.log("api for send otp");
             const { data } = await axios.post(
                 `${
-                    import.meta.env.VITE_BACEND_TEST
+                    import.meta.env.VITE_BACKEND_BASE_URI
                 }/api/v1/user/forgot-password`,
                 { email },
                 {
@@ -35,7 +35,7 @@ export const resetPassword = createAsyncThunk(
         try {
             const { data } = await axios.post(
                 `${
-                    import.meta.env.VITE_BACEND_TEST
+                    import.meta.env.VITE_BACKEND_BASE_URI
                 }/api/v1/user/reset-password`,
                 { otp, email, password },
                 {
