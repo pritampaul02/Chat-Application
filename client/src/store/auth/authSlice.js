@@ -1,16 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
-    loadUser,
+    registerUser,
     loginUser,
     logOutUser,
-    registerUser,
-} from "./auth.controller";
+    loadUser,
+} from "./authActions.js";
+
 const initialState = {
     user: {},
     loading: {
         registerUser: false,
         loginUser: false,
-        logoutUser: false,
+        logOutUser: false,
         loadUser: false,
     },
     isAuthenticated: false,
@@ -33,54 +34,54 @@ const authSlice = createSlice({
         builder
             // Register
             .addCase(registerUser.pending, (state) => {
-                state.loading = true;
+                state.loading.registerUser = true;
                 state.error = null;
             })
             .addCase(registerUser.fulfilled, (state, action) => {
-                state.loading = false;
+                state.loading.registerUser = false;
                 state.user = action.payload;
             })
             .addCase(registerUser.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.registerUser = false;
                 state.error = action.payload;
             })
             // Login
             .addCase(loginUser.pending, (state) => {
-                state.loading = true;
+                state.loading.loginUser = true;
                 state.error = null;
             })
             .addCase(loginUser.fulfilled, (state, action) => {
-                state.loading = false;
+                state.loading.loginUser = false;
                 state.user = action.payload;
             })
             .addCase(loginUser.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.loginUser = false;
                 state.error = action.payload;
             })
             // Logout
             .addCase(logOutUser.pending, (state) => {
-                state.loading = true;
+                state.loading.logOutUser = true;
                 state.error = null;
             })
             .addCase(logOutUser.fulfilled, (state) => {
-                state.loading = false;
+                state.loading.logOutUser = false;
                 state.user = null;
             })
             .addCase(logOutUser.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.logOutUser = false;
                 state.error = action.payload;
             })
 
             // Load Current User
             .addCase(loadUser.pending, (state) => {
-                state.loading = true;
+                state.loading.loadUser = true;
             })
             .addCase(loadUser.fulfilled, (state, action) => {
-                state.loading = false;
+                state.loading.loadUser = false;
                 state.user = action.payload;
             })
             .addCase(loadUser.rejected, (state) => {
-                state.loading = false;
+                state.loading.loadUser = false;
                 state.user = null;
             });
     },

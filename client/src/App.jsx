@@ -19,7 +19,7 @@ import SearchLayout from "./layout/SearchLayout";
 import UserProfile from "./components/UserProfile";
 import ProtectedRoute from "./private/ProtectedRoute";
 
-import { loadUser } from "./store/auth/auth.controller";
+import { loadUser } from "./store/auth/authActions";
 import { useDispatch } from "react-redux";
 import RequestPasswordReset from "./pages/ReqPasswordReset";
 import ResetPassword from "./pages/ResetPassword";

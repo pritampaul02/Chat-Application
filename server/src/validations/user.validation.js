@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Profile } from "../../../client/src/pages";
 
 class UserValidation {
     createUser = z.object({
@@ -9,6 +10,7 @@ class UserValidation {
                 .string()
                 .trim()
                 .min(8, "Password must be at least 8 characters"),
+            profilepic: z.string().trim().optional(),
         }),
     });
 

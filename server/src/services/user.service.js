@@ -13,9 +13,7 @@ import { Socket } from "socket.io";
 
 export const UserService = {
     async createUser(userData) {
-        console.log("ok created account ");
         const { email } = userData;
-        console.log(email, "for veryfy email exist user");
 
         const existUser = await Users.findOne({ email });
         if (existUser) {

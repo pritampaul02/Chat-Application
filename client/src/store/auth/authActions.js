@@ -11,7 +11,7 @@ export const registerUser = createAsyncThunk(
                 formData,
                 {
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "multipart/form-data",
                     },
                     withCredentials: true,
                 }
