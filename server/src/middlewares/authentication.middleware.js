@@ -2,12 +2,21 @@ import jwt from "jsonwebtoken";
 import { Users } from "../model/user.model.js";
 
 export const isAuthenticate = async (req, res, next) => {
-
     try {
         let token = req?.cookies?.token
             ? req?.cookies?.token
             : req.headers?.authorization || req.headers.cookie.split("=")[1];
         console.log("token====>", token);
+
+        // let token;
+
+        // if (req?.cookies?.token) {
+        //     token = req.cookies.token;
+        // } else if (req.headers?.authorization) {
+        //     token = req.headers.authorization;
+        // } else if (req.headers?.cookie?.includes("token=")) {
+        //     token = req.headers.cookie.split("token=")[1];
+        // }
 
         if (!token) {
             console.log("User not authenticated");
@@ -41,7 +50,7 @@ export const isAuthenticate = async (req, res, next) => {
             success: false,
             message: "User not authenticated",
             error: error.message,
-        })
+        });
     }
 };
 

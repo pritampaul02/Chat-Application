@@ -1,21 +1,20 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+
+import axiosInstance from "../../utils/axios";
 
 // REGISTER THUNK
 export const registerUser = createAsyncThunk(
     "auth/registerUser",
     async (formData, { rejectWithValue }) => {
         try {
-            const { data } = await axios.post(
-                `${import.meta.env.VITE_BACKEND_BASE_URI}/api/v1/user/register`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                    withCredentials: true,
-                }
+            const { data } = await axiosInstance.post(
+                `/user/register`,
+                formData
             );
+            if (data?.success && data?.token) {
+                sessionStorage.setItem("token", data.token);
+                sessionStorage.setItem("myUser", JSON.stringify(data.data));
+            }
             return data;
         } catch (error) {
             return rejectWithValue(
@@ -30,16 +29,13 @@ export const loginUser = createAsyncThunk(
     "auth/loginUser",
     async (formData, { rejectWithValue }) => {
         try {
-            const { data } = await axios.post(
-                `${import.meta.env.VITE_BACKEND_BASE_URI}/api/v1/user/login`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
-                }
-            );
+            const { data } = await axiosInstance.post(`/user/login`, formData);
+
+            if (data?.success && data?.token) {
+                sessionStorage.setItem("token", data.token);
+                sessionStorage.setItem("myUser", JSON.stringify(data.data));
+            }
+
             return data;
         } catch (error) {
             return rejectWithValue(
@@ -53,12 +49,9 @@ export const logOutUser = createAsyncThunk(
     "auth/logOutUser",
     async (_, { rejectWithValue }) => {
         try {
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_BACKEND_BASE_URI}/api/v1/user/logout`,
-                {
-                    withCredentials: true,
-                }
-            );
+            const { data } = await axiosInstance.get(`/user/logout`);
+            sessionStorage.removeItem("myUser");
+            sessionStorage.removeItem("token");
             return data;
         } catch (error) {
             return rejectWithValue(
@@ -74,11 +67,40 @@ export const loadUser = createAsyncThunk(
     "auth/loadUser",
     async (_, { rejectWithValue }) => {
         try {
-            console.log("api calling me");
-            const { data } = await axios.get(
-                `${import.meta.env.VITE_BACKEND_BASE_URI}/api/v1/user/me`, // API endpoint to get current user
-                { withCredentials: true } // Make sure cookies are included
+            // console.log("api calling me");
+            const user = sessionStorage.getItem("myUser");
+            const token = sessionStorage.getItem("token");
+
+            if (user && token) {
+                return {
+                    ...JSON.parse(user),
+                    token,
+                };
+            }
+            const { data } = await axiosInstance.get(
+                `/user/me` // API endpoint to get current user
             );
+            sessionStorage.setItem("myUser", JSON.stringify(data));
+            return data; // Return the user data
+        } catch (error) {
+            console.error(error);
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to load user"
+            );
+        }
+    }
+);
+
+export const getMe = createAsyncThunk(
+    "auth/getMe",
+    async (_, { rejectWithValue }) => {
+        try {
+            // console.log("api calling me");
+
+            const { data } = await axiosInstance.get(
+                `/user/me` // API endpoint to get current user
+            );
+
             return data; // Return the user data
         } catch (error) {
             console.error(error);

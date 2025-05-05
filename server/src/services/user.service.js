@@ -10,6 +10,7 @@ import {
 import mongoose from "mongoose";
 import { getSocketId, io } from "../socket/socket.js";
 import { Socket } from "socket.io";
+import { any } from "zod";
 
 export const UserService = {
     async createUser(userData) {
@@ -63,24 +64,20 @@ export const UserService = {
         user.otp = null;
         user.otpExpiry = null;
         user.isVerified = true;
-        console.log(user);
+        // console.log(user);
         await user.save();
-        console.log(
-            "================================================================="
-        );
-        console.log(user);
+
         return user;
     },
 
     async getUserById(id) {
         const user = await Users.aggregate([
             {
-                $match: { _id: new mongoose.Types.ObjectId(id) }, // Match the user by ID
+                $match: { _id: new mongoose.Types.ObjectId(id) },
             },
-
             {
                 $lookup: {
-                    from: "users", // Collection name should match MongoDB collection (pluralized)
+                    from: "users",
                     localField: "friends",
                     foreignField: "_id",
                     as: "friends",
@@ -89,7 +86,7 @@ export const UserService = {
             {
                 $lookup: {
                     from: "users",
-                    localField: "friendsRequast", // Ensure the field name matches the schema
+                    localField: "friendRequests",
                     foreignField: "_id",
                     as: "friendRequests",
                 },
@@ -107,32 +104,74 @@ export const UserService = {
                     name: 1,
                     email: 1,
                     profile_pic: 1,
-                    totalFriends: { $size: "$friends" }, // Calculate total number of friends
-                    friends: { _id: 1, name: 1, email: 1, profile_pic: 1 },
+                    coverPhoto: 1,
+                    bio: 1,
+                    totalFriends: { $size: "$friends" },
+                    totalFriendRequests: { $size: "$friendRequests" },
+
+                    friends: {
+                        $map: {
+                            input: "$friends",
+                            as: "f",
+                            in: {
+                                _id: "$$f._id",
+                                name: "$$f.name",
+                                email: "$$f.email",
+                                profile_pic: "$$f.profile_pic",
+                            },
+                        },
+                    },
                     friendRequests: {
-                        _id: 1,
-                        name: 1,
-                        email: 1,
-                        profile_pic: 1,
+                        $map: {
+                            input: "$friendRequests",
+                            as: "fr",
+                            in: {
+                                _id: "$$fr._id",
+                                name: "$$fr.name",
+                                email: "$$fr.email",
+                                profile_pic: "$$fr.profile_pic",
+                            },
+                        },
                     },
                     sentFriendRequests: {
-                        _id: 1,
-                        name: 1,
-                        email: 1,
-                        profile_pic: 1,
+                        $map: {
+                            input: "$sentFriendRequests",
+                            as: "f",
+                            in: {
+                                _id: "$$f._id",
+                                name: "$$f.name",
+                                email: "$$f.email",
+                                profile_pic: "$$f.profile_pic",
+                            },
+                        },
                     },
                 },
             },
         ]);
 
-        if (!user) throw new Error("User not found");
-        console.log("user ========> ", user);
+        if (!user.length) throw new Error("User not found");
 
-        return user;
+        return user[0]; // Return the first (and only) matched user
     },
 
     async getAllUser(userId) {
         return await Users.find({ _id: { $ne: userId } });
+    },
+
+    async searchUsers({ query = "", skip = 0, limit = 10 }) {
+        const regex = new RegExp(query, "i");
+
+        const users = await Users.find({ name: regex })
+            .skip(Number(skip))
+            .limit(Number(limit))
+            .select("name _id bio profile_pic");
+
+        const total = await Users.countDocuments({ name: regex });
+
+        return {
+            users,
+            hasMore: skip + limit < total,
+        };
     },
 
     async getAllUsersWithPosts() {
@@ -314,10 +353,20 @@ export const UserService = {
             throw new Error("User Not Found (Sender)");
         }
 
-        const receiverId = body["requastId"];
+        const receiverId = body["requestId"];
         const receiver = await Users.findById(receiverId);
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");
+        }
+
+        //check if user is sending request to himself
+        console.log(
+            sender,
+            "===============================================================================",
+            receiverId
+        );
+        if (sender._id.toString() === receiverId) {
+            throw new Error("you send request to your self! it is not allow!");
         }
 
         //  Check if already friends
@@ -335,7 +384,7 @@ export const UserService = {
         ) {
             throw new Error("Friend request already sent!");
         }
-
+        // check user already sent you a friend request!
         if (
             receiver.sentFriendRequests.includes(userId) ||
             sender.friendRequests.includes(receiverId)
@@ -351,7 +400,7 @@ export const UserService = {
         await receiver.save();
 
         const reciverSocketId = await getSocketId(receiverId);
-        console.log("reciver socket id ", reciverSocketId);
+        // console.log("reciver socket id ", reciverSocketId);
 
         io.to(reciverSocketId).emit("friendRequest", {
             senderId: userId,
@@ -359,7 +408,7 @@ export const UserService = {
         });
 
         const senderSocketId = await getSocketId(userId);
-        console.log("sender socket id ", senderSocketId);
+        // console.log("sender socket id ", senderSocketId);
 
         io.to(senderSocketId).emit("sendFriendRequest", {
             senderId: receiverId,
@@ -368,6 +417,42 @@ export const UserService = {
 
         const data = await this.getUserById(userId);
         return data;
+    },
+
+    async cancelFriendRequest(userId, body) {
+        const sender = await Users.findById(userId);
+        if (!sender) throw new Error("Sender not found");
+
+        const receiverId = body.requestId;
+        const receiver = await Users.findById(receiverId);
+        if (!receiver) throw new Error("Receiver not found");
+
+        // Make sure a friend request was actually sent
+        if (!sender.sentFriendRequests.includes(receiverId)) {
+            throw new Error("Friend request not found in your sent requests");
+        }
+
+        // Remove from sender and receiver lists
+        sender.sentFriendRequests = sender.sentFriendRequests.filter(
+            (id) => id.toString() !== receiverId
+        );
+        receiver.friendRequests = receiver.friendRequests.filter(
+            (id) => id.toString() !== userId
+        );
+
+        await sender.save();
+        await receiver.save();
+
+        // Notify via socket
+        const receiverSocketId = await getSocketId(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("cancelFriendRequest", {
+                senderId: userId,
+            });
+        }
+
+        const updatedUser = await this.getUserById(userId);
+        return updatedUser;
     },
 
     async manageFriendRequest(userId, body) {
@@ -405,7 +490,7 @@ export const UserService = {
             //  console.log(receiver.friendsRequast);
 
             const reciverSocketId = await getSocketId(receiverId);
-            console.log("reciver socket id ", reciverSocketId);
+            // console.log("reciver socket id ", reciverSocketId);
 
             io.to(reciverSocketId).emit("manageSendFriendReq", {
                 senderId: userId,
@@ -413,7 +498,7 @@ export const UserService = {
             });
 
             const senderSocketId = await getSocketId(userId);
-            console.log("sender socket id ", senderSocketId);
+            // console.log("sender socket id ", senderSocketId);
 
             io.to(senderSocketId).emit("manageFriendReq", {
                 senderId: receiverId,

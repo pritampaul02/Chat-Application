@@ -5,7 +5,7 @@ const corsConfig = cors({
         "http://localhost:5173",
         "https://chat-application-client-lime.vercel.app/",
         "https://chat-application-delta-nine.vercel.app/",
-        "*",
+        "*/",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,

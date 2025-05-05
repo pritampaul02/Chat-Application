@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Profile } from "../../../client/src/pages";
 
 class UserValidation {
     createUser = z.object({
@@ -10,7 +9,6 @@ class UserValidation {
                 .string()
                 .trim()
                 .min(8, "Password must be at least 8 characters"),
-            profilepic: z.string().trim().optional(),
         }),
     });
 
@@ -120,15 +118,32 @@ class UserValidation {
 
     sendFriendRequest = z.object({
         body: z.object({
-            requastId: z.string().min(1, "request Id is must  be required "),
+            requestId: z.string().min(1, "request Id is must  be required "),
         }),
     });
+
+    cancelFriendRequest = z.object({
+        body: z.object({
+            requestId: z.string().min(1, "request Id is required"),
+        }),
+    });
+
     manageFriendRequest = z.object({
         body: z.object({
             requestId: z.string().min(1, "Request ID is required"),
             action: z.enum(["accept", "reject"], {
                 errorMap: () => ({ message: "Invalid action" }),
             }),
+        }),
+    });
+    searchUser = z.object({
+        query: z.optional(),
+    });
+    //get user by id
+
+    getUserById = z.object({
+        params: z.object({
+            userId: z.string().min(1, "User ID is required"),
         }),
     });
 }

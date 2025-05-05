@@ -20,6 +20,9 @@ import {
     updateUser,
     logOutUser,
     getMe,
+    searchUsers,
+    getUserById,
+    cancelFriendRequest,
 } from "../controller/user.controller.js";
 
 import { isAuthenticate } from "../middlewares/authentication.middleware.js";
@@ -45,6 +48,20 @@ router
 
     .get("/all-users", isAuthenticate, getAllUser)
     .get("/", isAuthenticate, getUser)
+    .get(
+        "/search-user",
+        isAuthenticate,
+        // validate(userValidation.searchUser),
+        searchUsers
+    )
+    // get user by id
+
+    .get(
+        "/:userId",
+        isAuthenticate,
+        validate(userValidation.getUserById),
+        getUserById
+    )
 
     .post(
         "/send-friend-requast",
@@ -52,6 +69,13 @@ router
         validate(userValidation.sendFriendRequest),
         sendFriendRequest
     )
+    .post(
+        "/cancel-friend-request",
+        isAuthenticate,
+        validate(userValidation.cancelFriendRequest),
+        cancelFriendRequest
+    )
+
     .post(
         "/manage-friend-requast",
         isAuthenticate,
@@ -61,6 +85,7 @@ router
 
     .patch(
         "/change-profile-pic",
+        isAuthenticate,
         validate(userValidation.changeProfilePic),
         changeProfilePic
     )

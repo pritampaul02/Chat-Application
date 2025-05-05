@@ -1,57 +1,78 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { RiChatNewLine } from "react-icons/ri";
 import { BsChatLeftTextFill } from "react-icons/bs";
 import { Filter, Plus, Search } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
-import { AllChat } from "../../mockData/AllChat";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchChaListFriends } from "../../store/chatList/chatAction";
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
 const SidebarChat = () => {
     const location = useLocation();
+    const dispatch = useDispatch();
 
-    // Generate chat items with proper routing
-    const allChat = AllChat.map((el, i) => {
-        const chatId = i + 1;
-        const isActive = location.pathname === `/chat/${chatId}`;
+    const { loading, error, success, user } = useSelector(
+        (state) => state.chatList
+    );
 
-        return (
-            <NavLink
-                to={`/chat/${chatId}`}
-                key={chatId}
-                className={`w-full flex items-center pl-6 pr-6 py-3 hover:bg-[#00A3FF22] ${
-                    isActive ? "bg-[#00A3FF33]" : ""
-                }`}
-            >
-                <div className="flex-shrink-0">
-                    <img
-                        src={el.imgLink}
-                        alt="User avatar"
-                        className="object-cover rounded-full h-12 w-12 bg-[#f0f2f5]"
-                    />
-                </div>
-                <div className="ml-3 flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                        <span className="text-[1rem] truncate">
-                            {el.name} {chatId}
-                        </span>
-                        <div className="text-[12px] text-gray-500">
-                            {el.time}
+    useEffect(() => {
+        dispatch(fetchChaListFriends());
+    }, [dispatch]);
+
+    const renderChats = () => {
+        if (!user || !user.friends) {
+            return null; // Don't render anything if user or friends not loaded yet
+        }
+
+        if (user.friends.length === 0) {
+            return <p className="px-6 text-gray-500">No chats available</p>;
+        }
+
+        return user.friends.map((el) => {
+            const chatId = el._id;
+            const isActive = location.pathname === `/chat/${chatId}`;
+
+            return (
+                <NavLink
+                    to={`/chat/${chatId}`}
+                    key={chatId}
+                    className={`w-full flex items-center pl-6 pr-6 py-3 hover:bg-[#00A3FF22] ${
+                        isActive ? "bg-[#00A3FF33]" : ""
+                    }`}
+                >
+                    <div className="flex-shrink-0">
+                        <img
+                            src={el?.profile_pic?.url || IMG_LINK}
+                            alt="User avatar"
+                            className="object-cover rounded-full h-12 w-12 bg-[#f0f2f5]"
+                        />
+                    </div>
+                    <div className="ml-3 flex-1 min-w-0">
+                        <div className="flex justify-between items-center">
+                            <span className="text-[1rem] truncate">
+                                {el?.name}
+                            </span>
+                            <div className="text-[12px] text-gray-500">
+                                {el?.lastSeen
+                                    ? new Date(el.lastSeen).toLocaleTimeString()
+                                    : ""}
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600 truncate">
+                                {el?.lastMessage || "No messages yet"}
+                            </span>
+                            <div className="bg-primary rounded-full h-4 w-4 flex justify-center items-center text-white text-xs">
+                                {el?.msgNotification || 0}
+                            </div>
                         </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 truncate">
-                            {el.message}
-                        </span>
-                        <div className="bg-primary rounded-full h-4 w-4 flex justify-center items-center text-white text-xs">
-                            {el.msgNotification}
-                        </div>
-                    </div>
-                </div>
-            </NavLink>
-        );
-    });
+                </NavLink>
+            );
+        });
+    };
 
     return (
         <div className="w-[22rem] bg-white border-r border-[#5E5E5E33] h-screen flex flex-col">
@@ -89,7 +110,15 @@ const SidebarChat = () => {
                         ALL MESSAGES
                     </p>
                 </div>
-                <div className="pb-4">{allChat}</div>
+                <div className="pb-4">
+                    {loading ? (
+                        <p className="px-6">Loading chats...</p>
+                    ) : error ? (
+                        <p className="px-6 text-red-500">{error}</p>
+                    ) : (
+                        renderChats()
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -1,15 +1,16 @@
 import React, { useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserById } from "../store/userProfile/userProfileAction";
+// import { fetchUserById } from "../store/userProfile/userProfileAction";
 import {
     sendFriendRequest,
     cancelFriendRequest,
-} from "../store/friends/friendsAction";
-import { resetFriendState } from "../store/friends/friendsSlice";
-import { getMe } from "../store/auth/authActions";
-
-const UserProfile = () => {
+    manageFriendRequest,
+} from "../../store/friends/friendsAction";
+import { resetFriendState } from "../../store/friends/friendsSlice";
+import { getMe } from "../../store/auth/authActions";
+import { fetchUserById } from "../../store/userProfile/userProfileAction";
+const FriendsProfile = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -57,6 +58,26 @@ const UserProfile = () => {
         dispatch(resetFriendState());
     };
 
+    const handleManageFriendsRequest = () => {
+        const friendData = {
+            requestId: user._id,
+            action: "accept",
+        };
+        dispatch(manageFriendRequest(friendData));
+        dispatch(getMe());
+        dispatch(resetFriendState());
+    };
+
+    const handleDeleteFriendsRequest = () => {
+        const friendData = {
+            requestId: user._id,
+            action: "reject",
+        };
+        dispatch(manageFriendRequest(friendData));
+        dispatch(getMe());
+        dispatch(resetFriendState());
+    };
+
     const hasSentRequest = !!(
         myUser?._id &&
         user?._id &&
@@ -68,6 +89,12 @@ const UserProfile = () => {
         user?._id &&
         myUser.friends?.includes(user._id)
     );
+    const isSentFriendRequest = !!(
+        myUser?._id &&
+        user?._id &&
+        myUser.friendRequests?.includes(user._id)
+    );
+    console.log("++++++++++++++++++++++++++++++", isSentFriendRequest);
 
     const isIam = myId === user?._id;
 
@@ -132,6 +159,23 @@ const UserProfile = () => {
                         >
                             Message
                         </button>
+                    ) : isSentFriendRequest ? (
+                        <div className=" gap-3 flex">
+                            <button
+                                onClick={handleManageFriendsRequest()}
+                                disabled={sending}
+                                className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition"
+                            >
+                                {sending ? "Confirming..." : "Confirm"}
+                            </button>
+                            <button
+                                onClick={handleDeleteFriendsRequest}
+                                disabled={sending}
+                                className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition"
+                            >
+                                {sending ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
                     ) : hasSentRequest ? (
                         <button
                             onClick={handleCancelRequest}
@@ -171,4 +215,4 @@ const UserProfile = () => {
     );
 };
 
-export default UserProfile;
+export default FriendsProfile;
