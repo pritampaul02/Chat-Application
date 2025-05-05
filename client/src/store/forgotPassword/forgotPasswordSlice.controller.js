@@ -1,24 +1,16 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import axiosInstance from "../../utils/axios";
 
 // SEND RESET OTP THUNK
 export const sendResetOtp = createAsyncThunk(
     "forgotPassword/sendResetOtp",
     async (email, { rejectWithValue }) => {
         try {
-            console.log("api for send otp");
-            const { data } = await axios.post(
-                `${
-                    import.meta.env.VITE_BACKEND_BASE_URI
-                }/api/v1/user/forgot-password`,
-                { email },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
-                }
-            );
+            // console.log("api for send otp");
+            const { data } = await axiosInstance.post(`/user/forgot-password`, {
+                email,
+            });
             return data;
         } catch (error) {
             return rejectWithValue(
@@ -33,18 +25,11 @@ export const resetPassword = createAsyncThunk(
     "forgotPassword/resetPassword",
     async ({ otp, email, password }, { rejectWithValue }) => {
         try {
-            const { data } = await axios.post(
-                `${
-                    import.meta.env.VITE_BACKEND_BASE_URI
-                }/api/v1/user/reset-password`,
-                { otp, email, password },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
-                }
-            );
+            const { data } = await axiosInstance.post(`/user/reset-password`, {
+                otp,
+                email,
+                password,
+            });
             return data;
         } catch (error) {
             return rejectWithValue(

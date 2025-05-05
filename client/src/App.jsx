@@ -6,7 +6,6 @@ import {
     Login,
     Profile,
     Register,
-    Search,
     Settings,
     Status,
 } from "./pages/index";
@@ -23,12 +22,18 @@ import { loadUser } from "./store/auth/authActions";
 import { useDispatch } from "react-redux";
 import RequestPasswordReset from "./pages/ReqPasswordReset";
 import ResetPassword from "./pages/ResetPassword";
+import FriendsLayout from "./layout/FriendsLayout";
+import FriendsProfile from "./components/friendsComponents/FriendsProfile";
 
 const App = () => {
     const dispatch = useDispatch();
+    const loadUserCalled = React.useRef(false);
 
     React.useEffect(() => {
-        dispatch(loadUser());
+        if (!loadUserCalled.current) {
+            dispatch(loadUser());
+            loadUserCalled.current = true;
+        }
     }, [dispatch]);
 
     return (
@@ -71,7 +76,11 @@ const App = () => {
                             />
                         </Route>
 
-                        <Route path="friends" element={<Friends />} />
+                        <Route path="/friends" element={<FriendsLayout />}>
+                            <Route index element={<Friends />} />
+                            <Route path=":id" element={<FriendsProfile />} />
+                        </Route>
+                        {/* <Route path="friends" element={<Friends />} /> */}
                         <Route path="settings" element={<Settings />} />
                         <Route path="search" element={<SearchLayout />}>
                             <Route path=":name/:id" element={<UserProfile />} />

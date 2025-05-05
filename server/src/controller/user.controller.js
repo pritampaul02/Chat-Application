@@ -1,11 +1,9 @@
 import { UserService } from "../services/user.service.js";
 import { sendCookie } from "../utils/sendCookie.js";
-import jwt from "jsonwebtoken";
 
 import { sendResponse } from "../utils/response.handler.js";
 import { HTTP_STATUS } from "../constants/statusCode.constants.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessage.constants.js";
-import { Users } from "../model/user.model.js";
 
 export const createUser = async (req, res) => {
     try {
@@ -17,7 +15,7 @@ export const createUser = async (req, res) => {
         sendResponse(res, {
             status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             success: false,
-            message: RESPONSE_MESSAGES.INTERNAL_ERROR,
+            message: error.message || "Internal server error",
             error,
         });
     }
@@ -64,6 +62,7 @@ export const VerifyOtpWithExpiry = async (req, res) => {
 export const getUser = async (req, res) => {
     try {
         const { id } = req.user;
+        console.log(id);
         const user = await UserService.getUserById(id);
         sendResponse(res, {
             status: HTTP_STATUS.OK,
@@ -81,6 +80,22 @@ export const getUser = async (req, res) => {
     }
 };
 
+export const searchUsers = async (req, res) => {
+    try {
+        const { query = "", skip = 0, limit = 10 } = req.query;
+
+        const result = await UserService.searchUsers({
+            query,
+            skip: Number(skip),
+            limit: Number(limit),
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to search users" });
+    }
+};
+
 export const getAllUsersWithPost = async (req, res) => {
     try {
         const usersWithPosts = await UserService.getAllUsersWithPosts();
@@ -95,6 +110,30 @@ export const getAllUsersWithPost = async (req, res) => {
             status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             success: false,
             message: RESPONSE_MESSAGES.INTERNAL_ERROR,
+            error,
+        });
+    }
+};
+
+//get user by id
+
+export const getUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        console.log(userId);
+        const user = await UserService.getUserById(userId);
+        console.log(user);
+        sendResponse(res, {
+            status: HTTP_STATUS.OK,
+            success: true,
+            message: "User fetched successfully.",
+            data: user,
+        });
+    } catch (error) {
+        sendResponse(res, {
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            success: false,
+            message: error.message,
             error,
         });
     }
@@ -281,6 +320,32 @@ export const sendFriendRequest = async (req, res) => {
             status: HTTP_STATUS.BAD_REQUEST,
             success: false,
             message: error.message || RESPONSE_MESSAGES.SEND_FRIND_REQUST_FAILD,
+        });
+    }
+};
+
+export const cancelFriendRequest = async (req, res) => {
+    try {
+        console.log("Cancel Friend Request API hit");
+
+        const { id } = req.user;
+
+        const data = await UserService.cancelFriendRequest(id, req.body);
+
+        sendResponse(res, {
+            status: HTTP_STATUS.OK,
+            success: true,
+            data,
+            message: RESPONSE_MESSAGES.CANCEL_FRIEND_REQUEST_SUCCESS,
+        });
+    } catch (error) {
+        console.error("Cancel friend request error:", error);
+
+        sendResponse(res, {
+            status: HTTP_STATUS.BAD_REQUEST,
+            success: false,
+            message:
+                error.message || RESPONSE_MESSAGES.CANCEL_FRIEND_REQUEST_FAILED,
         });
     }
 };

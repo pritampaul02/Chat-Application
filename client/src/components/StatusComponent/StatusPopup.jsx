@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { IoSend } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
-export default function StatusPopup({ onClose, status, autoCloseAfter = 60 }) {
+export default function StatusPopup({ onClose, status, autoCloseAfter = 5 }) {
     const navigate = useNavigate();
     const [progressWidth, setProgressWidth] = useState("0%");
 

@@ -4,7 +4,6 @@ import { TiAttachment } from "react-icons/ti";
 import { IoMicOutline, IoSend } from "react-icons/io5";
 import { FaUser } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
-import { AllChat } from "../mockData/AllChat";
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
