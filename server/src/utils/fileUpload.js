@@ -1,5 +1,6 @@
 // import { v2 as cloudinary } from 'cloudinary';
 
+import { unlink } from "fs/promises";
 import cloudinary from "../config/cloudinary.config.js";
 
 export const fileUploader = async (file) => {
@@ -13,7 +14,7 @@ export const fileUploader = async (file) => {
                 },
             ],
         });
-
+        await unlink(localFilePath);
         return { url: data.secure_url, public_id: data.public_id, error: null };
     } catch (error) {
         console.error(error);

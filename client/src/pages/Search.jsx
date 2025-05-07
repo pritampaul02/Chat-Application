@@ -155,7 +155,7 @@ const Search = () => {
     );
 
     return (
-        <div className="w-[22rem] bg-white border-r border-gray-200 h-screen flex flex-col">
+        <div className="w-full md:ml-14 md:w-[22rem] bg-white border-r border-gray-200 h-screen flex flex-col">
             <div className="w-full px-6 pb-3 pt-4 sticky top-0 bg-white z-10">
                 <h1 className="text-2xl font-semibold mb-3 mt-4 text-gray-800">
                     Search
@@ -173,7 +173,7 @@ const Search = () => {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-h-[calc(100vh-120px)]">
                 {loading ? (
                     Array.from({ length: 5 }).map((_, index) => (
                         <div

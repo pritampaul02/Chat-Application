@@ -484,7 +484,7 @@ export const updateMyProfile = async (req, res) => {
         }
 
         if (user.coverPhoto?.public_id) {
-            await fileDestroy(user.profile_pic.public_id);
+            await fileDestroy(user.coverPhoto.public_id);
         }
 
         if (req.files?.profile_pic) {
