@@ -2,58 +2,103 @@ import React, { useState, useEffect } from "react";
 import { CircleUser, Camera, Pencil } from "lucide-react";
 import { CiLocationOn } from "react-icons/ci";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { getMe, updateProfile } from "../store/auth/authActions";
 
 const Profile = () => {
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [bio, setBio] = useState("Life is not same for everyone 😔😔");
+    const [bio, setBio] = useState("");
     const [location, setLocation] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [profileImage, setProfileImage] = useState(null);
     const [coverImage, setCoverImage] = useState(null);
+    const [profileFile, setProfileFile] = useState(null);
+    const [coverFile, setCoverFile] = useState(null);
 
-    const handleProfilePicChange = (e) => {
-        const file = e.target.files[0];
-        if (file) setProfileImage(URL.createObjectURL(file));
-    };
+    const dispatch = useDispatch();
+    const { user: myUser } = useSelector((state) => state.auth);
 
-    const handleCoverPicChange = (e) => {
-        const file = e.target.files[0];
-        if (file) setCoverImage(URL.createObjectURL(file));
-    };
+    useEffect(() => {
+        if (!myUser?._id) dispatch(getMe());
+    }, [dispatch, myUser]);
 
-    // Fetch location suggestions
+    useEffect(() => {
+        if (myUser) {
+            setBio(myUser.bio || "");
+            setLocation(myUser.location || "");
+            setProfileImage(myUser.profile_pic.url);
+            setCoverImage(myUser.coverPhoto.url);
+        }
+        console.log(myUser, "dfsadfsdf");
+    }, [myUser]);
+
     useEffect(() => {
         const fetchSuggestions = async () => {
             if (location.trim().length < 2) return setSuggestions([]);
-
             try {
                 const res = await axios.get(
                     "https://api.opencagedata.com/geocode/v1/json",
                     {
                         params: {
-                            key: import.meta.env.VITE_SEARCH_LOCATION_API_KEY, // Replace with your key
+                            key: import.meta.env.VITE_SEARCH_LOCATION_API_KEY,
                             q: location,
                             limit: 5,
                             language: "en",
                         },
                     }
                 );
-                const results = res.data.results.map(
-                    (result) => result.formatted
-                );
-                setSuggestions(results);
+                setSuggestions(res.data.results.map((r) => r.formatted));
             } catch (err) {
-                console.error("Error fetching location:", err);
+                console.error(err);
             }
         };
-
         const debounce = setTimeout(fetchSuggestions, 400);
         return () => clearTimeout(debounce);
     }, [location]);
 
-    const handleSelectSuggestion = (place) => {
-        setLocation(place);
+    const handleSelectSuggestion = (s) => {
+        setLocation(s);
         setSuggestions([]);
+    };
+
+    const handleProfilePicChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setProfileImage(URL.createObjectURL(file));
+            setProfileFile(file);
+            console.log(file);
+        }
+    };
+
+    const handleCoverPicChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setCoverImage(URL.createObjectURL(file));
+            setCoverFile(file);
+        }
+    };
+
+    const handleSave = () => {
+        const formData = new FormData();
+        formData.append("bio", bio);
+        formData.append("location", location);
+        if (profileFile) formData.append("profile_pic", profileFile);
+        if (coverFile) formData.append("coverPhoto", coverFile);
+
+        // const formData = {
+        //     bio: bio,
+        //     location: location,
+        //     profile_pic: profileFile,
+        //     coverPhoto: coverFile,
+        // };
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+
+        dispatch(updateProfile(formData)).then(() => {
+            setIsEditOpen(false);
+        });
+        dispatch(getMe());
     };
 
     return (
@@ -110,10 +155,8 @@ const Profile = () => {
                 {/* === Name and Actions === */}
                 <div className="mt-24 px-6 flex flex-col sm:flex-row sm:justify-between items-center sm:items-end">
                     <div className="text-left">
-                        <h2 className="text-2xl font-bold">Your Name</h2>
-                        <p className="text-sm text-gray-600">
-                            Student | Developer
-                        </p>
+                        <h2 className="text-2xl font-bold">{myUser.name}</h2>
+                        <p className="text-sm text-gray-600">{bio}</p>
                     </div>
                     <div className="mt-4 sm:mt-0 flex gap-2">
                         <button className="px-4 py-2 rounded-md bg-primary text-white shadow hover:bg-blue-700 transition">
@@ -163,6 +206,17 @@ const Profile = () => {
                         >
                             Edit Bio
                         </button>
+                        <div className="h-full w-full flex justify-end">
+                            {" "}
+                            {(profileFile || coverFile) && (
+                                <button
+                                    className=" text-white bg-primary pl-2 pr-2 rounded-[6px] cursor-pointer text-md hover:underline"
+                                    onClick={handleSave}
+                                >
+                                    Save
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -273,7 +327,7 @@ const Profile = () => {
                             {/* Save */}
                             <div className="flex justify-end">
                                 <button
-                                    onClick={() => setIsEditOpen(false)}
+                                    onClick={handleSave}
                                     className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
                                 >
                                     Save

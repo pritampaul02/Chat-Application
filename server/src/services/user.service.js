@@ -105,6 +105,7 @@ export const UserService = {
                     email: 1,
                     profile_pic: 1,
                     coverPhoto: 1,
+                    location: 1,
                     bio: 1,
                     totalFriends: { $size: "$friends" },
                     totalFriendRequests: { $size: "$friendRequests" },
@@ -209,7 +210,10 @@ export const UserService = {
             await fileDestroy(user.profile_pic.public_id);
         }
 
-        const { url, public_id, error } = await fileUploader(file);
+        const { url, public_id, error } = await fileUploader(
+            file,
+            "CHAT-APP/profile_pic"
+        );
         if (error) {
             throw new Error("File upload failed");
         }
@@ -226,7 +230,10 @@ export const UserService = {
             await fileDestroy(user.coverPhoto.public_id);
         }
 
-        const { url, public_id, error } = await fileUploader(file);
+        const { url, public_id, error } = await fileUploader(
+            file,
+            "CHAT-APP/coverPhoto"
+        );
         if (error) throw new Error("File upload failed");
 
         user.coverPhoto = { url, public_id };
@@ -247,6 +254,37 @@ export const UserService = {
         if (!user) throw new Error("User not found");
 
         user.location = { place };
+        await user.save();
+        return user;
+    },
+    // change user profile pic bio etc in one api
+    async updateMyProfile(userId, updates, imageData) {
+        const user = await Users.findById(userId);
+        if (!user) throw new Error("User not found");
+        const { bio, location } = updates;
+        const { profile_pic, coverPhoto } = imageData;
+        user.bio = bio;
+        user.location = location;
+
+        if (user.profile_pic?.public_id) {
+            await fileDestroy(user.profile_pic.public_id);
+        }
+
+        const { url, public_id, error } = await fileUploader(
+            profile_pic,
+            "CHAT-APP/profile_pic"
+        );
+        if (error) throw new Error("File upload failed");
+
+        user.profile_pic = { url, public_id };
+        const {
+            url: imageUrl,
+            public_id: publicId,
+            error: errors,
+        } = await fileUploader(coverPhoto, "CHAT-APP/coverPhoto");
+        if (errors) throw new Error("File upload failed");
+        user.coverPhoto = { url: imageUrl, public_id: publicId };
+
         await user.save();
         return user;
     },

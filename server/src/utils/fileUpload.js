@@ -1,40 +1,39 @@
+// import { v2 as cloudinary } from 'cloudinary';
 
-import { v2 as cloudinary } from 'cloudinary';
+import cloudinary from "../config/cloudinary.config.js";
 
-export const fileUploader = async (file)=>{
-
-
+export const fileUploader = async (file) => {
     try {
-        const data =await cloudinary.uploader.upload(file ,{
-            folder:"rbac"
-        })
+        const data = await cloudinary.uploader.upload(file, {
+            folder,
+            transformation: [
+                {
+                    quality: "auto:good",
+                    fetch_format: "auto",
+                },
+            ],
+        });
 
-      return { url:data.secure_url , public_id: data.public_id , error:null}  
+        return { url: data.secure_url, public_id: data.public_id, error: null };
     } catch (error) {
-      console.error(error);
-      
-        return { url:null , public_id:null , error}
+        console.error(error);
+
+        return { url: null, public_id: null, error };
+    }
+};
+
+export const fileDestroy = async (public_id) => {
+    if (public_id) {
+        try {
+            const data = await cloudinary.uploader.destroy(public_id);
+            // console.log(data);
+            return { success: true, data, error: null };
+        } catch (error) {
+            console.error(error);
+
+            return { success: false, data: null, error };
+        }
     }
 
-}
-
-export const fileDestroy = async( public_id )=>{
-
-  if(public_id){
-    try {
-       
-      const data = await cloudinary.uploader.destroy(public_id)
-      // console.log(data);
-      return { success : true , data, error : null }
-  
-    } catch (error) {
-      console.error(error);
-      
-      return { success : false , data:null ,  error}
-    }
-
-  }
-
-  return { success : true , error: null , data:null}
-
-}
+    return { success: true, error: null, data: null };
+};
