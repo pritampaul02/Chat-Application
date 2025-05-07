@@ -4,6 +4,8 @@ import { TiAttachment } from "react-icons/ti";
 import { IoMicOutline, IoSend } from "react-icons/io5";
 import { FaUser } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
+import { HiArrowLeft } from "react-icons/hi";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
@@ -17,33 +19,26 @@ const MessageBubble = ({ message, isSender }) => {
             }`}
         >
             <div
-                className={`max-w-[75%] p-3 rounded-2xl ${
+                className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${
                     isSender
                         ? "bg-primary text-white rounded-tr-none"
                         : "bg-white border border-gray-200 rounded-tl-none"
                 }`}
             >
-                <p className="text-sm">{message.text}</p>
+                <p>{message.text}</p>
+                {/* Timestamp + read indicator */}
                 <div
-                    className={`flex items-center mt-1 text-xs ${
+                    className={`mt-1 text-xs ${
                         isSender ? "text-primary-100" : "text-gray-500"
-                    }`}
+                    } flex justify-end items-center`}
                 >
-                    <div
-                        className={`flex w-full
-                             justify-end
-                        `}
-                    >
-                        {" "}
-                        <span className="select-none">{message.time}</span>
-                    </div>
-
+                    <span>{message.time}</span>
                     {isSender && (
                         <span className="ml-1">
                             {message.read ? (
-                                <BsCheck2All className="text-blue-100  text-[16px]" />
+                                <BsCheck2All className="text-blue-100 text-sm" />
                             ) : (
-                                <BsCheck2 className="text-blue-100  text-[16px]" />
+                                <BsCheck2 className="text-blue-100 text-sm" />
                             )}
                         </span>
                     )}
@@ -54,9 +49,21 @@ const MessageBubble = ({ message, isSender }) => {
 };
 
 // Chat Header Component
-const ChatHeader = ({ contact }) => {
+const ChatHeader = ({ toggleSidebar, contact }) => {
+    const navigate = useNavigate();
     return (
         <header className="flex items-center bg-white border-b border-gray-200 h-16 px-4">
+            {/* Back button - shown only on small screens */}
+            <button
+                className="md:hidden mr-3 p-2 rounded-full hover:bg-gray-100"
+                onClick={() => {
+                    navigate("/chat");
+                    toggleSidebar();
+                }}
+            >
+                <HiArrowLeft className="text-xl text-gray-700" />
+            </button>
+
             <div className="rounded-full h-10 w-10 bg-gray-300 flex justify-center items-center">
                 {contact.avatar ? (
                     <img
@@ -68,10 +75,12 @@ const ChatHeader = ({ contact }) => {
                     <FaUser className="text-xl" />
                 )}
             </div>
+
             <div className="ml-3 flex-1">
                 <h2 className="font-medium">{contact.name}</h2>
                 <p className="text-xs text-gray-500">{contact.status}</p>
             </div>
+
             <button className="p-2 rounded-full hover:bg-gray-100">
                 <CiSearch className="text-lg" />
             </button>
@@ -84,26 +93,26 @@ const MessageInput = () => {
     const [message, setMessage] = React.useState("");
 
     return (
-        <footer className="bg-white border-t border-gray-200 p-3">
-            <div className="flex items-center gap-2">
+        <footer className="bg-white border-t border-gray-200 md:mb-0 mb-14 p-2 sm:p-3">
+            <div className="flex items-center gap-1 sm:gap-2">
                 <button className="p-2 rounded-full hover:bg-gray-100">
-                    <BsEmojiSmile className="text-xl text-gray-600" />
+                    <BsEmojiSmile className="text-lg sm:text-xl text-gray-600" />
                 </button>
                 <button className="p-2 rounded-full hover:bg-gray-100">
-                    <TiAttachment className="text-xl text-gray-600" />
+                    <TiAttachment className="text-lg sm:text-xl text-gray-600" />
                 </button>
                 <input
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Type a message"
-                    className="flex-1 py-2 px-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                    className="flex-1 py-2 px-4 rounded-full border border-gray-300 text-sm focus:outline-none"
                 />
                 <button className="p-2 rounded-full hover:bg-gray-100">
                     {message ? (
-                        <IoSend className="text-xl text-primary" />
+                        <IoSend className="text-lg text-primary" />
                     ) : (
-                        <IoMicOutline className="text-xl text-gray-600" />
+                        <IoMicOutline className="text-lg text-gray-600" />
                     )}
                 </button>
             </div>
@@ -113,6 +122,7 @@ const MessageInput = () => {
 
 // Main ChatScreen Component
 const ChatScreen = () => {
+    const { toggleSidebar } = useOutletContext();
     // Mock data - replace with real data
     const contact = {
         name: "Akash Mondal",
@@ -265,12 +275,12 @@ const ChatScreen = () => {
     ];
 
     return (
-        <div className="flex flex-col h-screen">
-            <ChatHeader contact={contact} />
+        <div className="flex flex-col h-full md:h-screen">
+            <ChatHeader toggleSidebar={toggleSidebar} contact={contact} />
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 bg-opacity-50 bg-[url('/assets/download.png')] bg-cover bg-center">
-                <div className="max-w-4xl mx-auto">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-gray-50 bg-[url('/assets/download.png')] bg-cover bg-center">
+                <div className="max-w-3xl mx-auto">
                     {messages.map((message) => (
                         <MessageBubble
                             key={message.id}

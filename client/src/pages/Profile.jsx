@@ -1,3 +1,4 @@
+// ✅ FULLY RESPONSIVE Profile Component (Optimized)
 import React, { useState, useEffect } from "react";
 import { CircleUser, Camera, Pencil } from "lucide-react";
 import { CiLocationOn } from "react-icons/ci";
@@ -29,7 +30,6 @@ const Profile = () => {
             setProfileImage(myUser.profile_pic.url);
             setCoverImage(myUser.coverPhoto.url);
         }
-        console.log(myUser, "dfsadfsdf");
     }, [myUser]);
 
     useEffect(() => {
@@ -66,7 +66,6 @@ const Profile = () => {
         if (file) {
             setProfileImage(URL.createObjectURL(file));
             setProfileFile(file);
-            console.log(file);
         }
     };
 
@@ -85,16 +84,6 @@ const Profile = () => {
         if (profileFile) formData.append("profile_pic", profileFile);
         if (coverFile) formData.append("coverPhoto", coverFile);
 
-        // const formData = {
-        //     bio: bio,
-        //     location: location,
-        //     profile_pic: profileFile,
-        //     coverPhoto: coverFile,
-        // };
-        for (let pair of formData.entries()) {
-            console.log(pair[0], pair[1]);
-        }
-
         dispatch(updateProfile(formData)).then(() => {
             setIsEditOpen(false);
         });
@@ -102,10 +91,10 @@ const Profile = () => {
     };
 
     return (
-        <div className="bg-gray-100 flex justify-center min-h-screen px-4 py-6">
+        <div className="bg-gray-100 flex justify-center min-h-screen px-2 sm:px-4 py-6">
             <div className="w-full max-w-5xl bg-white rounded-md shadow relative">
                 {/* === Cover Photo === */}
-                <div className="relative w-full h-[22rem] bg-gray-200 rounded-t-md overflow-hidden">
+                <div className="relative w-full h-[16rem] sm:h-[20rem] md:h-[22rem] bg-gray-200 rounded-t-md overflow-hidden">
                     {coverImage ? (
                         <img
                             src={coverImage}
@@ -117,7 +106,7 @@ const Profile = () => {
                             No cover photo
                         </div>
                     )}
-                    <label className="absolute right-4 bottom-4 bg-white px-3 py-1 rounded-md text-sm cursor-pointer shadow border z-10">
+                    <label className="absolute right-2 bottom-2 bg-white px-2 py-1 rounded-md text-xs sm:text-sm cursor-pointer shadow border z-10">
                         Add cover photo
                         <input
                             type="file"
@@ -128,8 +117,8 @@ const Profile = () => {
                 </div>
 
                 {/* === Profile Picture === */}
-                <div className="absolute left-8 top-[calc(22rem-4rem)] z-30">
-                    <div className="relative w-40 h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-200">
+                <div className="absolute left-4 sm:left-8 top-[calc(16rem-3.5rem)] sm:top-[calc(20rem-4rem)] z-30">
+                    <div className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-200">
                         {profileImage ? (
                             <img
                                 src={profileImage}
@@ -138,7 +127,7 @@ const Profile = () => {
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                <CircleUser className="w-20 h-20" />
+                                <CircleUser className="w-16 h-16" />
                             </div>
                         )}
                         <label className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md border cursor-pointer hover:bg-gray-100 transition">
@@ -153,17 +142,19 @@ const Profile = () => {
                 </div>
 
                 {/* === Name and Actions === */}
-                <div className="mt-24 px-6 flex flex-col sm:flex-row sm:justify-between items-center sm:items-end">
-                    <div className="text-left">
-                        <h2 className="text-2xl font-bold">{myUser.name}</h2>
+                <div className="mt-24 sm:mt-28 px-4 sm:px-6 flex flex-col sm:flex-row sm:justify-between items-center sm:items-end gap-4 sm:gap-0">
+                    <div className="text-center sm:text-left">
+                        <h2 className="text-xl sm:text-2xl font-bold">
+                            {myUser.name}
+                        </h2>
                         <p className="text-sm text-gray-600">{bio}</p>
                     </div>
-                    <div className="mt-4 sm:mt-0 flex gap-2">
-                        <button className="px-4 py-2 rounded-md bg-primary text-white shadow hover:bg-blue-700 transition">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <button className="w-full sm:w-auto px-4 py-2 rounded-md bg-primary text-white shadow hover:bg-blue-700 transition text-sm">
                             Add to Story
                         </button>
                         <button
-                            className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 transition shadow"
+                            className="w-full sm:w-auto px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 transition shadow text-sm"
                             onClick={() => setIsEditOpen(true)}
                         >
                             <Pencil className="inline mr-2" />
@@ -173,9 +164,11 @@ const Profile = () => {
                 </div>
 
                 {/* === Intro Section === */}
-                <div className="mt-6 px-6 pb-6">
-                    <div className="bg-white p-4 rounded-md shadow-sm w-full max-w-md">
-                        <h3 className="font-semibold text-lg">Intro</h3>
+                <div className="mt-6 px-4 sm:px-6 pb-6">
+                    <div className="bg-white p-4 rounded-md shadow-sm w-full max-w-md mx-auto">
+                        <h3 className="font-semibold text-base sm:text-lg">
+                            Intro
+                        </h3>
                         <p className="text-sm text-gray-700 mt-2">{bio}</p>
                         <ul className="mt-4 space-y-2 text-sm text-gray-600">
                             <li>
@@ -195,8 +188,7 @@ const Profile = () => {
                                 </span>
                             </li>
                             <li>
-                                <CiLocationOn className="inline text-2xl" />{" "}
-                                From{" "}
+                                <CiLocationOn className="inline text-lg" /> From{" "}
                                 <span className="font-medium">{location}</span>
                             </li>
                         </ul>
@@ -206,11 +198,10 @@ const Profile = () => {
                         >
                             Edit Bio
                         </button>
-                        <div className="h-full w-full flex justify-end">
-                            {" "}
+                        <div className="flex justify-end mt-2">
                             {(profileFile || coverFile) && (
                                 <button
-                                    className=" text-white bg-primary pl-2 pr-2 rounded-[6px] cursor-pointer text-md hover:underline"
+                                    className="text-white bg-primary px-3 py-1.5 rounded-md text-sm hover:bg-blue-700 transition"
                                     onClick={handleSave}
                                 >
                                     Save
@@ -222,15 +213,15 @@ const Profile = () => {
 
                 {/* === Edit Modal === */}
                 {isEditOpen && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 w-full max-w-lg relative shadow-lg">
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+                        <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-lg relative shadow-lg max-h-[90vh] overflow-y-auto">
                             <button
                                 onClick={() => setIsEditOpen(false)}
                                 className="absolute right-4 top-4 text-gray-500 text-xl font-bold"
                             >
                                 &times;
                             </button>
-                            <h2 className="text-xl font-bold mb-4">
+                            <h2 className="text-lg sm:text-xl font-bold mb-4">
                                 Edit Profile
                             </h2>
 
@@ -240,14 +231,14 @@ const Profile = () => {
                                     <img
                                         src={coverImage}
                                         alt="cover"
-                                        className="w-full h-40 object-cover"
+                                        className="w-full h-32 sm:h-40 object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                                    <div className="w-full h-32 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
                                         No cover photo
                                     </div>
                                 )}
-                                <label className="absolute right-4 bottom-2 bg-white px-3 py-1 rounded-md text-sm cursor-pointer shadow border">
+                                <label className="absolute right-4 bottom-2 bg-white px-2 py-1 rounded-md text-sm cursor-pointer shadow border">
                                     <input
                                         type="file"
                                         className="hidden"
@@ -258,7 +249,7 @@ const Profile = () => {
                             </div>
 
                             {/* Profile Preview */}
-                            <div className="relative w-24 h-24 mb-4 mx-auto rounded-full overflow-hidden border-4 border-white shadow">
+                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-4 mx-auto rounded-full overflow-hidden border-4 border-white shadow">
                                 {profileImage ? (
                                     <img
                                         src={profileImage}
@@ -293,7 +284,7 @@ const Profile = () => {
                                 />
                             </div>
 
-                            {/* Location Field with Suggestion */}
+                            {/* Location Field with Suggestions */}
                             <div className="mb-4 relative">
                                 <label className="block text-sm font-medium mb-1">
                                     Location

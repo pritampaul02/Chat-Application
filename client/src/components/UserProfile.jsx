@@ -89,28 +89,38 @@ const UserProfile = () => {
     }
 
     return (
-        <div className="flex flex-col w-[60rem] h-full bg-white overflow-y-auto">
+        <div className="flex flex-col w-full max-w-4xl mx-auto h-full bg-white overflow-y-auto">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-20">
+                <button
+                    onClick={() => navigate("/search")}
+                    className="text-gray-600 hover:text-primary mr-3"
+                >
+                    ← Back
+                </button>
+                <h2 className="text-lg font-semibold text-gray-800">Profile</h2>
+            </div>
+
             {/* Cover Photo & Profile */}
-            <div className="relative h-96 w-full">
+            <div className="relative h-60 sm:h-80 md:h-96 w-full">
                 <div className="w-full h-full relative rounded-2xl bg-gray-200 text-gray-400">
                     {user.coverPhoto?.url && (
                         <img
                             src={user.coverPhoto.url}
-                            className="w-full h-full object-cover rounded-2xl"
+                            className="w-full h-full object-cover rounded-b-2xl"
                             alt="Banner"
                         />
                     )}
                 </div>
-                <div className="absolute bottom-[-60px] left-10">
+                <div className="absolute bottom-[-40px] left-6 sm:left-10">
                     <img
                         src={user.profile_pic.url}
                         alt={user.name}
-                        className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
+                        className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32  rounded-full border-4 border-white object-cover shadow-lg"
                     />
                 </div>
             </div>
 
-            <div className="mt-20 px-10 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="mt-20 px-4 sm:px-6 md:px-10 py-4 border-b flex flex-col md:flex-rowmt-20  border-gray-200 md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">
                         {user.name}
@@ -159,7 +169,7 @@ const UserProfile = () => {
                 </div>
             </div>
 
-            <div className="px-10 py-6 space-y-2">
+            <div className="px-4 sm:px-6 md:px-10 py-6 space-y-2">
                 <h2 className="text-lg font-semibold text-gray-800">Bio</h2>
                 <p>{user.bio}</p>
                 <p className="text-gray-700 whitespace-pre-line">
