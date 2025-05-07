@@ -36,8 +36,8 @@ export const sendCookie = (user, res, message, statusCode = 200) => {
     // Set cookie options
     const cookieOptions = {
         httpOnly: true, // Prevent JavaScript access for security
-        secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-        sameSite: "lax", // Mitigate CSRF attacks
+        secure: true, // Use secure cookies in production
+        sameSite: "none", // Mitigate CSRF attacks
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expire in 30 days
         path: "/", // Accessible from all paths
     };

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { CiLocationOn } from "react-icons/ci";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserById } from "../store/userProfile/userProfileAction";
@@ -165,6 +166,10 @@ const UserProfile = () => {
                     🌟 Simple boy{"\n"}
                     👨‍💻 Digital Creator{"\n"}
                     🎓 Studied at Panskura Banamali College
+                </p>
+                <p>
+                    <CiLocationOn className="inline text-2xl" /> From{" "}
+                    <span className="font-medium">{user.location}</span>
                 </p>
             </div>
         </div>

@@ -23,10 +23,13 @@ import {
     searchUsers,
     getUserById,
     cancelFriendRequest,
+    updateMyProfile,
 } from "../controller/user.controller.js";
 
 import { isAuthenticate } from "../middlewares/authentication.middleware.js";
 import userValidation from "../validations/user.validation.js";
+import upload from "../middlewares/multer.middleware.js";
+// import upload from "../middlewares/multer.upload.js";
 
 const router = express.Router();
 
@@ -111,6 +114,19 @@ router
         isAuthenticate,
         validate(userValidation.changeLocation),
         updateLocation
+    )
+
+    // update bio, update location, update profile photo , update cover photo, in one api
+
+    .patch(
+        "/update-all-my-profile",
+        isAuthenticate,
+        upload.fields([
+            { name: "profile_pic", maxCount: 1 },
+            { name: "coverPhoto", maxCount: 1 },
+        ]),
+        validate(userValidation.updateMyProfile), // You’ll define this
+        updateMyProfile
     )
 
     // .patch(

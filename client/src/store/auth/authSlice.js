@@ -5,6 +5,7 @@ import {
     logOutUser,
     loadUser,
     getMe,
+    updateProfile,
 } from "./authActions.js";
 
 const initialState = {
@@ -17,6 +18,7 @@ const initialState = {
         loadUser: false,
         getMe: false,
         getAllUser: false,
+        updateProfile: false,
     },
     isAuthenticated: false,
 
@@ -100,6 +102,19 @@ const authSlice = createSlice({
             .addCase(getMe.rejected, (state) => {
                 state.loading = false;
                 state.user = null;
+            })
+            // edit  my profile
+
+            .addCase(updateProfile.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.user = action.payload;
+                state.loading = false;
+            })
+            .addCase(updateProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     },
 });

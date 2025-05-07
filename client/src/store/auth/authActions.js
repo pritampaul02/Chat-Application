@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import axiosInstance from "../../utils/axios";
+import axios from "axios";
 
 // REGISTER THUNK
 export const registerUser = createAsyncThunk(
@@ -107,6 +108,36 @@ export const getMe = createAsyncThunk(
             return rejectWithValue(
                 error.response?.data?.message || "Failed to load user"
             );
+        }
+    }
+);
+
+// edit profile
+
+export const updateProfile = createAsyncThunk(
+    "auth/updateProfile",
+    async (formData, { rejectWithValue }) => {
+        console.log("api is updating");
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+
+        try {
+            const res = await axios.patch(
+                `${
+                    import.meta.env.VITE_BACKEND_BASE_URI
+                }/api/v1/user/update-all-my-profile`,
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    withCredentials: true,
+                }
+            );
+            console.log(res.data);
+            return res.data;
+        } catch (err) {
+            console.log(err);
+            return rejectWithValue(err.response?.data?.message);
         }
     }
 );

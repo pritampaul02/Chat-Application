@@ -4,6 +4,9 @@ import { sendCookie } from "../utils/sendCookie.js";
 import { sendResponse } from "../utils/response.handler.js";
 import { HTTP_STATUS } from "../constants/statusCode.constants.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessage.constants.js";
+import { uploadToCloudinary } from "../middlewares/multer.middleware.js";
+import { Users } from "../model/user.model.js";
+import { fileDestroy } from "../utils/fileUpload.js";
 
 export const createUser = async (req, res) => {
     try {
@@ -430,5 +433,98 @@ export const updateLocation = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ message: error.message });
+    }
+};
+
+// // change user profile pic bio etc in one api
+// export const updateMyProfile = async (req, res) => {
+//     try {
+//         console.log(req.file);
+//         const { bio, location } = req.body;
+//         const { profile_pic, coverPhoto } = req.file;
+//         const updatedUser = await UserService.updateMyProfile(
+//             req.user.id,
+//             {
+//                 bio,
+//                 location,
+//             },
+//             { profile_pic, coverPhoto }
+//         );
+
+//         sendResponse(res, {
+//             status: HTTP_STATUS.OK,
+//             success: true,
+//             message: "Profile updated successfully",
+//             data: updatedUser,
+//         });
+//     } catch (error) {
+//         sendResponse(res, {
+//             status: HTTP_STATUS.BAD_REQUEST,
+//             success: false,
+//             message: error.message,
+//         });
+//     }
+// };
+export const updateMyProfile = async (req, res) => {
+    try {
+        console.log("BODY:", req.body); // location, bio
+        console.log("FILES:", req.files); // profile_pic, coverPhoto
+        const user = await Users.findOne(req.user._id);
+        if (!user) {
+            throw new Error("user not found");
+        }
+        const { bio, location } = req.body;
+
+        const updateData = {
+            bio,
+            location,
+        };
+        if (user.profile_pic?.public_id) {
+            await fileDestroy(user.profile_pic.public_id);
+        }
+
+        if (user.coverPhoto?.public_id) {
+            await fileDestroy(user.profile_pic.public_id);
+        }
+
+        if (req.files?.profile_pic) {
+            const result = await uploadToCloudinary(
+                req.files.profile_pic[0].path,
+                "profile_pics"
+            );
+            updateData.profile_pic = {
+                url: result.secure_url,
+                public_id: result.public_id,
+            };
+        }
+
+        if (req.files?.coverPhoto) {
+            const result = await uploadToCloudinary(
+                req.files.coverPhoto[0].path,
+                "cover_photos"
+            );
+            updateData.coverPhoto = {
+                url: result.secure_url,
+                public_id: result.public_id,
+            };
+        }
+
+        const updatedUser = await Users.findByIdAndUpdate(
+            req.user._id,
+            updateData,
+            {
+                new: true,
+            }
+        );
+
+        sendResponse(res, {
+            status: HTTP_STATUS.OK,
+            success: true,
+            message: "Profile updated successfully",
+            data: updatedUser,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(400).json({ message: "Profile update failed" });
     }
 };

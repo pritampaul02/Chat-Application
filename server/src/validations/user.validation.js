@@ -62,6 +62,15 @@ class UserValidation {
         }),
     });
 
+    updateMyProfile = z.object({
+        body: z.object({
+            profile_pic: z.string().optional(),
+            coverPhoto: z.string().optional(),
+            bio: z.string().max(300).optional(),
+            location: z.string().optional(),
+        }),
+    });
+
     updateUserRole = z.object({
         params: z.object({
             userId: z.string().min(1, "User ID is required"),
