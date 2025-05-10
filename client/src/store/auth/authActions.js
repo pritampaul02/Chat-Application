@@ -125,7 +125,7 @@ export const updateProfile = createAsyncThunk(
         try {
             const res = await axios.patch(
                 `${
-                    import.meta.env.VITE_BACEND_TEST
+                    import.meta.env.VITE_BACKEND_BASE_URI
                 }/api/v1/user/update-all-my-profile`,
                 formData,
                 {
