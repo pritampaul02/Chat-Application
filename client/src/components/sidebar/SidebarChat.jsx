@@ -76,7 +76,7 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
             );
         });
     };
-    console.log(isOpen);
+
     return (
         <>
             {/* Mobile Overlay */}

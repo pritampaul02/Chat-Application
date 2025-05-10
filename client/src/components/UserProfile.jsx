@@ -89,7 +89,7 @@ const UserProfile = () => {
     }
 
     return (
-        <div className="flex flex-col w-full max-w-4xl mx-auto h-full bg-white overflow-y-auto">
+        <div className="flex flex-col w-full md:w-96  mx-auto h-full  overflow-y-auto">
             <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-20">
                 <button
                     onClick={() => navigate("/search")}
