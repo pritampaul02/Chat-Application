@@ -3,9 +3,9 @@ import messageService from "../services/message.service.js";
 import { sendResponse } from "../utils/response.handler.js";
 
 class MessageController {
-
     sendMessage = async (req, res) => {
         try {
+            console.log(" req.body", req.body);
             const { id } = req.user;
             const data = await messageService.sendMessage(id, req.body);
             sendResponse(res, {
@@ -24,8 +24,6 @@ class MessageController {
             });
         }
     };
-
-
 
     fetchMessage = async (req, res) => {
         try {
@@ -52,7 +50,6 @@ class MessageController {
             });
         }
     };
-
 
     editMessage = async (req, res) => {
         const { id: userId } = req.user;
@@ -102,7 +99,6 @@ class MessageController {
             data: updated,
         });
     };
-    
 
     updateReactToMessage = async (req, res) => {
         const { id: userId } = req.user;

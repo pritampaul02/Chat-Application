@@ -1,3 +1,4 @@
+// pages/Friends/SideBarFriend.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -40,12 +41,9 @@ const UserCard = ({ user, showActions }) => (
 const SideBarFriend = () => {
     const [activeTab, setActiveTab] = useState("Friend Requests");
     const [search, setSearch] = useState("");
-
     const dispatch = useDispatch();
-
     const { user } = useSelector((state) => state.chatList);
 
-    // Fetch friends only once on mount
     useEffect(() => {
         dispatch(fetchChaListFriends());
     }, [dispatch]);
@@ -74,18 +72,18 @@ const SideBarFriend = () => {
     );
 
     return (
-        <div className="w-[22rem] h-screen bg-white border-r border-gray-200 rounded-t-md flex flex-col">
-            {/* Header */}
-            <header className="h-12 bg-gray-200 rounded-t-md px-4">
-                <ul className="flex items-center h-full justify-start">
+        <div className="w-full md:ml-14 md:w-[22rem] h-full bg-white border-r border-gray-200 flex flex-col">
+            {/* Tabs */}
+            <header className="bg-gray-100 px-4">
+                <ul className="flex items-center h-12 gap-2 overflow-x-auto">
                     {TABS.map((tab) => (
                         <li key={tab}>
                             <button
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-3 py-1 rounded-lg text-sm transition ${
+                                className={`px-3 py-1 rounded-lg text-sm ${
                                     activeTab === tab
                                         ? "bg-gray-300 font-semibold"
-                                        : "hover:bg-gray-100"
+                                        : "hover:bg-gray-200"
                                 }`}
                             >
                                 {tab}

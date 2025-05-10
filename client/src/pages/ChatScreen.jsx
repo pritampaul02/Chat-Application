@@ -1,17 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BsEmojiSmile, BsCheck2, BsCheck2All } from "react-icons/bs";
 import { TiAttachment } from "react-icons/ti";
 import { IoMicOutline, IoSend } from "react-icons/io5";
 import { FaUser } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import { HiArrowLeft } from "react-icons/hi";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMessages, sendMessage } from "../store/chat/chatSlice";
+import { fetchUserById } from "../store/userProfile/userProfileAction";
+import { useRef } from "react";
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
-// Message Bubble Component
+// Updated MessageBubble Component to handle isSender efficiently
 const MessageBubble = ({ message, isSender }) => {
+    const bubbleClasses = isSender
+        ? "bg-primary text-white rounded-tr-none"
+        : "bg-white border border-gray-200 rounded-tl-none";
+    const textColor = isSender ? "text-primary" : "text-gray-500";
+
     return (
         <div
             className={`flex mb-4 ${
@@ -19,18 +28,11 @@ const MessageBubble = ({ message, isSender }) => {
             }`}
         >
             <div
-                className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${
-                    isSender
-                        ? "bg-primary text-white rounded-tr-none"
-                        : "bg-white border border-gray-200 rounded-tl-none"
-                }`}
+                className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${bubbleClasses}`}
             >
-                <p>{message.text}</p>
-                {/* Timestamp + read indicator */}
+                <p className="break-all">{message.message}</p>
                 <div
-                    className={`mt-1 text-xs ${
-                        isSender ? "text-primary-100" : "text-gray-500"
-                    } flex justify-end items-center`}
+                    className={`mt-1 text-xs ${textColor} flex justify-end items-center`}
                 >
                     <span>{message.time}</span>
                     {isSender && (
@@ -64,7 +66,12 @@ const ChatHeader = ({ toggleSidebar, contact }) => {
                 <HiArrowLeft className="text-xl text-gray-700" />
             </button>
 
-            <div className="rounded-full h-10 w-10 bg-gray-300 flex justify-center items-center">
+            <div
+                onClick={() => {
+                    navigate(`/friends/${contact.id}`);
+                }}
+                className="rounded-full h-10 w-10 bg-gray-300 flex justify-center cursor-pointer items-center"
+            >
                 {contact.avatar ? (
                     <img
                         src={contact.avatar}
@@ -91,6 +98,24 @@ const ChatHeader = ({ toggleSidebar, contact }) => {
 // Message Input Component
 const MessageInput = () => {
     const [message, setMessage] = React.useState("");
+    const dispatch = useDispatch();
+    const { chatId } = useParams();
+    const { messages } = useSelector((state) => state.chat);
+    const handleSendMessage = () => {
+        if (message.trim() && chatId) {
+            const messageData = {
+                message,
+                receiver: chatId,
+                receiverModel: "user",
+            };
+
+            dispatch(sendMessage(messageData));
+            setMessage("");
+        }
+    };
+    useEffect(() => {
+        dispatch(fetchMessages(chatId));
+    }, [dispatch]);
 
     return (
         <footer className="bg-white border-t border-gray-200 md:mb-0 mb-14 p-2 sm:p-3">
@@ -108,7 +133,11 @@ const MessageInput = () => {
                     placeholder="Type a message"
                     className="flex-1 py-2 px-4 rounded-full border border-gray-300 text-sm focus:outline-none"
                 />
-                <button className="p-2 rounded-full hover:bg-gray-100">
+                <button
+                    className="p-2 rounded-full hover:bg-gray-100"
+                    type="submit"
+                    onClick={handleSendMessage}
+                >
                     {message ? (
                         <IoSend className="text-lg text-primary" />
                     ) : (
@@ -120,159 +149,43 @@ const MessageInput = () => {
     );
 };
 
-// Main ChatScreen Component
+// Updated ChatScreen Component
 const ChatScreen = () => {
     const { toggleSidebar } = useOutletContext();
-    // Mock data - replace with real data
-    const contact = {
-        name: "Akash Mondal",
-        avatar: IMG_LINK,
-        status: "Online",
-    };
+    const dispatch = useDispatch();
+    const { messages } = useSelector((state) => state.chat);
+    const { chatId } = useParams();
 
-    const messages = [
-        {
-            id: 1,
-            text: "Hey there! How are you doing?",
-            time: "10:30 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 2,
-            text: "I'm good, thanks! Working on that project we discussed.",
-            time: "10:32 AM",
-            sender: true,
-            read: true,
-        },
-        {
-            id: 3,
-            text: "That's great! When do you think you'll have the first draft ready?",
-            time: "10:33 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 4,
-            text: "Probably by Friday. I'll send you an update tomorrow.",
-            time: "10:35 AM",
-            sender: true,
-            read: false,
-        },
-        {
-            id: 5,
-            text: "Let's catch up this weekend.",
-            time: "10:40 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 6,
-            text: "Sure, Saturday works for me.",
-            time: "10:41 AM",
-            sender: true,
-            read: true,
-        },
-        {
-            id: 7,
-            text: "I'll bring snacks 😄",
-            time: "10:42 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 8,
-            text: "Awesome! Can't wait.",
-            time: "10:44 AM",
-            sender: true,
-            read: false,
-        },
-        {
-            id: 9,
-            text: "Can you share that PDF again?",
-            time: "11:00 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 10,
-            text: "Sent it to your email.",
-            time: "11:01 AM",
-            sender: true,
-            read: true,
-        },
+    const userId = JSON.parse(sessionStorage.getItem("myUser"));
+    const prevIdRef = useRef();
+    const {
+        user,
+        loading,
+        error: userError,
+    } = useSelector((state) => state.userProfile);
+    useEffect(() => {
+        dispatch(fetchMessages(chatId));
+    }, [dispatch, chatId]);
 
-        {
-            id: 11,
-            text: "Got it, thanks!",
-            time: "11:03 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 12,
-            text: "Any progress on the design?",
-            time: "11:10 AM",
-            sender: true,
-            read: true,
-        },
-        {
-            id: 13,
-            text: "Yeah, I made a few updates.",
-            time: "11:12 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 14,
-            text: "Looking forward to seeing it.",
-            time: "11:13 AM",
-            sender: true,
-            read: true,
-        },
-        {
-            id: 15,
-            text: "Check your inbox now.",
-            time: "11:15 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 16,
-            text: "Wow, that looks clean!",
-            time: "11:17 AM",
-            sender: true,
-            read: true,
-        },
-        {
-            id: 17,
-            text: "Appreciate it!",
-            time: "11:18 AM",
-            sender: false,
-            read: true,
-        },
-        {
-            id: 18,
-            text: "Will you join the meeting today?",
-            time: "11:20 AM",
-            sender: true,
-            read: false,
-        },
-        {
-            id: 19,
-            text: "Yes, I'll be there by 2.",
-            time: "11:21 AM",
-            sender: false,
-            read: false,
-        },
-        {
-            id: 20,
-            text: "Perfect. See you then!",
-            time: "11:22 AM",
-            sender: true,
-            read: true,
-        },
-    ];
+    useEffect(() => {
+        if (chatId !== prevIdRef.current) {
+            dispatch(fetchUserById(chatId));
+            prevIdRef.current = chatId;
+        }
+    }, [chatId, dispatch]);
+
+    const contact = user
+        ? {
+              id: user._id,
+              name: user.name,
+              avatar: user.profile_pic?.url || IMG_LINK,
+              status: "Online",
+          }
+        : {
+              name: "Unknown",
+              avatar: IMG_LINK,
+              status: "Offline",
+          };
 
     return (
         <div className="flex flex-col h-full md:h-screen">
@@ -283,9 +196,9 @@ const ChatScreen = () => {
                 <div className="max-w-3xl mx-auto">
                     {messages.map((message) => (
                         <MessageBubble
-                            key={message.id}
+                            key={message._id}
                             message={message}
-                            isSender={message.sender}
+                            isSender={message.sender._id === userId._id}
                         />
                     ))}
                 </div>

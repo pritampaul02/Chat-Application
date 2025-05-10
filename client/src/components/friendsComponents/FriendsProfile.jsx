@@ -1,7 +1,7 @@
+// pages/Friends/FriendsProfile.jsx
 import React, { useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-// import { fetchUserById } from "../store/userProfile/userProfileAction";
 import {
     sendFriendRequest,
     cancelFriendRequest,
@@ -10,10 +10,12 @@ import {
 import { resetFriendState } from "../../store/friends/friendsSlice";
 import { getMe } from "../../store/auth/authActions";
 import { fetchUserById } from "../../store/userProfile/userProfileAction";
+import { ArrowLeft } from "lucide-react";
+
 const FriendsProfile = () => {
     const { id } = useParams();
-    const navigate = useNavigate();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const prevIdRef = useRef();
 
     const { user: myUser } = useSelector((state) => state.auth);
@@ -24,19 +26,14 @@ const FriendsProfile = () => {
         loading,
         error: userError,
     } = useSelector((state) => state.userProfile);
-
     const { sending, error: friendError } = useSelector(
         (state) => state.friends
     );
 
-    // Load current logged-in user if not loaded
     useEffect(() => {
-        if (!myUser?._id && !loading) {
-            dispatch(getMe());
-        }
+        if (!myUser?._id && !loading) dispatch(getMe());
     }, [dispatch, myUser, loading]);
 
-    // Fetch profile user data when `id` changes
     useEffect(() => {
         if (id !== prevIdRef.current) {
             dispatch(fetchUserById(id));
@@ -45,7 +42,6 @@ const FriendsProfile = () => {
         }
     }, [id, dispatch]);
 
-    // Friend request handling
     const handleAddFriend = () => {
         dispatch(sendFriendRequest(user._id));
         dispatch(getMe());
@@ -59,65 +55,54 @@ const FriendsProfile = () => {
     };
 
     const handleManageFriendsRequest = () => {
-        const friendData = {
-            requestId: user._id,
-            action: "accept",
-        };
-        dispatch(manageFriendRequest(friendData));
+        dispatch(
+            manageFriendRequest({ requestId: user._id, action: "accept" })
+        );
         dispatch(getMe());
         dispatch(resetFriendState());
     };
 
     const handleDeleteFriendsRequest = () => {
-        const friendData = {
-            requestId: user._id,
-            action: "reject",
-        };
-        dispatch(manageFriendRequest(friendData));
+        dispatch(
+            manageFriendRequest({ requestId: user._id, action: "reject" })
+        );
         dispatch(getMe());
         dispatch(resetFriendState());
     };
 
-    const hasSentRequest = !!(
-        myUser?._id &&
-        user?._id &&
-        myUser.sentFriendRequests?.includes(user._id)
-    );
-
-    const isFriend = !!(
-        myUser?._id &&
-        user?._id &&
-        myUser.friends?.includes(user._id)
-    );
-    const isSentFriendRequest = !!(
-        myUser?._id &&
-        user?._id &&
-        myUser.friendRequests?.includes(user._id)
-    );
-    console.log("++++++++++++++++++++++++++++++", isSentFriendRequest);
-
+    const hasSentRequest = myUser?.sentFriendRequests?.includes(user?._id);
+    const isFriend = myUser?.friends?.includes(user?._id);
+    const isSentFriendRequest = myUser?.friendRequests?.includes(user?._id);
     const isIam = myId === user?._id;
 
-    if (userError) {
+    if (userError)
         return (
             <div className="text-center mt-10 text-gray-500">
                 User not found
             </div>
         );
-    }
 
-    if (loading || user === undefined || user === null || !myUser?._id) {
-        return (
-            <div className="flex flex-col w-[60rem] h-full bg-white overflow-y-auto animate-pulse">
-                {/* Skeleton Loader */}
-            </div>
-        );
+    if (loading || !user || !myUser?._id) {
+        return <div className="animate-pulse p-6">Loading profile...</div>;
     }
 
     return (
-        <div className="flex flex-col w-[60rem] h-full bg-white overflow-y-auto">
+        <div className="flex flex-col w-full sm:w-[60rem]  h-full bg-white overflow-y-auto">
+            {/* Header with back button */}
+            <div className="flex items-center gap-2 p-4 border-b border-gray-200 md:hidden">
+                <button
+                    onClick={() => navigate("/friends")}
+                    className="p-2 rounded-full hover:bg-gray-200 transition"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <h2 className="font-medium text-gray-800 text-lg">
+                    Friend Profile
+                </h2>
+            </div>
+
             {/* Cover Photo & Profile */}
-            <div className="relative h-96 w-full">
+            <div className="relative h-60 md:h-96 w-full">
                 <div className="w-full h-full relative rounded-2xl bg-gray-200 text-gray-400">
                     {user.coverPhoto?.url && (
                         <img
@@ -127,16 +112,16 @@ const FriendsProfile = () => {
                         />
                     )}
                 </div>
-                <div className="absolute bottom-[-60px] left-10">
+                <div className="absolute bottom-[-60px] left-4 md:left-10">
                     <img
                         src={user.profile_pic.url}
                         alt={user.name}
-                        className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
+                        className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white object-cover shadow-lg"
                     />
                 </div>
             </div>
 
-            <div className="mt-20 px-10 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="mt-20 px-4 md:px-10 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">
                         {user.name}
@@ -160,9 +145,9 @@ const FriendsProfile = () => {
                             Message
                         </button>
                     ) : isSentFriendRequest ? (
-                        <div className=" gap-3 flex">
+                        <div className="flex gap-3">
                             <button
-                                onClick={handleManageFriendsRequest()}
+                                onClick={handleManageFriendsRequest}
                                 disabled={sending}
                                 className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition"
                             >
@@ -193,7 +178,6 @@ const FriendsProfile = () => {
                             {sending ? "Sending..." : "Add Friend"}
                         </button>
                     )}
-
                     {friendError && (
                         <p className="text-red-500 text-sm mt-1">
                             {friendError}
@@ -202,13 +186,13 @@ const FriendsProfile = () => {
                 </div>
             </div>
 
-            <div className="px-10 py-6 space-y-2">
+            {/* Bio section */}
+            <div className="px-4 md:px-10 py-6 space-y-2">
                 <h2 className="text-lg font-semibold text-gray-800">Bio</h2>
-                <p>{user.bio}</p>
                 <p className="text-gray-700 whitespace-pre-line">
-                    🌟 Simple boy{"\n"}
-                    👨‍💻 Digital Creator{"\n"}
-                    🎓 Studied at Panskura Banamali College
+                    {user.bio || "No bio available."}
+                    {"\n"}🌟 Simple boy{"\n"}👨‍💻 Digital Creator{"\n"}🎓 Studied
+                    at Panskura Banamali College
                 </p>
             </div>
         </div>

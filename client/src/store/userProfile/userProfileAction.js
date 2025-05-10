@@ -9,7 +9,7 @@ export const fetchUserById = createAsyncThunk(
         try {
             // console.log(userId);
             const { data } = await axiosInstance.get(`/user/${userId}`);
-            console.log(data, "id user=======");
+
             return data.data;
         } catch (err) {
             return rejectWithValue(

@@ -56,7 +56,7 @@ class MessageService {
         console.log("messaeg", messages);
         return messages;
     };
-    
+
     editMessage = async (userId, messageId, text) => {
         const message = await Messages.findById(messageId);
         if (!message || message.sender.toString() !== userId) {
