@@ -14,7 +14,7 @@ export const createUser = async (req, res) => {
         console.log("user", user);
         sendCookie(user, res, "User created successfully", HTTP_STATUS.OK);
     } catch (error) {
-        console.error(error);
+        console.error(error ,  "=====> error");
         sendResponse(res, {
             status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             success: false,

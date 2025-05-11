@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
     Chat,
@@ -19,22 +19,32 @@ import UserProfile from "./components/UserProfile";
 import ProtectedRoute from "./private/ProtectedRoute";
 
 import { loadUser } from "./store/auth/authActions";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import RequestPasswordReset from "./pages/ReqPasswordReset";
 import ResetPassword from "./pages/ResetPassword";
 import FriendsLayout from "./layout/FriendsLayout";
 import FriendsProfile from "./components/friendsComponents/FriendsProfile";
+import { InfoIcon } from "lucide-react";
+import { initializeSocket } from "./store/socket/socketSlice";
 
 const App = () => {
     const dispatch = useDispatch();
     const loadUserCalled = React.useRef(false);
-
+    const { user } = useSelector((state) => state.auth);
     React.useEffect(() => {
         if (!loadUserCalled.current) {
             dispatch(loadUser());
             loadUserCalled.current = true;
         }
     }, [dispatch]);
+
+    useEffect(() => {
+        if (user) {
+           dispatch(initializeSocket({ userId: user._id }));
+           console.log("ok");
+           
+        }
+    }, [user]);
 
     return (
         <BrowserRouter>
