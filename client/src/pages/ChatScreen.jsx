@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { use, useEffect } from "react";
 import { BsEmojiSmile, BsCheck2, BsCheck2All } from "react-icons/bs";
 import { TiAttachment } from "react-icons/ti";
 import { IoMicOutline, IoSend } from "react-icons/io5";
@@ -7,9 +7,15 @@ import { CiSearch } from "react-icons/ci";
 import { HiArrowLeft } from "react-icons/hi";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMessages, sendMessage } from "../store/chat/chatSlice";
+import {
+    addMessage,
+    fetchMessages,
+    sendMessage,
+} from "../store/chat/chatSlice";
 import { fetchUserById } from "../store/userProfile/userProfileAction";
 import { useRef } from "react";
+import socket from "../utils/socket";
+// import socket from "../utils/socket";
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
@@ -110,12 +116,16 @@ const MessageInput = () => {
             };
 
             dispatch(sendMessage(messageData));
+            dispatch(fetchMessages(chatId));
             setMessage("");
         }
     };
-    useEffect(() => {
-        dispatch(fetchMessages(chatId));
-    }, [dispatch]);
+    const handleKeyPress = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
 
     return (
         <footer className="bg-white border-t border-gray-200 md:mb-0 mb-14 p-2 sm:p-3">
@@ -129,6 +139,7 @@ const MessageInput = () => {
                 <input
                     type="text"
                     value={message}
+                    onKeyPress={handleKeyPress}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Type a message"
                     className="flex-1 py-2 px-4 rounded-full border border-gray-300 text-sm focus:outline-none"
@@ -164,6 +175,7 @@ const ChatScreen = () => {
         error: userError,
     } = useSelector((state) => state.userProfile);
     useEffect(() => {
+        if (!chatId) return;
         dispatch(fetchMessages(chatId));
     }, [dispatch, chatId]);
 
@@ -174,11 +186,35 @@ const ChatScreen = () => {
         }
     }, [chatId, dispatch]);
 
+    useEffect(() => {
+        if (!chatId || !userId?._id) return;
+
+        socket.emit("joinRoom", chatId);
+
+        socket.on("send-message", ({ reciverId, chat }) => {
+            if (reciverId === chatId) {
+                dispatch(addMessage(chat)); // <-- Optimistically add
+            }
+        });
+
+        socket.on("meg-sent", ({ sender, chat }) => {
+            if (sender === userId._id) {
+                dispatch(addMessage(chat)); // <-- Optimistically add
+            }
+        });
+
+        return () => {
+            socket.emit("leaveRoom", chatId);
+            socket.off("send-message");
+            socket.off("meg-sent");
+        };
+    }, [chatId, dispatch, userId?._id]);
+
     const contact = user
         ? {
               id: user._id,
               name: user.name,
-              avatar: user.profile_pic?.url || IMG_LINK,
+              avatar: user.profile_pic?.url,
               status: "Online",
           }
         : {
@@ -186,7 +222,7 @@ const ChatScreen = () => {
               avatar: IMG_LINK,
               status: "Offline",
           };
-
+    console.log("messages", messages);
     return (
         <div className="flex flex-col h-full md:h-screen">
             <ChatHeader toggleSidebar={toggleSidebar} contact={contact} />
@@ -194,11 +230,11 @@ const ChatScreen = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-gray-50 bg-[url('/assets/download.png')] bg-cover bg-center">
                 <div className="max-w-3xl mx-auto">
-                    {messages.map((message) => (
+                    {messages?.map((message) => (
                         <MessageBubble
-                            key={message._id}
+                            key={message?._id}
                             message={message}
-                            isSender={message.sender._id === userId._id}
+                            isSender={message?.sender?._id === userId?._id}
                         />
                     ))}
                 </div>

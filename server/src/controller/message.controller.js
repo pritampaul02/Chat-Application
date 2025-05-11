@@ -5,7 +5,6 @@ import { sendResponse } from "../utils/response.handler.js";
 class MessageController {
     sendMessage = async (req, res) => {
         try {
-            console.log(" req.body", req.body);
             const { id } = req.user;
             const data = await messageService.sendMessage(id, req.body);
             sendResponse(res, {
@@ -33,7 +32,7 @@ class MessageController {
             const { receiverId } = req.params;
             console.log(id, receiverId);
             const data = await messageService.fetchMessage(id, receiverId);
-            console.log("data===", data);
+
             sendResponse(res, {
                 status: HTTP_STATUS.OK,
                 data: data,

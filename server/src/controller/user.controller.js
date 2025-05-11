@@ -6,7 +6,7 @@ import { HTTP_STATUS } from "../constants/statusCode.constants.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessage.constants.js";
 import { uploadToCloudinary } from "../middlewares/multer.middleware.js";
 import { Users } from "../model/user.model.js";
-import { fileDestroy } from "../utils/fileUpload.js";
+import { cloudinaryFileUploader, fileDestroy } from "../utils/fileUpload.js";
 
 export const createUser = async (req, res) => {
     try {
@@ -125,7 +125,7 @@ export const getUserById = async (req, res) => {
         const { userId } = req.params;
         console.log(userId);
         const user = await UserService.getUserById(userId);
-        console.log(user);
+
         sendResponse(res, {
             status: HTTP_STATUS.OK,
             success: true,
@@ -488,10 +488,14 @@ export const updateMyProfile = async (req, res) => {
         }
 
         if (req.files?.profile_pic) {
-            const result = await uploadToCloudinary(
-                req.files.profile_pic[0].path,
-                "profile_pics"
+            const { buffer, mimetype } = req.files.profile_pic[0];
+
+            const result = await cloudinaryFileUploader(
+                buffer,
+                mimetype,
+                "chat-app/profile_pics"
             );
+
             updateData.profile_pic = {
                 url: result.secure_url,
                 public_id: result.public_id,
@@ -499,9 +503,12 @@ export const updateMyProfile = async (req, res) => {
         }
 
         if (req.files?.coverPhoto) {
-            const result = await uploadToCloudinary(
-                req.files.coverPhoto[0].path,
-                "cover_photos"
+            const { buffer, mimetype } = req.files.coverPhoto[0];
+
+            const result = await cloudinaryFileUploader(
+                buffer,
+                mimetype,
+                "chat-app/cover_photos"
             );
             updateData.coverPhoto = {
                 url: result.secure_url,

@@ -1,14 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "../../utils/axios";
 import axiosInstance from "../../utils/axios";
 
 // Async thunk to fetch messages
 export const fetchMessages = createAsyncThunk(
     "chat/fetchMessages",
-    async (receiverId, { rejectWithValue }) => {
+    async (chatId, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get(`/message/${receiverId}`);
-
-            return response.data.data;
+            const response = await axiosInstance.get(`/message/${chatId}`);
+            return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
@@ -18,13 +18,12 @@ export const fetchMessages = createAsyncThunk(
 // Async thunk to send a message
 export const sendMessage = createAsyncThunk(
     "chat/sendMessage",
-    async (message, { rejectWithValue }) => {
+    async (messageData, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.post(
-                "/message/send-message",
-                message
+                `/message/send-message`,
+                messageData
             );
-
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -39,7 +38,11 @@ const chatSlice = createSlice({
         loading: false,
         error: null,
     },
-    reducers: {},
+    reducers: {
+        addMessage: (state, action) => {
+            state.messages.push(action.payload);
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchMessages.pending, (state) => {
@@ -48,20 +51,23 @@ const chatSlice = createSlice({
             })
             .addCase(fetchMessages.fulfilled, (state, action) => {
                 state.loading = false;
-
-                state.messages = action.payload;
+                state.messages = Array.isArray(action.payload?.data)
+                    ? action.payload?.data
+                    : [];
             })
             .addCase(fetchMessages.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
             .addCase(sendMessage.fulfilled, (state, action) => {
-                if (!Array.isArray(state.messages)) {
-                    state.messages = []; // Fallback safety
-                }
-                state.messages.push(action.payload);
+                console.log(
+                    "Message sent successfully:",
+                    action.payload?.data.message
+                );
+                state.messages.push(action.payload?.data);
             });
     },
 });
 
+export const { addMessage } = chatSlice.actions;
 export default chatSlice.reducer;

@@ -6,7 +6,7 @@ class MessageService {
     sendMessage = async (id, body) => {
         const sender = await Users.findById(id);
         const reciver = await Users.findById(body.receiver);
-        console.log(reciver);
+
         if (!sender && !reciver) {
             throw new Error("User not found");
         }
@@ -25,11 +25,22 @@ class MessageService {
         const reciverSocketId = getSocketId(body.receiver);
         console.log("receiver id", reciverSocketId);
         const senderSocketId = getSocketId(id);
+        console.log("sender id", senderSocketId);
+        if (reciverSocketId) {
+            io.to(reciverSocketId).emit("send-message", {
+                reciverId: body.receiver,
+                chat,
+            });
+        }
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("meg-sent", { sender: id, chat });
+        }
 
         io.to(reciverSocketId).emit("send-message", {
             reciverId: body.receiver,
             chat,
         });
+
         io.to(senderSocketId).emit("meg-sent", { sender: id, chat });
         return chat;
     };
@@ -53,7 +64,6 @@ class MessageService {
             .populate("sender", "name profile_pic _id email")
             .populate("receiver", "name profile_pic _id email");
 
-        console.log("messaeg", messages);
         return messages;
     };
 

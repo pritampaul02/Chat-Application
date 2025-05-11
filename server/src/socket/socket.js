@@ -4,42 +4,50 @@ import http from "http";
 import express from "express";
 import { UserService } from "../services/user.service.js";
 
-
 const app = express();
-
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
+    cors: {
+        origin: "*", // TODO: restrict in production
+        methods: ["GET", "POST"],
+    },
 });
 
-const userSocketMap = {
-    // userId : socketId,
-}
+const userSocketMap = {}; // { userId: socketId }
 
+// Socket.io connection
 io.on("connection", (socket) => {
-  const userId = socket.handshake.query.userId;
-  console.log("socket connection ======> " , userId );
-  const user = UserService.userStatusChanger(userId , true)
+    const userId = socket.handshake.query.userId;
 
-  if (!userId) return;
+    if (!userId) {
+        console.warn("Socket connected without userId");
+        return;
+    }
 
-  userSocketMap[userId] = socket.id;
+    console.log("✅ User connected:", userId);
+    userSocketMap[userId] = socket.id;
 
-  io.emit("onlineUsers", Object.keys(userSocketMap))
+    // Update DB status
+    UserService.userStatusChanger(userId, "online");
 
-  socket.on("disconnect", () => {
-    delete userSocketMap[userId];
+    // Notify all clients of online users
     io.emit("onlineUsers", Object.keys(userSocketMap));
-    const user = UserService.userStatusChanger(userId , true)
 
-  });
+    // Handle disconnection
+    socket.on("disconnect", () => {
+        console.log("❌ User disconnected:", userId);
+        delete userSocketMap[userId];
+        UserService.userStatusChanger(userId, "offline");
+        io.emit("onlineUsers", Object.keys(userSocketMap));
+    });
+
+    // You can add other socket events like typing, seen, etc. here
 });
 
-const getSocketId = (userId) =>{
+// Utility function to get a socket ID by userId
+const getSocketId = (userId) => {
     return userSocketMap[userId];
-}
+};
 
 export { io, app, server, getSocketId };
