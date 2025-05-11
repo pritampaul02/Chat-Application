@@ -30,7 +30,7 @@ const MessageBubble = ({ message, isSender }) => {
             <div
                 className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${bubbleClasses}`}
             >
-                <p className="break-all">{message.message}</p>
+                <p className="break-all">{message?.message}</p>
                 <div
                     className={`mt-1 text-xs ${textColor} flex justify-end items-center`}
                 >
@@ -100,7 +100,7 @@ const MessageInput = () => {
     const [message, setMessage] = React.useState("");
     const dispatch = useDispatch();
     const { chatId } = useParams();
-    const { messages } = useSelector((state) => state.chat);
+    const { messages , loading} = useSelector((state) => state.chat);
     const handleSendMessage = () => {
         if (message.trim() && chatId) {
             const messageData = {
@@ -114,8 +114,10 @@ const MessageInput = () => {
         }
     };
     useEffect(() => {
+        console.log(" fetching messages");
+       
         dispatch(fetchMessages(chatId));
-    }, [dispatch]);
+    }, [ chatId ]);
 
     return (
         <footer className="bg-white border-t border-gray-200 md:mb-0 mb-14 p-2 sm:p-3">
@@ -154,7 +156,11 @@ const ChatScreen = () => {
     const { toggleSidebar } = useOutletContext();
     const dispatch = useDispatch();
     const { messages } = useSelector((state) => state.chat);
+    const { socket } = useSelector((state) => state.socket);
     const { chatId } = useParams();
+
+    console.log("socket", socket);
+    
 
     const userId = JSON.parse(sessionStorage.getItem("myUser"));
     const prevIdRef = useRef();
@@ -173,6 +179,20 @@ const ChatScreen = () => {
             prevIdRef.current = chatId;
         }
     }, [chatId, dispatch]);
+
+    console.log("messages" , messages);
+    
+    // useEffect(() => {
+    //     if(!socket) return;
+    //     socket.on("send-message", async ({ reciverId, chat }) => {
+    //       console.log("receive message ", reciverId, chat);
+    //     });
+    
+    //     return () => {
+    //       socket.off("send-message");
+    //     };
+    //   }, [socket]);
+
 
     const contact = user
         ? {
@@ -196,9 +216,9 @@ const ChatScreen = () => {
                 <div className="max-w-3xl mx-auto">
                     {messages.map((message) => (
                         <MessageBubble
-                            key={message._id}
+                            key={message?._id}
                             message={message}
-                            isSender={message.sender._id === userId._id}
+                            isSender={message?.sender?._id === userId._id}
                         />
                     ))}
                 </div>

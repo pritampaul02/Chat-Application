@@ -25,6 +25,9 @@ export const sendMessage = createAsyncThunk(
                 message
             );
 
+            console.log("send message response", response);
+            
+
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -59,7 +62,7 @@ const chatSlice = createSlice({
                 if (!Array.isArray(state.messages)) {
                     state.messages = []; // Fallback safety
                 }
-                state.messages.push(action.payload);
+                state.messages.push(action.payload?.data);
             });
     },
 });

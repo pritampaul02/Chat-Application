@@ -22,9 +22,10 @@ const userSocketMap = {
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   console.log("socket connection ======> " , userId );
+  if (!userId) return;
+  
   const user = UserService.userStatusChanger(userId , true)
 
-  if (!userId) return;
 
   userSocketMap[userId] = socket.id;
 
