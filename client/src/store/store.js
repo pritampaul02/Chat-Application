@@ -6,6 +6,8 @@ import chatReducer from "./chat/chatSlice";
 import searchReducer from "./search/searchSlice";
 import userProfileReducer from "./userProfile/userProfileSlice";
 import friendsReducer from "./friends/friendsSlice";
+import socketReducer from "./socket/socketSlice";
+import messageReducer from "../store/message/messageSlice";
 
 const store = configureStore({
     reducer: {
@@ -16,6 +18,8 @@ const store = configureStore({
         search: searchReducer,
         userProfile: userProfileReducer,
         friends: friendsReducer,
+        socket: socketReducer,
+        message: messageReducer,
     },
 });
 

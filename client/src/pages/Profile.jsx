@@ -87,11 +87,10 @@ const Profile = () => {
         dispatch(updateProfile(formData)).then(() => {
             setIsEditOpen(false);
         });
-        dispatch(getMe());
     };
 
     return (
-        <div className="bg-gray-100 flex justify-center min-h-screen px-2 sm:px-4 py-6">
+        <div className="bg-gray-100 md:ml-14 flex justify-center min-h-screen px-2 sm:px-4 py-6">
             <div className="w-full max-w-5xl bg-white rounded-md shadow relative">
                 {/* === Cover Photo === */}
                 <div className="relative w-full h-[16rem] sm:h-[20rem] md:h-[22rem] bg-gray-200 rounded-t-md overflow-hidden">

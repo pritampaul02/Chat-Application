@@ -14,7 +14,7 @@ export const createUser = async (req, res) => {
         console.log("user", user);
         sendCookie(user, res, "User created successfully", HTTP_STATUS.OK);
     } catch (error) {
-        console.error(error);
+        console.error(error, "=====> error");
         sendResponse(res, {
             status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             success: false,
@@ -467,8 +467,8 @@ export const updateLocation = async (req, res) => {
 // };
 export const updateMyProfile = async (req, res) => {
     try {
-        console.log("BODY:", req.body); // location, bio
-        console.log("FILES:", req.files); // profile_pic, coverPhoto
+        // console.log("BODY:", req.body); // location, bio
+        // console.log("FILES:", req.files); // profile_pic, coverPhoto
         const user = await Users.findOne(req.user._id);
         if (!user) {
             throw new Error("user not found");
@@ -497,7 +497,7 @@ export const updateMyProfile = async (req, res) => {
             );
 
             updateData.profile_pic = {
-                url: result.secure_url,
+                url: result.url,
                 public_id: result.public_id,
             };
         }
@@ -511,7 +511,7 @@ export const updateMyProfile = async (req, res) => {
                 "chat-app/cover_photos"
             );
             updateData.coverPhoto = {
-                url: result.secure_url,
+                url: result.url,
                 public_id: result.public_id,
             };
         }

@@ -62,7 +62,8 @@ class MessageService {
             ],
         })
             .populate("sender", "name profile_pic _id email")
-            .populate("receiver", "name profile_pic _id email");
+            .populate("receiver", "name profile_pic _id email")
+            .populate("reactions.user", "name profile_pic _id ");
 
         return messages;
     };
@@ -71,6 +72,9 @@ class MessageService {
         const message = await Messages.findById(messageId);
         if (!message || message.sender.toString() !== userId) {
             throw new Error("You are not authorized to edit this message");
+        }
+        if (message.deleted) {
+            throw new Error("You cannot edit a deleted message");
         }
 
         message.message = text;
@@ -126,7 +130,6 @@ class MessageService {
             emoji,
             userId,
         });
-
         return message;
     };
     UpdateReactToMessage = async (userId, messageId, emoji) => {
@@ -150,7 +153,6 @@ class MessageService {
             emoji,
             userId,
         });
-
         return message;
     };
 }

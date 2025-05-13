@@ -75,6 +75,7 @@ export const UserService = {
             {
                 $match: { _id: new mongoose.Types.ObjectId(id) },
             },
+
             {
                 $lookup: {
                     from: "users",
@@ -210,10 +211,7 @@ export const UserService = {
             await fileDestroy(user.profile_pic.public_id);
         }
 
-        const { url, public_id, error } = await fileUploader(
-            file,
-            "CHAT-APP/profile_pic"
-        );
+        const { url, public_id, error } = await fileUploader(file);
         if (error) {
             throw new Error("File upload failed");
         }
@@ -230,10 +228,7 @@ export const UserService = {
             await fileDestroy(user.coverPhoto.public_id);
         }
 
-        const { url, public_id, error } = await fileUploader(
-            file,
-            "CHAT-APP/coverPhoto"
-        );
+        const { url, public_id, error } = await fileUploader(file);
         if (error) throw new Error("File upload failed");
 
         user.coverPhoto = { url, public_id };
@@ -257,37 +252,6 @@ export const UserService = {
         await user.save();
         return user;
     },
-    // change user profile pic bio etc in one api
-    async updateMyProfile(userId, updates, imageData) {
-        const user = await Users.findById(userId);
-        if (!user) throw new Error("User not found");
-        const { bio, location } = updates;
-        const { profile_pic, coverPhoto } = imageData;
-        user.bio = bio;
-        user.location = location;
-
-        if (user.profile_pic?.public_id) {
-            await fileDestroy(user.profile_pic.public_id);
-        }
-
-        const { url, public_id, error } = await fileUploader(
-            profile_pic,
-            "CHAT-APP/profile_pic"
-        );
-        if (error) throw new Error("File upload failed");
-
-        user.profile_pic = { url, public_id };
-        const {
-            url: imageUrl,
-            public_id: publicId,
-            error: errors,
-        } = await fileUploader(coverPhoto, "CHAT-APP/coverPhoto");
-        if (errors) throw new Error("File upload failed");
-        user.coverPhoto = { url: imageUrl, public_id: publicId };
-
-        await user.save();
-        return user;
-    },
 
     async loginUser(email, password) {
         const user = await Users.findOne({ email }).select("+password");
@@ -303,6 +267,7 @@ export const UserService = {
             await sendEmail(user.email, "Two Step Verification", otp);
             return { requiresTwoStep: true };
         }
+        
 
         return user;
     },
@@ -361,12 +326,9 @@ export const UserService = {
         return user;
     },
 
-    async resetPasswordWithOtp(otp, email, newPassword) {
-        const user = await Users.findOne({ email }).select("+password");
-        if (!user || user.otp !== otp) {
-            throw new Error("Invalid otp");
-        }
-        if (timeExpire(user.otpExpiry)) {
+    async resetPasswordWithOtp(otp, newPassword) {
+        const user = await Users.findOne({ otp }).select("+password");
+        if (!user || timeExpire(user.expireAt)) {
             throw new Error("Invalid or expired OTP");
         }
         user.password = newPassword;
@@ -391,20 +353,10 @@ export const UserService = {
             throw new Error("User Not Found (Sender)");
         }
 
-        const receiverId = body["requestId"];
+        const receiverId = body["requastId"];
         const receiver = await Users.findById(receiverId);
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");
-        }
-
-        //check if user is sending request to himself
-        console.log(
-            sender,
-            "===============================================================================",
-            receiverId
-        );
-        if (sender._id.toString() === receiverId) {
-            throw new Error("you send request to your self! it is not allow!");
         }
 
         //  Check if already friends
@@ -422,7 +374,7 @@ export const UserService = {
         ) {
             throw new Error("Friend request already sent!");
         }
-        // check user already sent you a friend request!
+
         if (
             receiver.sentFriendRequests.includes(userId) ||
             sender.friendRequests.includes(receiverId)
@@ -438,7 +390,7 @@ export const UserService = {
         await receiver.save();
 
         const reciverSocketId = await getSocketId(receiverId);
-        // console.log("reciver socket id ", reciverSocketId);
+        console.log("reciver socket id ", reciverSocketId);
 
         io.to(reciverSocketId).emit("friendRequest", {
             senderId: userId,
@@ -446,7 +398,7 @@ export const UserService = {
         });
 
         const senderSocketId = await getSocketId(userId);
-        // console.log("sender socket id ", senderSocketId);
+        console.log("sender socket id ", senderSocketId);
 
         io.to(senderSocketId).emit("sendFriendRequest", {
             senderId: receiverId,
@@ -455,42 +407,6 @@ export const UserService = {
 
         const data = await this.getUserById(userId);
         return data;
-    },
-
-    async cancelFriendRequest(userId, body) {
-        const sender = await Users.findById(userId);
-        if (!sender) throw new Error("Sender not found");
-
-        const receiverId = body.requestId;
-        const receiver = await Users.findById(receiverId);
-        if (!receiver) throw new Error("Receiver not found");
-
-        // Make sure a friend request was actually sent
-        if (!sender.sentFriendRequests.includes(receiverId)) {
-            throw new Error("Friend request not found in your sent requests");
-        }
-
-        // Remove from sender and receiver lists
-        sender.sentFriendRequests = sender.sentFriendRequests.filter(
-            (id) => id.toString() !== receiverId
-        );
-        receiver.friendRequests = receiver.friendRequests.filter(
-            (id) => id.toString() !== userId
-        );
-
-        await sender.save();
-        await receiver.save();
-
-        // Notify via socket
-        const receiverSocketId = await getSocketId(receiverId);
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("cancelFriendRequest", {
-                senderId: userId,
-            });
-        }
-
-        const updatedUser = await this.getUserById(userId);
-        return updatedUser;
     },
 
     async manageFriendRequest(userId, body) {
@@ -528,7 +444,7 @@ export const UserService = {
             //  console.log(receiver.friendsRequast);
 
             const reciverSocketId = await getSocketId(receiverId);
-            // console.log("reciver socket id ", reciverSocketId);
+            console.log("reciver socket id ", reciverSocketId);
 
             io.to(reciverSocketId).emit("manageSendFriendReq", {
                 senderId: userId,
@@ -536,7 +452,7 @@ export const UserService = {
             });
 
             const senderSocketId = await getSocketId(userId);
-            // console.log("sender socket id ", senderSocketId);
+            console.log("sender socket id ", senderSocketId);
 
             io.to(senderSocketId).emit("manageFriendReq", {
                 senderId: receiverId,

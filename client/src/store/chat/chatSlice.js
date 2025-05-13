@@ -60,6 +60,10 @@ const chatSlice = createSlice({
                 state.error = action.payload;
             })
             .addCase(sendMessage.fulfilled, (state, action) => {
+                if (!Array.isArray(state.messages)) {
+                    state.messages = []; // Fallback safety
+                }
+                state.messages.push(action.payload?.data);
                 console.log(
                     "Message sent successfully:",
                     action.payload?.data.message

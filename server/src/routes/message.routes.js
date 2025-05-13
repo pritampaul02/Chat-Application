@@ -32,16 +32,16 @@ router
         messageController.deleteMessage
     )
     .patch(
+        "/react/:messageId",
+        isAuthenticate,
+        validate(messageValidation.reactMessage),
+        messageController.reactToMessage
+    )
+    .patch(
         "/edit/react/:messageId",
         isAuthenticate,
         validate(messageValidation.updateReactMessage),
         messageController.updateReactToMessage
-    )
-    .patch(
-        "react/:messageId",
-        isAuthenticate,
-        validate(messageValidation.reactMessage),
-        messageController.reactToMessage
     );
 
 export const messageRouter = router;
