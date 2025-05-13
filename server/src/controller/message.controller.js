@@ -5,7 +5,6 @@ import { sendResponse } from "../utils/response.handler.js";
 class MessageController {
     sendMessage = async (req, res) => {
         try {
-            console.log(" req.body", req.body);
             const { id } = req.user;
             const data = await messageService.sendMessage(id, req.body);
             sendResponse(res, {
@@ -33,7 +32,7 @@ class MessageController {
             const { receiverId } = req.params;
             console.log(id, receiverId);
             const data = await messageService.fetchMessage(id, receiverId);
-            console.log("data===", data);
+
             sendResponse(res, {
                 status: HTTP_STATUS.OK,
                 data: data,
@@ -83,21 +82,33 @@ class MessageController {
     };
 
     reactToMessage = async (req, res) => {
-        const { id: userId } = req.user;
-        const { messageId } = req.params;
-        const { emoji } = req.body;
+        try {
+            const { id: userId } = req.user;
+            const { messageId } = req.params;
+            const { emoji } = req.body;
 
-        const updated = await messageService.reactToMessage(
-            userId,
-            messageId,
-            emoji
-        );
-        sendResponse(res, {
-            status: HTTP_STATUS.OK,
-            success: true,
-            message: "Reaction added",
-            data: updated,
-        });
+            const updated = await messageService.reactToMessage(
+                userId,
+                messageId,
+                emoji
+            );
+            console.log(updated, "updated emoji");
+
+            sendResponse(res, {
+                status: HTTP_STATUS.OK,
+                success: true,
+                message: "Reaction added",
+                data: updated,
+            });
+        } catch (error) {
+            console.error("error === ====  ====   ===>", error);
+            sendResponse(res, {
+                status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+                success: false,
+                message: error.message || "something went wrong",
+                error,
+            });
+        }
     };
 
     updateReactToMessage = async (req, res) => {

@@ -490,8 +490,8 @@ export const UserService = {
                     ? `${user.name} is now online`
                     : `${user.name} went offlin`;
 
-            Socket.emit("user-status-change", {
-                uuser: user,
+            io.emit("user-status-change", {
+                user: user,
                 status: status,
                 message: message,
                 lastSeen: user.lastSeen,

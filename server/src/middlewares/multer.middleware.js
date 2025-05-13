@@ -3,35 +3,23 @@ import { unlink } from "fs/promises";
 import cloudinary from "../config/cloudinary.config.js";
 // import path from "path";
 
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, "uploads/"),
-    filename: (req, file, cb) => {
-        const sanitizedFilename = file.originalname.replace(/\s+/g, "_");
-        cb(
-            null,
-            `${Date.now()}-${Math.round(
-                Math.random() * 1e9
-            )}-${sanitizedFilename}`
-        );
-    },
-});
+// Multer Storage Configurationimport multer from "multer";
 
-// File Filter for Images
+const storage = multer.memoryStorage(); // Use memory storage in serverless
+
 const fileFilter = (req, file, cb) => {
-    if (!file.mimetype.startsWith("image/")) {
-        return cb(new Error("Only image files are allowed."), false);
+    const allowedTypes = ["application/pdf", "image/", "video/", "audio/"];
+    if (allowedTypes.some((type) => file.mimetype.startsWith(type))) {
+        cb(null, true);
+    } else {
+        cb(new Error("Unsupported file type"), false);
     }
-    cb(null, true);
 };
 
-// Multer Middleware
-const upload = multer({
+export const upload = multer({
     storage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
     fileFilter,
-    limits: {
-        fileSize: 1 * 1024 * 1024, // 1 MB file size limit
-    },
 });
 
 // Upload to Cloudinary

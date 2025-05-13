@@ -1,61 +1,238 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { BsEmojiSmile, BsCheck2, BsCheck2All } from "react-icons/bs";
 import { TiAttachment } from "react-icons/ti";
 import { IoMicOutline, IoSend } from "react-icons/io5";
 import { FaUser } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import { HiArrowLeft } from "react-icons/hi";
+import { ChevronsDown, EllipsisVertical } from "lucide-react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMessages, sendMessage } from "../store/chat/chatSlice";
+import {
+    addMessage,
+    fetchMessages,
+    sendMessage,
+} from "../store/chat/chatSlice";
 import { fetchUserById } from "../store/userProfile/userProfileAction";
-import { useRef } from "react";
-
+import {
+    deleteMessage,
+    editMessage,
+    reactToMessage,
+} from "../store/message/messageAction";
+import EmojiPicker from "emoji-picker-react";
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
-// Updated MessageBubble Component to handle isSender efficiently
+const LONG_PRESS_DURATION = 500; // 500ms
 const MessageBubble = ({ message, isSender }) => {
-    const bubbleClasses = isSender
-        ? "bg-primary text-white rounded-tr-none"
-        : "bg-white border border-gray-200 rounded-tl-none";
-    const textColor = isSender ? "text-primary" : "text-gray-500";
+    const [showActions, setShowActions] = useState(false);
+    const [showOptions, setShowOptions] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showReactionUsers, setShowReactionUsers] = useState(false);
+    const dispatch = useDispatch();
+    const pickerRef = useRef();
+    const longPressTimerRef = useRef(null);
+
+    const formattedTime = new Date(message?.createdAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
+
+    const handleEditMessage = () => {
+        const updatedText = prompt("Edit your message:", message.message);
+        if (updatedText) {
+            dispatch(
+                editMessage({ messageId: message._id, message: updatedText })
+            );
+        }
+        setShowOptions(false);
+    };
+
+    const handleDeleteMessage = () => {
+        dispatch(deleteMessage(message._id));
+        setShowOptions(false);
+    };
+
+    const handleEmojiClick = (emojiData) => {
+        dispatch(
+            reactToMessage({ messageId: message._id, emoji: emojiData.emoji })
+        );
+        setShowEmojiPicker(false);
+        setShowOptions(false);
+    };
+
+    // Handle long press detection
+    const handlePressStart = () => {
+        longPressTimerRef.current = setTimeout(() => {
+            setShowActions(true);
+            setShowOptions(false);
+            setShowEmojiPicker(false);
+        }, LONG_PRESS_DURATION);
+    };
+
+    const handlePressEnd = () => {
+        clearTimeout(longPressTimerRef.current);
+    };
+
+    // Close emoji picker on outside click
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+                setShowEmojiPicker(false);
+                setShowReactionUsers(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
         <div
-            className={`flex mb-4 ${
+            className={`flex relative mb-4 px-2 sm:px-4 ${
                 isSender ? "justify-end" : "justify-start"
             }`}
+            onMouseDown={handlePressStart}
+            onMouseUp={handlePressEnd}
+            onMouseLeave={handlePressEnd}
+            onTouchStart={handlePressStart}
+            onTouchEnd={handlePressEnd}
         >
-            <div
-                className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${bubbleClasses}`}
-            >
-                <p className="break-all">{message?.message}</p>
+            <div className="relative group max-w-[85%] sm:max-w-[75%] md:max-w-[60%]">
+                {/* Message Bubble */}
                 <div
-                    className={`mt-1 text-xs ${textColor} flex justify-end items-center`}
+                    className={`p-3 rounded-2xl text-sm break-words relative ${
+                        isSender
+                            ? "bg-primary text-white rounded-tr-none"
+                            : "bg-white border border-gray-200 rounded-tl-none"
+                    }`}
                 >
-                    <span>{message.time}</span>
-                    {isSender && (
-                        <span className="ml-1">
-                            {message.read ? (
+                    <p>{message?.message}</p>
+
+                    {/* Timestamp and read status */}
+                    <div className="mt-1 text-xs text-right flex items-center justify-end gap-1">
+                        <span>
+                            {!message.deleted && message.edited
+                                ? "Edited "
+                                : ""}
+                            {!message.deleted ? formattedTime : ""}
+                        </span>
+                        {isSender &&
+                            !message.deleted &&
+                            (message?.read ? (
                                 <BsCheck2All className="text-blue-100 text-sm" />
                             ) : (
                                 <BsCheck2 className="text-blue-100 text-sm" />
-                            )}
-                        </span>
+                            ))}
+                    </div>
+
+                    {/* Reaction Emoji (clickable) */}
+                    {!message.deleted && message.reactions?.length > 0 && (
+                        <div
+                            className="absolute -bottom-4 left-0 px-1 py-0.5 rounded-full text-lg cursor-pointer"
+                            onClick={() =>
+                                setShowReactionUsers((prev) => !prev)
+                            }
+                        >
+                            {message.reactions.map((r, i) => (
+                                <span key={i}>{r.emoji}</span>
+                            ))}
+                        </div>
                     )}
                 </div>
+                {/* Action Button */}
+                {showActions && (
+                    <button
+                        className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-100 transition"
+                        onClick={() => setShowOptions((prev) => !prev)}
+                    >
+                        <EllipsisVertical size={18} />
+                    </button>
+                )}
+                {/* Dropdown Options */}
+                {showOptions && (
+                    <div className="absolute top-10 right-0 z-30 bg-white shadow-lg rounded-md p-2 text-sm space-y-1 w-28">
+                        {isSender && (
+                            <>
+                                <button
+                                    className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
+                                    onClick={handleEditMessage}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
+                                    onClick={handleDeleteMessage}
+                                >
+                                    Delete
+                                </button>
+                            </>
+                        )}
+                        <button
+                            className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        >
+                            React
+                        </button>
+                    </div>
+                )}
+                {/* Emoji Picker */}
+                {showEmojiPicker && (
+                    <div
+                        ref={pickerRef}
+                        className="absolute top-16 right-0 z-40"
+                    >
+                        <EmojiPicker
+                            onEmojiClick={handleEmojiClick}
+                            theme="light"
+                            height={350}
+                            width={300}
+                        />
+                    </div>
+                )}
+
+                {/* Emoji Reaction Users List */}
+                {showReactionUsers && (
+                    <div
+                        className={`absolute top-full -left-40 md:top-full md:left-0 w-55 md:w-60 mt-2 bg-white border ${
+                            isSender
+                                ? "translate-x-2"
+                                : "translate-x-45 md:translate-x-0    "
+                        } border-gray-300 rounded shadow p-2 z-40`}
+                    >
+                        <p className="font-semibold mb-2 text-sm text-gray-700">
+                            Reacted by:
+                        </p>
+                        <ul className="space-y-1 text-sm max-h-40 overflow-auto">
+                            {message.reactions.map((r, i) => (
+                                <li key={i} className="flex items-center gap-2">
+                                    <span className="text-lg">{r.emoji}</span>
+                                    <img
+                                        src={r.user?.profile_pic?.url}
+                                        alt="profile"
+                                        className="w-6 h-6 rounded-full"
+                                    />
+                                    <span className="text-gray-800">
+                                        {r.user?.name}
+                                    </span>
+                                    <span className="text-gray-800">
+                                        {new Date(r.reactedAt).toLocaleString()}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
-// Chat Header Component
 const ChatHeader = ({ toggleSidebar, contact }) => {
     const navigate = useNavigate();
     return (
         <header className="flex items-center bg-white border-b border-gray-200 h-16 px-4">
-            {/* Back button - shown only on small screens */}
             <button
                 className="md:hidden mr-3 p-2 rounded-full hover:bg-gray-100"
                 onClick={() => {
@@ -67,9 +244,7 @@ const ChatHeader = ({ toggleSidebar, contact }) => {
             </button>
 
             <div
-                onClick={() => {
-                    navigate(`/friends/${contact.id}`);
-                }}
+                onClick={() => navigate(`/friends/${contact.id}`)}
                 className="rounded-full h-10 w-10 bg-gray-300 flex justify-center cursor-pointer items-center"
             >
                 {contact.avatar ? (
@@ -88,19 +263,20 @@ const ChatHeader = ({ toggleSidebar, contact }) => {
                 <p className="text-xs text-gray-500">{contact.status}</p>
             </div>
 
-            <button className="p-2 rounded-full hover:bg-gray-100">
+            <button className="p-2 rounded-full bg-primary text-white hover:opacity-80 transition">
                 <CiSearch className="text-lg" />
             </button>
         </header>
     );
 };
 
-// Message Input Component
 const MessageInput = () => {
-    const [message, setMessage] = React.useState("");
+    const [message, setMessage] = useState("");
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const pickerRef = useRef(null);
     const dispatch = useDispatch();
     const { chatId } = useParams();
-    const { messages , loading} = useSelector((state) => state.chat);
+
     const handleSendMessage = () => {
         if (message.trim() && chatId) {
             const messageData = {
@@ -108,42 +284,78 @@ const MessageInput = () => {
                 receiver: chatId,
                 receiverModel: "user",
             };
-
             dispatch(sendMessage(messageData));
             setMessage("");
+            setShowEmojiPicker(false);
         }
     };
+
+    const handleKeyPress = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    const handleEmojiClick = (emojiData) => {
+        setMessage((prev) => prev + emojiData.emoji);
+    };
+
     useEffect(() => {
-        console.log(" fetching messages");
-       
-        dispatch(fetchMessages(chatId));
-    }, [ chatId ]);
+        const handleClickOutside = (event) => {
+            if (
+                pickerRef.current &&
+                !pickerRef.current.contains(event.target)
+            ) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
-        <footer className="bg-white border-t border-gray-200 md:mb-0 mb-14 p-2 sm:p-3">
+        <footer className="bg-white mb-14 md:mb-0 border-t border-gray-200 p-2 sm:p-3 relative">
             <div className="flex items-center gap-1 sm:gap-2">
-                <button className="p-2 rounded-full hover:bg-gray-100">
-                    <BsEmojiSmile className="text-lg sm:text-xl text-gray-600" />
-                </button>
-                <button className="p-2 rounded-full hover:bg-gray-100">
-                    <TiAttachment className="text-lg sm:text-xl text-gray-600" />
-                </button>
+                <div className="relative">
+                    <BsEmojiSmile
+                        className="text-lg sm:text-xl text-gray-600 cursor-pointer"
+                        onClick={() => setShowEmojiPicker((prev) => !prev)}
+                    />
+                    {showEmojiPicker && (
+                        <div
+                            ref={pickerRef}
+                            className="absolute bottom-12 left-0 z-30"
+                        >
+                            <EmojiPicker
+                                onEmojiClick={handleEmojiClick}
+                                theme="light"
+                                height={350}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                <TiAttachment className="text-lg sm:text-xl text-gray-600 cursor-pointer" />
+
                 <input
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     placeholder="Type a message"
                     className="flex-1 py-2 px-4 rounded-full border border-gray-300 text-sm focus:outline-none"
                 />
+
                 <button
-                    className="p-2 rounded-full hover:bg-gray-100"
-                    type="submit"
+                    className="p-2 rounded-full bg-primary hover:opacity-80 transition"
                     onClick={handleSendMessage}
                 >
-                    {message ? (
-                        <IoSend className="text-lg text-primary" />
+                    {message.trim() ? (
+                        <IoSend className="text-lg text-white" />
                     ) : (
-                        <IoMicOutline className="text-lg text-gray-600" />
+                        <IoMicOutline className="text-lg text-white" />
                     )}
                 </button>
             </div>
@@ -151,54 +363,49 @@ const MessageInput = () => {
     );
 };
 
-// Updated ChatScreen Component
 const ChatScreen = () => {
     const { toggleSidebar } = useOutletContext();
     const dispatch = useDispatch();
-    const { messages } = useSelector((state) => state.chat);
-    const { socket } = useSelector((state) => state.socket);
     const { chatId } = useParams();
-
-    console.log("socket", socket);
-    
-
+    const { messages } = useSelector((state) => state.chat);
+    const { user } = useSelector((state) => state.userProfile);
     const userId = JSON.parse(sessionStorage.getItem("myUser"));
-    const prevIdRef = useRef();
-    const {
-        user,
-        loading,
-        error: userError,
-    } = useSelector((state) => state.userProfile);
-    useEffect(() => {
-        dispatch(fetchMessages(chatId));
-    }, [dispatch, chatId]);
+
+    const scrollContainerRef = useRef(null);
+    const lastMessageRef = useRef(null);
+    const [showScrollButton, setShowScrollButton] = useState(false);
 
     useEffect(() => {
-        if (chatId !== prevIdRef.current) {
+        if (chatId) {
+            dispatch(fetchMessages(chatId));
             dispatch(fetchUserById(chatId));
-            prevIdRef.current = chatId;
         }
-    }, [chatId, dispatch]);
+    }, [chatId]);
 
-    console.log("messages" , messages);
-    
-    // useEffect(() => {
-    //     if(!socket) return;
-    //     socket.on("send-message", async ({ reciverId, chat }) => {
-    //       console.log("receive message ", reciverId, chat);
-    //     });
-    
-    //     return () => {
-    //       socket.off("send-message");
-    //     };
-    //   }, [socket]);
+    useEffect(() => {
+        if (lastMessageRef.current) {
+            lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]);
 
+    const handleScroll = () => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        setShowScrollButton(
+            container.scrollHeight - container.scrollTop >
+                container.clientHeight + 100
+        );
+    };
+
+    const scrollToBottom = () => {
+        lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     const contact = user
         ? {
               id: user._id,
               name: user.name,
-              avatar: user.profile_pic?.url || IMG_LINK,
+              avatar: user.profile_pic?.url,
               status: "Online",
           }
         : {
@@ -208,21 +415,41 @@ const ChatScreen = () => {
           };
 
     return (
-        <div className="flex flex-col h-full md:h-screen">
+        <div className="flex flex-col h-full md:h-screen relative">
             <ChatHeader toggleSidebar={toggleSidebar} contact={contact} />
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-gray-50 bg-[url('/assets/download.png')] bg-cover bg-center">
+            <div
+                className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-gray-50"
+                onScroll={handleScroll}
+                ref={scrollContainerRef}
+            >
                 <div className="max-w-3xl mx-auto">
-                    {messages.map((message) => (
-                        <MessageBubble
-                            key={message?._id}
-                            message={message}
-                            isSender={message?.sender?._id === userId._id}
-                        />
+                    {messages.map((msg, idx) => (
+                        <div
+                            key={msg._id}
+                            ref={
+                                idx === messages.length - 1
+                                    ? lastMessageRef
+                                    : null
+                            }
+                        >
+                            <MessageBubble
+                                message={msg}
+                                isSender={msg?.sender?._id === userId._id}
+                            />
+                        </div>
                     ))}
                 </div>
             </div>
+
+            {showScrollButton && (
+                <button
+                    onClick={scrollToBottom}
+                    className="absolute bottom-28 right-4 bg-primary text-white p-2 rounded-full shadow-md"
+                >
+                    <ChevronsDown />
+                </button>
+            )}
 
             <MessageInput />
         </div>
