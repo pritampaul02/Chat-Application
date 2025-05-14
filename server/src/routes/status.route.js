@@ -17,7 +17,12 @@ router.get("/", isAuthenticate, statusController.getStatuses);
 router.post("/like/:statusId", isAuthenticate, statusController.likeStatus);
 
 // View a status
-router.get("/view/:statusId", isAuthenticate, statusController.viewStatus);
+router.get(
+    "/view/:statusId",
+    isAuthenticate,
+    validate(statusValidation.viewStatus),
+    statusController.viewStatus
+);
 // Delete a status
 router.delete(
     "/delete/:statusId",

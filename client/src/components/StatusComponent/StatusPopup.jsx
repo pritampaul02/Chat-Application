@@ -1,69 +1,136 @@
-import React, { useEffect, useState } from "react";
+// src/components/status/StatusPopup.jsx
+import React, { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { viewStatus } from "../../store/status/statusAction";
 import { IoSend } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
-
-export default function StatusPopup({ onClose, status, autoCloseAfter = 5 }) {
+import { EyeIcon } from "lucide-react";
+import { CgPlayPauseO } from "react-icons/cg";
+import { IoPlayCircleOutline } from "react-icons/io5";
+const StatusPopup = ({ autoCloseAfter = 5 }) => {
+    const { statusId } = useParams();
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+    const myUser = JSON.parse(sessionStorage.getItem("myUser"));
+    const { currentStatus: status, loading } = useSelector(
+        (state) => state.status
+    );
+
     const [progressWidth, setProgressWidth] = useState("0%");
+    const [showViewers, setShowViewers] = useState(false);
+    const [stopAutoClose, setStopAutoClose] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const [isTouching, setIsTouching] = useState(false);
+
+    const timerRef = useRef(null);
+    const progressRef = useRef(null);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        if (statusId) {
+            dispatch(viewStatus(statusId));
+        }
+    }, [statusId, dispatch]);
+
+    const startTimers = () => {
+        if (stopAutoClose || isTyping || isTouching) return;
+
+        progressRef.current = setTimeout(() => {
+            setProgressWidth("100%");
+        }, 100);
+
+        timerRef.current = setTimeout(() => {
             navigate(-1);
         }, autoCloseAfter * 1000);
+    };
 
-        const animationTrigger = setTimeout(() => {
-            setProgressWidth("100%");
-        }, 50);
+    const clearTimers = () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        if (progressRef.current) clearTimeout(progressRef.current);
+    };
+
+    useEffect(() => {
+        clearTimers();
+        startTimers();
 
         return () => {
-            clearTimeout(timer);
-            clearTimeout(animationTrigger);
+            clearTimers();
         };
-    }, [autoCloseAfter, navigate]);
+    }, [
+        navigate,
+        autoCloseAfter,
+        stopAutoClose,
+        isTyping,
+        isTouching,
+        statusId,
+    ]);
+
+    const handleTouchStart = () => setIsTouching(true);
+    const handleTouchEnd = () => setIsTouching(false);
+
+    const handleInputChange = (e) => {
+        setIsTyping(e.target.value.length > 0);
+    };
+
+    const handleStopAutoClose = () => {
+        setStopAutoClose(true);
+        clearTimers();
+    };
+
+    if (loading || !status) {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+                <p className="text-white text-lg">Loading status...</p>
+            </div>
+        );
+    }
 
     const renderMedia = () => {
         if (status.type === "image") {
             return (
                 <img
-                    src={status.src}
+                    src={status.image}
                     alt="status"
-                    className="absolute inset-0 w-full h-full object-contain z-0 bg-black"
+                    className="w-full h-full object-contain"
                 />
             );
-        }
-        if (status.type === "video") {
+        } else if (status.type === "video") {
             return (
                 <video
-                    src={status.src}
+                    src={status.media.url}
                     autoPlay
-                    loop
                     muted
-                    className="absolute inset-0 w-full h-full object-contain z-0 bg-black"
+                    className="w-full h-full object-contain"
                 />
             );
-        }
-        if (status.type === "text") {
+        } else if (status.type === "text") {
             return (
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white text-3xl font-bold z-0">
+                <div
+                    className={`flex items-center justify-center w-full h-full text-white text-3xl    `}
+                    style={{ background: status.background }}
+                >
                     {status.text}
                 </div>
             );
         }
         return null;
     };
-
+    console.log("status", status.background);
     return (
-        <div className="w-full min-h-screen bg-black flex items-center justify-center px-4 relative">
-            <div className="w-[30rem] h-screen relative overflow-hidden rounded-2xl shadow-2xl z-10">
-                {/* Media background */}
-                {renderMedia()}
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
+            <div className="relative w-[30rem] h-screen bg-black text-white overflow-hidden">
+                {/* Media content */}
+                <div className="absolute inset-0">{renderMedia()}</div>
 
                 {/* Overlay */}
-                <div className="absolute inset-0 flex flex-col justify-between z-10">
+                <div className="absolute inset-0 flex flex-col justify-between p-4">
                     {/* Header */}
-                    <div className="bg-white/10 backdrop-blur-md border-b border-white/20 px-4 pt-3 pb-1">
-                        {/* Smooth linear progress bar */}
-                        <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden mb-3">
+                    <div>
+                        {/* Progress bar */}
+                        <div className="h-1 bg-white/30 rounded-full overflow-hidden mb-2">
                             <div
                                 className="h-full bg-white"
                                 style={{
@@ -73,55 +140,125 @@ export default function StatusPopup({ onClose, status, autoCloseAfter = 5 }) {
                             ></div>
                         </div>
 
-                        {/* Avatar and close */}
+                        {/* User Info */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <img
-                                    src={
-                                        status.avatar ||
-                                        "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png"
-                                    }
-                                    alt="avatar"
-                                    className="w-9 h-9 rounded-full object-cover"
+                                    src={status?.user?.profile_pic?.url}
+                                    alt={status.user.name}
+                                    className="w-10 h-10 rounded-full"
                                 />
-                                <div className="text-white text-sm">
-                                    <div className="font-semibold">
-                                        {status.name || "User Name"}
-                                    </div>
-                                    <div className="text-gray-300 text-xs">
-                                        {status.timestamp || "Just now"}
-                                    </div>
+                                <div>
+                                    <p className="font-semibold">
+                                        {status.user.name}
+                                    </p>
+                                    <p className="text-sm text-gray-300">
+                                        {new Date(
+                                            status.createdAt
+                                        ).toLocaleString()}
+                                    </p>
                                 </div>
                             </div>
-                            <button
-                                onClick={onClose || (() => navigate(-1))}
-                                className="text-white text-2xl hover:text-red-400"
-                            >
-                                ✕
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {!stopAutoClose ? (
+                                    <button
+                                        onClick={handleStopAutoClose}
+                                        className="text-xs px-2 py-1 border border-gray-400 rounded hover:bg-white hover:text-black"
+                                    >
+                                        <CgPlayPauseO size={16} />
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => setStopAutoClose(false)}
+                                        className="text-xs px-2 py-1 border border-gray-400 rounded hover:bg-white hover:text-black"
+                                    >
+                                        <IoPlayCircleOutline size={16} />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => navigate(-1)}
+                                    className="text-2xl font-bold hover:text-red-400"
+                                >
+                                    ✕
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="px-4 pt-4 pb-5 bg-white/10 backdrop-blur-md border-t border-white/20 text-white">
+                    <div className="flex flex-col gap-2">
                         {status.caption && (
-                            <p className="text-sm font-medium text-center mb-3">
-                                {status.caption}
-                            </p>
+                            <p className="text-center">{status.caption}</p>
                         )}
 
-                        <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl">
-                            <input
-                                type="text"
-                                name="captionMsg"
-                                className="flex-1 bg-transparent text-white placeholder-gray-300 outline-none"
-                                placeholder="Type a reply..."
-                            />
-                            <IoSend className="text-xl text-white cursor-pointer hover:text-primary" />
-                        </div>
+                        {status?.user?._id === myUser?._id ? (
+                            <span
+                                onClick={() => setShowViewers(true)}
+                                className="text-center flex justify-center items-center gap-2 cursor-pointer text-gray-300"
+                            >
+                                {status?.totalViews} <EyeIcon size={16} />
+                            </span>
+                        ) : (
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg">
+                                <input
+                                    type="text"
+                                    placeholder="Reply..."
+                                    onChange={handleInputChange}
+                                    className="flex-1 bg-transparent outline-none text-white placeholder-gray-300"
+                                />
+                                <IoSend
+                                    className="text-white cursor-pointer"
+                                    size={22}
+                                />
+                            </div>
+                        )}
                     </div>
+
+                    {/* Viewers Modal */}
+                    {showViewers && (
+                        <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                            <div className="bg-white text-black p-4 rounded-lg">
+                                <h2 className="text-lg font-semibold mb-2">
+                                    Viewers
+                                </h2>
+                                <ul>
+                                    {status?.views?.map((viewer) => (
+                                        <li
+                                            key={viewer.user._id}
+                                            className="flex items-center gap-2 mb-2"
+                                        >
+                                            <img
+                                                src={
+                                                    viewer.user.profile_pic.url
+                                                }
+                                                alt={viewer.user.name}
+                                                className="w-8 h-8 rounded-full"
+                                            />
+                                            <span>{viewer.user.name}</span>
+                                            <span>
+                                                {new Date(
+                                                    viewer.viewedAt
+                                                ).toLocaleString([], {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: true,
+                                                })}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <button
+                                    onClick={() => setShowViewers(false)}
+                                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
-}
+};
+export default StatusPopup;
