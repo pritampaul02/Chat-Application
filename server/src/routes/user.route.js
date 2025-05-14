@@ -37,7 +37,7 @@ router
     .get("/me", isAuthenticate, getMe)
     .post("/register", validate(userValidation.createUser), createUser)
     .post("/login", validate(userValidation.login), logInUser)
-    .get("/logout", logOutUser)
+    .get("/logout", isAuthenticate ,  logOutUser)
     .post(
         "/send-otp",
         validate(userValidation.sendOtp),

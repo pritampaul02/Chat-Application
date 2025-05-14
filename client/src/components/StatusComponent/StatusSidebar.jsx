@@ -54,7 +54,7 @@ const StatusSidebar = () => {
     });
 
     return (
-        <div className="w-[22rem] bg-white border-r border-[#5E5E5E33] h-screen flex flex-col">
+        <div className="w-[22rem] bg-white border-r border-[#5E5E5E33] md:ml-14 h-screen flex flex-col">
             {/* Header */}
             <div className="flex flex-col w-full px-6 pb-3 pt-4">
                 <div className="flex justify-between items-center h-16">

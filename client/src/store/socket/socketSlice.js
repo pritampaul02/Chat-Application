@@ -19,18 +19,23 @@ const socketReducer = createSlice({
        
         initializeSocket: (state, action) => {
             console.log("action.payload", action.payload);
-            
-            const socket = io( import.meta.env.VITE_BACKEND_BASE_URI , {
-                query: {
-                  userId: action.payload.userId,
-                },
-              });
+             try {
               
-              state.socket = socket;
-               
-              console.log("socket ===============> " , 
-                socket
-              );
+               const socket = io( import.meta.env.VITE_BACKEND_BASE_URI , {
+                   query: {
+                     userId: action.payload.userId,
+                   },
+                 });
+                 
+                 state.socket = socket;
+                  
+                 console.log("socket ===============> " , 
+                   socket
+                 );
+             } catch (error) {
+                console.log("error", error);
+              
+             }
               
             // state.socket = action.payload;
         },

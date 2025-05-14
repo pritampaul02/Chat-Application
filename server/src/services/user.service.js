@@ -348,12 +348,14 @@ export const UserService = {
     },
 
     async sendFriendRequest(userId, body) {
+        console.log("send friend request" , userId, body.requestId);
+        
         const sender = await Users.findById(userId);
         if (!sender) {
             throw new Error("User Not Found (Sender)");
         }
 
-        const receiverId = body["requastId"];
+        const receiverId = body.requestId;
         const receiver = await Users.findById(receiverId);
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");
@@ -490,7 +492,7 @@ export const UserService = {
                     ? `${user.name} is now online`
                     : `${user.name} went offline`;
 
-            Socket.emit("user-status-change", {
+            io.emit("user-status-change", {
                 user: user,
                 status: status,
                 message: message,

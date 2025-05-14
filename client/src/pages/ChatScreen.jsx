@@ -14,44 +14,6 @@ import { useRef } from "react";
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
-// Updated MessageBubble Component to handle isSender efficiently
-// const MessageBubble = ({ message, isSender }) => {
-//     const bubbleClasses = isSender
-//         ? "bg-primary text-white rounded-tr-none"
-//         : "bg-white border border-gray-200 rounded-tl-none";
-//     const textColor = isSender ? "text-primary" : "text-gray-500";
-
-//     return (
-//         <div
-//             className={`flex mb-4 ${
-//                 isSender ? "justify-end" : "justify-start"
-//             }`}
-//         >
-//             <div
-//                 className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${bubbleClasses}`}
-//             >
-//                 <div>
-//                 <p className="break-all">{message?.message}</p>
-                
-//                 </div>
-//                 <div
-//                     className={`mt-1 text-xs ${textColor} flex justify-end items-center`}
-//                 >
-//                     <span>{message.time}</span>
-//                     {isSender && (
-//                         <span className="ml-1">
-//                             {message.read ? (
-//                                 <BsCheck2All className="text-blue-100 text-sm" />
-//                             ) : (
-//                                 <BsCheck2 className="text-blue-100 text-sm" />
-//                             )}
-//                         </span>
-//                     )}
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
 
 
 const MessageBubble = ({ message, isSender }) => {
@@ -76,7 +38,7 @@ const MessageBubble = ({ message, isSender }) => {
             >
                 <div className="flex items-center flex-col">
                     <p className="break-all self-start">{message?.message}</p>
-                <span className="mr-1 self-end text-gray-500">{formattedTime}</span>
+                <span className="mr-1 self-end">{formattedTime}</span>
                 </div>
                 <div
                     className={`mt-1 text-xs ${textColor} flex justify-end items-center`}

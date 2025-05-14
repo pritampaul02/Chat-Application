@@ -26,12 +26,13 @@ import FriendsLayout from "./layout/FriendsLayout";
 import FriendsProfile from "./components/friendsComponents/FriendsProfile";
 import { InfoIcon } from "lucide-react";
 import { initializeSocket } from "./store/socket/socketSlice";
+import { useRef } from "react";
 
 const App = () => {
     const dispatch = useDispatch();
-    const loadUserCalled = React.useRef(false);
+    const loadUserCalled = useRef(false);
     const { user } = useSelector((state) => state.auth);
-    React.useEffect(() => {
+    useEffect(() => {
         if (!loadUserCalled.current) {
             dispatch(loadUser());
             loadUserCalled.current = true;
@@ -40,9 +41,8 @@ const App = () => {
 
     useEffect(() => {
         if (user) {
-           dispatch(initializeSocket({ userId: user._id }));
-           console.log("ok");
-           
+            dispatch(initializeSocket({ userId: user._id }));
+            console.log("ok");
         }
     }, [user]);
 

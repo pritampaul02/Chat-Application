@@ -44,11 +44,22 @@ const chatSlice = createSlice({
     },
     reducers: {
         
-        addMessages: (state, action) => {
-            if (!Array.isArray(state.messages)) {
-                state.messages = []; // Fallback safety
-            }
-            state.messages.push(action.payload);
+        addMessages : (state, action) => {
+            {
+            const isPresent = state.messages.find(item => item._id === action.payload._id )
+            console.log("update ============>" , isPresent);
+            const updateData = [...state.messages]
+            if(!isPresent){
+               updateData.push(action.payload)
+            } 
+
+            state.messages = updateData
+           
+        }
+            // if (!Array.isArray(state.messages)) {
+            //     state.messages = []; // Fallback safety
+            // }
+            // state.messages.push(action.payload);
         },
 
         clearMessages: (state) => {

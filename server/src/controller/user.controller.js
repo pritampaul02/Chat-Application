@@ -6,7 +6,7 @@ import { HTTP_STATUS } from "../constants/statusCode.constants.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessage.constants.js";
 import { uploadToCloudinary } from "../middlewares/multer.middleware.js";
 import { Users } from "../model/user.model.js";
-import { fileDestroy } from "../utils/fileUpload.js";
+import { cloudinaryFileUploader, fileDestroy } from "../utils/fileUpload.js";
 
 export const createUser = async (req, res) => {
     try {
@@ -14,7 +14,7 @@ export const createUser = async (req, res) => {
         console.log("user", user);
         sendCookie(user, res, "User created successfully", HTTP_STATUS.OK);
     } catch (error) {
-        console.error(error ,  "=====> error");
+        console.error(error, "=====> error");
         sendResponse(res, {
             status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             success: false,
@@ -26,7 +26,7 @@ export const createUser = async (req, res) => {
 // check for user is already login or not before login
 export const getMe = async (req, res) => {
     try {
-        res.json(req.user); // Return the user data
+        res.status(200).json({ message:"user fetched" ,  data:req.user}); // Return the user data
     } catch (error) {
         res.status(500).json({ message: "Server error hello" });
     }
@@ -74,6 +74,8 @@ export const getUser = async (req, res) => {
             data: user,
         });
     } catch (error) {
+        console.log("error", error);
+        
         sendResponse(res, {
             status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             success: false,
@@ -125,7 +127,7 @@ export const getUserById = async (req, res) => {
         const { userId } = req.params;
         console.log(userId);
         const user = await UserService.getUserById(userId);
-        console.log(user);
+
         sendResponse(res, {
             status: HTTP_STATUS.OK,
             success: true,
@@ -467,8 +469,8 @@ export const updateLocation = async (req, res) => {
 // };
 export const updateMyProfile = async (req, res) => {
     try {
-        console.log("BODY:", req.body); // location, bio
-        console.log("FILES:", req.files); // profile_pic, coverPhoto
+        // console.log("BODY:", req.body); // location, bio
+        // console.log("FILES:", req.files); // profile_pic, coverPhoto
         const user = await Users.findOne(req.user._id);
         if (!user) {
             throw new Error("user not found");
@@ -488,23 +490,30 @@ export const updateMyProfile = async (req, res) => {
         }
 
         if (req.files?.profile_pic) {
-            const result = await uploadToCloudinary(
-                req.files.profile_pic[0].path,
-                "profile_pics"
+            const { buffer, mimetype } = req.files.profile_pic[0];
+
+            const result = await cloudinaryFileUploader(
+                buffer,
+                mimetype,
+                "chat-app/profile_pics"
             );
+
             updateData.profile_pic = {
-                url: result.secure_url,
+                url: result.url,
                 public_id: result.public_id,
             };
         }
 
         if (req.files?.coverPhoto) {
-            const result = await uploadToCloudinary(
-                req.files.coverPhoto[0].path,
-                "cover_photos"
+            const { buffer, mimetype } = req.files.coverPhoto[0];
+
+            const result = await cloudinaryFileUploader(
+                buffer,
+                mimetype,
+                "chat-app/cover_photos"
             );
             updateData.coverPhoto = {
-                url: result.secure_url,
+                url: result.url,
                 public_id: result.public_id,
             };
         }

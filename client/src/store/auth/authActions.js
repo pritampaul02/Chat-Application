@@ -32,13 +32,15 @@ export const loginUser = createAsyncThunk(
         try {
             const { data } = await axiosInstance.post(`/user/login`, formData);
 
-            if (data?.success && data?.token) {
-                sessionStorage.setItem("token", data.token);
-                sessionStorage.setItem("myUser", JSON.stringify(data.data));
-            }
+            // if (data?.success && data?.token) {
+            //     sessionStorage.setItem("token", data.token);
+            //     sessionStorage.setItem("myUser", JSON.stringify(data.data));
+            // }
 
             return data;
         } catch (error) {
+            console.log("error", error);
+            
             return rejectWithValue(
                 error.response?.data?.message || "Login failed"
             );
@@ -81,7 +83,7 @@ export const loadUser = createAsyncThunk(
             const { data } = await axiosInstance.get(
                 `/user/me` // API endpoint to get current user
             );
-            sessionStorage.setItem("myUser", JSON.stringify(data));
+            // sessionStorage.setItem("myUser", JSON.stringify(data));
             return data; // Return the user data
         } catch (error) {
             console.error(error);
