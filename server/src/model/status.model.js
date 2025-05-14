@@ -17,16 +17,27 @@ const statusSchema = new mongoose.Schema(
         media: {
             url: {
                 type: String,
-                required: function () {
-                    return this.type !== "text";
-                },
+                // required: function () {
+                //     return this.type !== "text";
+                // },
             },
             public_id: {
                 type: String,
             },
         },
+        image: {
+            type: String,
+            required: function () {
+                return this.type === "image";
+            },
+        },
 
         text: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        caption: {
             type: String,
             trim: true,
             default: "",

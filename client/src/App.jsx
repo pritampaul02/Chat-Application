@@ -67,23 +67,7 @@ const App = () => {
 
                         <Route path="status" element={<StatusLayout />}>
                             <Route index element={<Status />} />
-                            <Route
-                                path=":statusId"
-                                element={
-                                    <StatusPopup
-                                        onClose={() => {}}
-                                        status={{
-                                            type: "image",
-                                            src: "/assets/preview1.jpg",
-                                            text: "Parindon ki tarah",
-                                            caption: "nayagra waterfall",
-                                            bottomText: "Abb to aaja... 🥺😌🌧️",
-                                            timestamp: "Yesterday at 8:56 PM",
-                                            views: 18,
-                                        }}
-                                    />
-                                }
-                            />
+                            <Route path=":statusId" element={<StatusPopup />} />
                         </Route>
 
                         <Route path="/friends" element={<FriendsLayout />}>

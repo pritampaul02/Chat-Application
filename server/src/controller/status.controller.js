@@ -26,7 +26,7 @@ class StatusController {
     };
     getStatuses = async (req, res) => {
         try {
-            const viewerId = req.user.id; // authenticated user
+            const viewerId = req.user._id; // authenticated user
             const statuses = await statusService.getStatuses(viewerId);
             sendResponse(res, {
                 status: HTTP_STATUS.OK,

@@ -14,7 +14,9 @@ class StatusService {
             type,
             url,
             public_id,
+            image,
             text = "",
+            caption = "",
             background,
             poll,
             isPublic = true,
@@ -35,7 +37,9 @@ class StatusService {
             user: userId,
             type,
             media,
+            image,
             text,
+            caption,
             background,
             poll,
             isPublic,
@@ -79,7 +83,7 @@ class StatusService {
                 { user: viewerObjectId }, // own statuses
             ],
         })
-            .populate("user", "name profile_pic")
+            .populate("user", "name profile_pic _id")
             .sort({ createdAt: -1 });
 
         return statuses;
@@ -117,7 +121,8 @@ class StatusService {
         const alreadyViewed = status.views.some(
             (view) => view.user.toString() === userId
         );
-        if (!alreadyViewed) {
+        const myStatus = status.user.toString() === userId;
+        if (!alreadyViewed && !myStatus) {
             status.views.push({ user: userId });
             await status.save();
 
@@ -131,8 +136,16 @@ class StatusService {
                 });
             }
         }
+        console.log("status", status);
 
-        return status;
+        const statusData = await Status.findById(statusId)
+
+            .populate("user", "name profile_pic _id")
+            .populate("views.user", "name profile_pic _id")
+            .lean();
+        statusData.totalViews = statusData.views?.length || 0;
+        console.log("statusData", statusData);
+        return statusData;
     };
 
     deleteStatus = async (userId, statusId) => {

@@ -8,7 +8,7 @@ import userProfileReducer from "./userProfile/userProfileSlice";
 import friendsReducer from "./friends/friendsSlice";
 import socketReducer from "./socket/socketSlice";
 import messageReducer from "../store/message/messageSlice";
-
+import statusReducer from "../store/status/statusSlice";
 const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -20,6 +20,7 @@ const store = configureStore({
         friends: friendsReducer,
         socket: socketReducer,
         message: messageReducer,
+        status: statusReducer,
     },
 });
 
