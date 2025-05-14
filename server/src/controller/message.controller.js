@@ -33,7 +33,7 @@ class MessageController {
             const { receiverId } = req.params;
             console.log(id, receiverId);
             const data = await messageService.fetchMessage(id, receiverId);
-            console.log("data===", data);
+            // console.log("data===", data);
             sendResponse(res, {
                 status: HTTP_STATUS.OK,
                 data: data,

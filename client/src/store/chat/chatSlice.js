@@ -42,7 +42,20 @@ const chatSlice = createSlice({
         loading: false,
         error: null,
     },
-    reducers: {},
+    reducers: {
+        
+        addMessages: (state, action) => {
+            if (!Array.isArray(state.messages)) {
+                state.messages = []; // Fallback safety
+            }
+            state.messages.push(action.payload);
+        },
+
+        clearMessages: (state) => {
+            state.messages = [];
+        },
+
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchMessages.pending, (state) => {
@@ -67,4 +80,5 @@ const chatSlice = createSlice({
     },
 });
 
+export const { addMessages, clearMessages } = chatSlice.actions;
 export default chatSlice.reducer;

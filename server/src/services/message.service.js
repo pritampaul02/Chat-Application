@@ -53,7 +53,7 @@ class MessageService {
             .populate("sender", "name profile_pic _id email")
             .populate("receiver", "name profile_pic _id email");
 
-        console.log("messaeg", messages);
+        // console.log("messaeg", messages);
         return messages;
     };
     

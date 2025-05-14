@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
   console.log("socket connection ======> " , userId );
   if (!userId) return;
   
-  const user = UserService.userStatusChanger(userId , true)
+  // const user = UserService.userStatusChanger(userId , "online")
 
 
   userSocketMap[userId] = socket.id;
@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     delete userSocketMap[userId];
     io.emit("onlineUsers", Object.keys(userSocketMap));
-    const user = UserService.userStatusChanger(userId , true)
+    // const user = UserService.userStatusChanger(userId , "offline")
 
   });
 });

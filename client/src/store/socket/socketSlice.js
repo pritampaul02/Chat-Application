@@ -18,6 +18,7 @@ const socketReducer = createSlice({
     reducers: {
        
         initializeSocket: (state, action) => {
+            console.log("action.payload", action.payload);
             
             const socket = io( import.meta.env.VITE_BACKEND_BASE_URI , {
                 query: {
@@ -27,11 +28,11 @@ const socketReducer = createSlice({
               
               state.socket = socket;
                
-              console.log("socket " , 
-                state.socket
+              console.log("socket ===============> " , 
+                socket
               );
               
-            state.socket = action.payload;
+            // state.socket = action.payload;
         },
     },
     extraReducers: (builder) => {

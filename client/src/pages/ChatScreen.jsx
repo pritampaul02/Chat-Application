@@ -7,7 +7,7 @@ import { CiSearch } from "react-icons/ci";
 import { HiArrowLeft } from "react-icons/hi";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMessages, sendMessage } from "../store/chat/chatSlice";
+import { addMessages, fetchMessages, sendMessage } from "../store/chat/chatSlice";
 import { fetchUserById } from "../store/userProfile/userProfileAction";
 import { useRef } from "react";
 
@@ -15,26 +15,72 @@ const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
 // Updated MessageBubble Component to handle isSender efficiently
+// const MessageBubble = ({ message, isSender }) => {
+//     const bubbleClasses = isSender
+//         ? "bg-primary text-white rounded-tr-none"
+//         : "bg-white border border-gray-200 rounded-tl-none";
+//     const textColor = isSender ? "text-primary" : "text-gray-500";
+
+//     return (
+//         <div
+//             className={`flex mb-4 ${
+//                 isSender ? "justify-end" : "justify-start"
+//             }`}
+//         >
+//             <div
+//                 className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${bubbleClasses}`}
+//             >
+//                 <div>
+//                 <p className="break-all">{message?.message}</p>
+                
+//                 </div>
+//                 <div
+//                     className={`mt-1 text-xs ${textColor} flex justify-end items-center`}
+//                 >
+//                     <span>{message.time}</span>
+//                     {isSender && (
+//                         <span className="ml-1">
+//                             {message.read ? (
+//                                 <BsCheck2All className="text-blue-100 text-sm" />
+//                             ) : (
+//                                 <BsCheck2 className="text-blue-100 text-sm" />
+//                             )}
+//                         </span>
+//                     )}
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+
 const MessageBubble = ({ message, isSender }) => {
     const bubbleClasses = isSender
         ? "bg-primary text-white rounded-tr-none"
         : "bg-white border border-gray-200 rounded-tl-none";
     const textColor = isSender ? "text-primary" : "text-gray-500";
 
+    // Format time (assuming message.time is a valid timestamp or ISO string)
+    const formattedTime = message?.createdAt
+        ? new Date(message.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+          })
+        : "";
+
     return (
-        <div
-            className={`flex mb-4 ${
-                isSender ? "justify-end" : "justify-start"
-            }`}
-        >
+        <div className={`flex mb-4 ${isSender ? "justify-end" : "justify-start"}`}>
             <div
                 className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] p-3 text-sm rounded-2xl ${bubbleClasses}`}
             >
-                <p className="break-all">{message?.message}</p>
+                <div className="flex items-center flex-col">
+                    <p className="break-all self-start">{message?.message}</p>
+                <span className="mr-1 self-end text-gray-500">{formattedTime}</span>
+                </div>
                 <div
                     className={`mt-1 text-xs ${textColor} flex justify-end items-center`}
                 >
-                    <span>{message.time}</span>
                     {isSender && (
                         <span className="ml-1">
                             {message.read ? (
@@ -49,6 +95,9 @@ const MessageBubble = ({ message, isSender }) => {
         </div>
     );
 };
+
+
+
 
 // Chat Header Component
 const ChatHeader = ({ toggleSidebar, contact }) => {
@@ -151,7 +200,7 @@ const MessageInput = () => {
     );
 };
 
-// Updated ChatScreen Component
+
 const ChatScreen = () => {
     const { toggleSidebar } = useOutletContext();
     const dispatch = useDispatch();
@@ -159,20 +208,22 @@ const ChatScreen = () => {
     const { socket } = useSelector((state) => state.socket);
     const { chatId } = useParams();
 
-    console.log("socket", socket);
-    
-
     const userId = JSON.parse(sessionStorage.getItem("myUser"));
     const prevIdRef = useRef();
+    const messagesEndRef = useRef(null); // 👈 scroll ref
+
     const {
         user,
         loading,
         error: userError,
     } = useSelector((state) => state.userProfile);
+
+    // Fetch messages when chatId changes
     useEffect(() => {
         dispatch(fetchMessages(chatId));
     }, [dispatch, chatId]);
 
+    // Fetch user details when chatId changes
     useEffect(() => {
         if (chatId !== prevIdRef.current) {
             dispatch(fetchUserById(chatId));
@@ -180,19 +231,25 @@ const ChatScreen = () => {
         }
     }, [chatId, dispatch]);
 
-    console.log("messages" , messages);
-    
-    // useEffect(() => {
-    //     if(!socket) return;
-    //     socket.on("send-message", async ({ reciverId, chat }) => {
-    //       console.log("receive message ", reciverId, chat);
-    //     });
-    
-    //     return () => {
-    //       socket.off("send-message");
-    //     };
-    //   }, [socket]);
+    // Listen for incoming messages from socket
+    useEffect(() => {
+        if (!socket) return;
 
+        socket.on("send-message", async ({ reciverId, chat }) => {
+            dispatch(addMessages(chat));
+        });
+
+        return () => {
+            socket.off("send-message");
+        };
+    }, [socket, dispatch]);
+
+    // Scroll to bottom when messages update
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]);
 
     const contact = user
         ? {
@@ -221,6 +278,8 @@ const ChatScreen = () => {
                             isSender={message?.sender?._id === userId._id}
                         />
                     ))}
+                    {/* Scroll Anchor */}
+                    <div ref={messagesEndRef} />
                 </div>
             </div>
 
