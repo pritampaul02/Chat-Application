@@ -104,9 +104,12 @@ export const createPollStatus = createAsyncThunk(
     "status/createPoll",
     async (payload, { rejectWithValue }) => {
         try {
+            console.log("payload", payload);
             const { data } = await axiosInstance.post("/status/", payload);
+            console.log("status res", data);
             return data;
         } catch (err) {
+            console.log("status error", err);
             return rejectWithValue(err.response.data.message);
         }
     }
