@@ -5,30 +5,36 @@ import { getSocketId, io } from "../socket/socket.js";
 class MessageService {
     sendMessage = async (id, body) => {
         const sender = await Users.findById(id);
-        const reciver = await Users.findById(body.receiver);
+        const receiver = await Users.findById(body.receiver);
 
-        if (!sender && !reciver) {
+        if (!sender || !receiver) {
             throw new Error("User not found");
         }
 
-        const data = await Messages.create({
+        const messageData = {
             sender: id,
             receiver: body.receiver,
-            receiverModel: body.receiverModel, // <- this is critical
-            message: body.message,
-        });
+            receiverModel: body.receiverModel,
+            message: body.message || "",
+        };
 
-        const chat = await Messages.findById(data._id)
+        if (body.image) {
+            messageData.image = body.image;
+            messageData.imageId = body.imageId; // optional: useful if you want to delete it later
+        }
+
+        const newMessage = await Messages.create(messageData);
+
+        const chat = await Messages.findById(newMessage._id)
             .populate("sender", "name profile_pic _id email")
             .populate("receiver", "name profile_pic _id email");
 
-        const reciverSocketId = getSocketId(body.receiver);
-        console.log("receiver id", reciverSocketId);
+        const receiverSocketId = getSocketId(body.receiver);
         const senderSocketId = getSocketId(id);
-        console.log("sender id", senderSocketId);
-        if (reciverSocketId) {
-            io.to(reciverSocketId).emit("send-message", {
-                reciverId: body.receiver,
+
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("send-message", {
+                receiverId: body.receiver,
                 chat,
             });
         }
@@ -36,12 +42,6 @@ class MessageService {
             io.to(senderSocketId).emit("meg-sent", { sender: id, chat });
         }
 
-        io.to(reciverSocketId).emit("send-message", {
-            reciverId: body.receiver,
-            chat,
-        });
-
-        io.to(senderSocketId).emit("meg-sent", { sender: id, chat });
         return chat;
     };
 
@@ -153,6 +153,39 @@ class MessageService {
             emoji,
             userId,
         });
+        return message;
+    };
+    deleteReactToMessage = async (userId, messageId, emoji) => {
+        const message = await Messages.findById(messageId);
+        if (!message) throw new Error("Message not found");
+        if (message.deleted) throw new Error("Message is deleted");
+
+        // Check if the user has reacted with this emoji
+        const reaction = message.reactions.find(
+            (r) => r.user.toString() === userId && r.emoji === emoji
+        );
+
+        if (!reaction) {
+            throw new Error(
+                "You are not authorized to delete this reaction or reaction not found"
+            );
+        }
+
+        // Remove the reaction
+        message.reactions = message.reactions.filter(
+            (r) => !(r.user.toString() === userId && r.emoji === emoji)
+        );
+
+        await message.save();
+        await message.populate("reactions.user", "name profile_pic _id");
+
+        io.to(getSocketId(message.receiver)).emit("message:reacted", {
+            type: "reaction-delete",
+            messageId,
+            emoji,
+            userId,
+        });
+
         return message;
     };
 }

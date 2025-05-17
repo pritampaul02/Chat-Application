@@ -20,12 +20,14 @@ export const sendMessage = createAsyncThunk(
     "chat/sendMessage",
     async (messageData, { rejectWithValue }) => {
         try {
+            console.log("messageData", messageData);
             const response = await axiosInstance.post(
                 `/message/send-message`,
                 messageData
             );
             return response.data;
         } catch (error) {
+            console.log("error", error);
             return rejectWithValue(error.response.data);
         }
     }

@@ -16,6 +16,7 @@ import {
 import { fetchUserById } from "../store/userProfile/userProfileAction";
 import {
     deleteMessage,
+    deleteReactToMessage,
     editMessage,
     reactToMessage,
 } from "../store/message/messageAction";
@@ -207,7 +208,25 @@ const MessageBubble = ({ message, isSender }) => {
                         <ul className="space-y-1 text-sm max-h-40 overflow-auto">
                             {message.reactions.map((r, i) => (
                                 <li key={i} className="flex items-center gap-2">
-                                    <span className="text-lg">{r.emoji}</span>
+                                    <span
+                                        title="Click to remove reaction"
+                                        onClick={() => {
+                                            console.log(
+                                                "delete emoji hgjhgjg",
+                                                message._id,
+                                                r.emoji
+                                            );
+                                            dispatch(
+                                                deleteReactToMessage({
+                                                    messageId: message._id,
+                                                    emoji: r.emoji,
+                                                })
+                                            );
+                                        }}
+                                        className="text-lg cursor-pointer"
+                                    >
+                                        {r.emoji}
+                                    </span>
                                     <img
                                         src={r.user?.profile_pic?.url}
                                         alt="profile"
@@ -232,7 +251,7 @@ const MessageBubble = ({ message, isSender }) => {
 const ChatHeader = ({ toggleSidebar, contact }) => {
     const navigate = useNavigate();
     return (
-        <header className="flex items-center bg-white border-b border-gray-200 h-16 px-4">
+        <header className="flex items-center  bg-white border-b border-gray-200 h-16 px-4">
             <button
                 className="md:hidden mr-3 p-2 rounded-full hover:bg-gray-100"
                 onClick={() => {
@@ -273,19 +292,25 @@ const ChatHeader = ({ toggleSidebar, contact }) => {
 const MessageInput = () => {
     const [message, setMessage] = useState("");
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
+    const fileInputRef = useRef(null);
     const pickerRef = useRef(null);
     const dispatch = useDispatch();
     const { chatId } = useParams();
 
     const handleSendMessage = () => {
-        if (message.trim() && chatId) {
-            const messageData = {
-                message,
-                receiver: chatId,
-                receiverModel: "user",
-            };
-            dispatch(sendMessage(messageData));
+        if (!chatId) return;
+
+        if (message.trim() || imageFile) {
+            const formData = new FormData();
+            formData.append("receiver", chatId);
+            formData.append("receiverModel", "user");
+            if (message.trim()) formData.append("message", message);
+            if (imageFile) formData.append("image", imageFile);
+
+            dispatch(sendMessage(formData));
             setMessage("");
+            setImageFile(null);
             setShowEmojiPicker(false);
         }
     };
@@ -299,6 +324,17 @@ const MessageInput = () => {
 
     const handleEmojiClick = (emojiData) => {
         setMessage((prev) => prev + emojiData.emoji);
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith("image/")) {
+            setImageFile(file);
+        }
+    };
+
+    const openFileDialog = () => {
+        fileInputRef.current?.click();
     };
 
     useEffect(() => {
@@ -317,6 +353,22 @@ const MessageInput = () => {
 
     return (
         <footer className="bg-white mb-14 md:mb-0 border-t border-gray-200 p-2 sm:p-3 relative">
+            {imageFile && (
+                <div className="mb-2 relative w-fit">
+                    <img
+                        src={URL.createObjectURL(imageFile)}
+                        alt="preview"
+                        className="w-32 h-32 rounded-lg object-cover border"
+                    />
+                    <button
+                        className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-2 py-0.5"
+                        onClick={() => setImageFile(null)}
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
+
             <div className="flex items-center gap-1 sm:gap-2">
                 <div className="relative">
                     <BsEmojiSmile
@@ -337,14 +389,26 @@ const MessageInput = () => {
                     )}
                 </div>
 
-                <TiAttachment className="text-lg sm:text-xl text-gray-600 cursor-pointer" />
+                <TiAttachment
+                    className="text-lg sm:text-xl text-gray-600 cursor-pointer"
+                    onClick={openFileDialog}
+                />
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    hidden
+                />
 
                 <input
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Type a message"
+                    placeholder={
+                        imageFile ? "Add a caption..." : "Type a message"
+                    }
                     className="flex-1 py-2 px-4 rounded-full border border-gray-300 text-sm focus:outline-none"
                 />
 
@@ -352,7 +416,7 @@ const MessageInput = () => {
                     className="p-2 rounded-full bg-primary hover:opacity-80 transition"
                     onClick={handleSendMessage}
                 >
-                    {message.trim() ? (
+                    {message.trim() || imageFile ? (
                         <IoSend className="text-lg text-white" />
                     ) : (
                         <IoMicOutline className="text-lg text-white" />
@@ -415,7 +479,7 @@ const ChatScreen = () => {
           };
 
     return (
-        <div className="flex flex-col h-full md:h-screen relative">
+        <div className="flex flex-col h-full md:h-full relative">
             <ChatHeader toggleSidebar={toggleSidebar} contact={contact} />
 
             <div
@@ -427,11 +491,11 @@ const ChatScreen = () => {
                     {messages.map((msg, idx) => (
                         <div
                             key={msg._id}
-                            ref={
-                                idx === messages.length - 1
-                                    ? lastMessageRef
-                                    : null
-                            }
+                            // ref={
+                            //     idx === messages.length - 1
+                            //         ? lastMessageRef
+                            //         : null
+                            // }
                         >
                             <MessageBubble
                                 message={msg}

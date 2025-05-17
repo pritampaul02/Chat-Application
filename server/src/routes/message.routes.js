@@ -42,6 +42,12 @@ router
         isAuthenticate,
         validate(messageValidation.updateReactMessage),
         messageController.updateReactToMessage
+    )
+    // delete react
+    .delete(
+        "/delete/react/:messageId",
+        isAuthenticate,
+        validate(messageValidation.deleteReactMessage),
+        messageController.deleteReactToMessage
     );
-
 export const messageRouter = router;
