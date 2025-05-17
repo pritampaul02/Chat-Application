@@ -9,14 +9,14 @@ const FriendsLayout = () => {
     return (
         <section className="flex w-full h-screen overflow-hidden">
             <div
-                className={`w-[100%]  shrink-0 overflow-y-auto 
+                className={`w-[100%] md:w-[25rem] border-r border-gray-200 shrink-0 overflow-y-auto 
                 ${showSearch ? "block" : "hidden"} 
                 md:block`}
             >
                 <SideBarFriend />
             </div>
 
-            <div className="flex-1 md:bg-red-500 flex justify-center overflow-y-auto">
+            <div className="flex-1 flex justify-center overflow-y-auto">
                 <div className="w-full md:w-[60rem] h-full">
                     <Outlet />
                 </div>
