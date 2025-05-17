@@ -1,25 +1,45 @@
 import { HTTP_STATUS } from "../constants/statusCode.constants.js";
 import messageService from "../services/message.service.js";
+import { cloudinaryFileUploader } from "../utils/fileUpload.js";
 import { sendResponse } from "../utils/response.handler.js";
 
 class MessageController {
     sendMessage = async (req, res) => {
         try {
             const { id } = req.user;
-            const data = await messageService.sendMessage(id, req.body);
+            let imageData = null;
+
+            // Upload image to Cloudinary if file exists
+            if (req.file) {
+                imageData = await cloudinaryFileUploader(
+                    req.file.buffer,
+                    req.file.mimetype,
+                    "chat/messages"
+                );
+
+                if (imageData.error) {
+                    throw new Error("Image upload failed");
+                }
+            }
+
+            const data = await messageService.sendMessage(id, {
+                ...req.body,
+                image: imageData?.url || null,
+                imageId: imageData?.public_id || null,
+            });
+
             sendResponse(res, {
                 status: HTTP_STATUS.CREATED,
-                data: data,
-                message: "message sent successfully",
+                data,
+                message: "Message sent successfully",
                 success: true,
             });
         } catch (error) {
-            console.error("error === ====  ====   ===>", error);
+            console.error("Send Message Error:", error);
             sendResponse(res, {
                 status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+                message: error.message || "Something went wrong",
                 success: false,
-                message: error.message || "something went wrong",
-                error,
             });
         }
     };
@@ -126,6 +146,23 @@ class MessageController {
             success: true,
             message: "Reaction added",
             data: updatedReact,
+        });
+    };
+    deleteReactToMessage = async (req, res) => {
+        const { id: userId } = req.user;
+        const { messageId } = req.params;
+        const { emoji } = req.body;
+
+        const deletedReact = await messageService.deleteReactToMessage(
+            userId,
+            messageId,
+            emoji
+        );
+        sendResponse(res, {
+            status: HTTP_STATUS.OK,
+            success: true,
+            message: "Reaction deleted",
+            data: deletedReact,
         });
     };
 }

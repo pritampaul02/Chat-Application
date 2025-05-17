@@ -1,5 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { deleteMessage, editMessage, reactToMessage } from "./messageAction";
+import {
+    deleteMessage,
+    deleteReactToMessage,
+    editMessage,
+    reactToMessage,
+} from "./messageAction";
 
 const messageSlice = createSlice({
     name: "message",
@@ -44,6 +49,15 @@ const messageSlice = createSlice({
                 state.reacting = false;
             })
             .addCase(reactToMessage.rejected, (state, action) => {
+                state.reacting = false;
+                state.error = action.payload;
+            })
+
+            // Delete React
+            .addCase(deleteReactToMessage.fulfilled, (state, action) => {
+                state.reacting = false;
+            })
+            .addCase(deleteReactToMessage.rejected, (state, action) => {
                 state.reacting = false;
                 state.error = action.payload;
             });
