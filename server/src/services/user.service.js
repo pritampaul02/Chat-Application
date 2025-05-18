@@ -267,7 +267,6 @@ export const UserService = {
             await sendEmail(user.email, "Two Step Verification", otp);
             return { requiresTwoStep: true };
         }
-        
 
         return user;
     },
@@ -348,12 +347,15 @@ export const UserService = {
     },
 
     async sendFriendRequest(userId, body) {
+        console.log("sendFriendRequest", body);
         const sender = await Users.findById(userId);
+        console.log(sender, "sender");
         if (!sender) {
             throw new Error("User Not Found (Sender)");
         }
 
-        const receiverId = body["requastId"];
+        const receiverId = body["requestId"];
+        console.log(receiverId, "receiverId, body sdjfsdjl");
         const receiver = await Users.findById(receiverId);
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");

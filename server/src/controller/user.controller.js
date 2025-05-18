@@ -305,7 +305,7 @@ export const getAllUser = async (req, res) => {
 
 export const sendFriendRequest = async (req, res) => {
     try {
-        console.log("this is friend request API");
+        console.log("this is friend request API", req.body);
 
         const { id } = req.user;
 
