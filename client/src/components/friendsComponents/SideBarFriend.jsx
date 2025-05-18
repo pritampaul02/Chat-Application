@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChaListFriends } from "../../store/chatList/chatAction";
+import socket from "../../utils/socket";
 
 const UserCard = ({ user, showActions }) => (
     <div className="flex items-start p-4 gap-3 hover:bg-[#00A3FF22] rounded-md">
@@ -70,6 +71,58 @@ const SideBarFriend = () => {
         () => filteredFriends?.map((u) => <UserCard key={u._id} user={u} />),
         [filteredFriends]
     );
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleFriendRequest = ({ senderId, senderName }) => {
+            console.log(
+                "📨 Friend Request received from:",
+                senderId,
+                senderName
+            );
+            dispatch(fetchChaListFriends());
+            alert(`📩 ${senderName} sent you a friend request.`);
+        };
+
+        const handleSendFriendRequest = ({ senderId, senderName }) => {
+            console.log("✅ Friend Request sent to:", senderId, senderName);
+            dispatch(fetchChaListFriends());
+            // alert(`✅ Friend request sent to ${senderName}.`);
+        };
+
+        const handleManageFriendReq = ({ senderId, senderName }) => {
+            console.log(
+                "🔄 Friend Request accepted/rejected from:",
+                senderId,
+                senderName
+            );
+            dispatch(fetchChaListFriends());
+            // alert(`📬 ${senderName} responded to your friend request.`);
+        };
+
+        const handleManageSendFriendReq = ({ senderId, senderName }) => {
+            console.log(
+                "🔄 You accepted/rejected friend request from:",
+                senderId,
+                senderName
+            );
+            dispatch(fetchChaListFriends());
+            // alert(`🤝 You accepted/rejected ${senderName}'s request.`);
+        };
+
+        socket.on("friendRequest", handleFriendRequest);
+        socket.on("sendFriendRequest", handleSendFriendRequest);
+        socket.on("manageFriendReq", handleManageFriendReq);
+        socket.on("manageSendFriendReq", handleManageSendFriendReq);
+
+        return () => {
+            socket.off("friendRequest", handleFriendRequest);
+            socket.off("sendFriendRequest", handleSendFriendRequest);
+            socket.off("manageFriendReq", handleManageFriendReq);
+            socket.off("manageSendFriendReq", handleManageSendFriendReq);
+        };
+    }, [socket, dispatch]);
 
     return (
         <div className="w-full md:ml-14 md:w-[22rem] h-full bg-white border-r border-gray-200 flex flex-col">

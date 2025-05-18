@@ -5,7 +5,7 @@ import SideBarFriend from "../components/friendsComponents/SideBarFriend";
 const FriendsLayout = () => {
     const location = useLocation();
     const showSearch = location.pathname === "/friends";
-
+    console.log("showSearch", showSearch);
     return (
         <section className="flex w-full h-screen overflow-hidden">
             <div

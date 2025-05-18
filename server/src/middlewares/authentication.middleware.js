@@ -6,7 +6,7 @@ export const isAuthenticate = async (req, res, next) => {
         let token = req?.cookies?.token
             ? req?.cookies?.token
             : req.headers?.authorization || req.headers.cookie.split("=")[1];
-        console.log("token====>", token);
+        // console.log("token====>", token);
 
         // let token;
 

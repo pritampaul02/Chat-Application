@@ -354,8 +354,8 @@ export const UserService = {
             throw new Error("User Not Found (Sender)");
         }
 
-        const receiverId = body["requestId"];
-        console.log(receiverId, "receiverId, body sdjfsdjl");
+        const receiverId = body.requestId;
+
         const receiver = await Users.findById(receiverId);
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");
@@ -390,7 +390,7 @@ export const UserService = {
 
         await sender.save();
         await receiver.save();
-
+        console.log(sender.name, "sender.name sdflksdjfj");
         const reciverSocketId = await getSocketId(receiverId);
         console.log("reciver socket id ", reciverSocketId);
 

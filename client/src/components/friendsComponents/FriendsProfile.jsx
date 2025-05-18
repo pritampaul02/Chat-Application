@@ -17,6 +17,7 @@ const FriendsProfile = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const prevIdRef = useRef();
+    // console.log("---------------=====================>" , "send friend req page");
 
     const { user: myUser } = useSelector((state) => state.auth);
     const myId = myUser?._id;
@@ -87,7 +88,7 @@ const FriendsProfile = () => {
     }
 
     return (
-        <div className="flex flex-col w-full sm:w-[60rem]  h-full bg-white overflow-y-auto">
+        <div className="flex flex-col w-full md:w-[60rem]  mx-auto h-full  overflow-y-auto">
             {/* Header with back button */}
             <div className="flex items-center gap-2 p-4 border-b border-gray-200 md:hidden">
                 <button

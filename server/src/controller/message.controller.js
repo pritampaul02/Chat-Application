@@ -106,7 +106,7 @@ class MessageController {
             const { id: userId } = req.user;
             const { messageId } = req.params;
             const { emoji } = req.body;
-
+            console.log(req.body, "req.body");
             const updated = await messageService.reactToMessage(
                 userId,
                 messageId,

@@ -1,6 +1,7 @@
 import { Users } from "../model/user.model.js";
 import { Messages } from "../model/message.model.js";
 import { getSocketId, io } from "../socket/socket.js";
+import { date } from "zod";
 
 class MessageService {
     sendMessage = async (id, body) => {
@@ -73,21 +74,41 @@ class MessageService {
         if (!message || message.sender.toString() !== userId) {
             throw new Error("You are not authorized to edit this message");
         }
+
         if (message.deleted) {
             throw new Error("You cannot edit a deleted message");
         }
 
         message.message = text;
         message.edited = true;
+        message.editedAt = Date.now();
         await message.save();
 
-        io.to(getSocketId(message.receiver)).emit("message:updated", {
-            type: "edit",
-            messageId,
-            message: text,
-        });
+        // Refetch the updated and populated message
+        const updatedChat = await Messages.findById(message._id)
+            .populate("sender", "name profile_pic _id email")
+            .populate("receiver", "name profile_pic _id email");
 
-        return message;
+        const receiverSocketId = getSocketId(message.receiver);
+        const senderSocketId = getSocketId(message.sender);
+
+        // Emit updated message to receiver
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("message:updated", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+
+        // Emit updated message to sender as well
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("message:updated", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+
+        return updatedChat;
     };
 
     deleteMessage = async (userId, messageId) => {
@@ -100,12 +121,31 @@ class MessageService {
         message.message = "This message was deleted";
         await message.save();
 
-        io.to(getSocketId(message.receiver)).emit("message:deleted", {
-            type: "delete",
-            messageId,
-        });
+        // Refetch the updated and populated message
+        const updatedChat = await Messages.findById(message._id)
+            .populate("sender", "name profile_pic _id email")
+            .populate("receiver", "name profile_pic _id email");
 
-        return message;
+        const receiverSocketId = getSocketId(message.receiver);
+        const senderSocketId = getSocketId(message.sender);
+
+        // Emit updated message to receiver
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("message:deleted", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+
+        // Emit updated message to sender as well
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("message:deleted", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+
+        return updatedChat;
     };
 
     reactToMessage = async (userId, messageId, emoji) => {
@@ -113,24 +153,38 @@ class MessageService {
         if (!message) throw new Error("Message not found");
         if (message.deleted) throw new Error("message not found");
 
-        const existing = message.reactions.filter(
-            (r) => r.user.toString() !== userId && r.emoji === emoji
+        message.reactions = message.reactions.filter(
+            (r) => r.user.toString() !== userId
         );
-        console.log(existing, "existing emoji");
 
-        if (!existing) {
-            message.reactions.push({ user: userId, emoji });
-        }
+        // Add the new emoji
+        message.reactions.push({ user: userId, emoji });
 
         await message.save();
 
-        io.to(getSocketId(message.receiver)).emit("message:reacted", {
-            type: "reaction",
-            messageId,
-            emoji,
-            userId,
-        });
-        return message;
+        const updatedChat = await Messages.findById(message._id)
+            .populate("sender", "name profile_pic _id email")
+            .populate("receiver", "name profile_pic _id email");
+
+        const receiverSocketId = getSocketId(message.receiver);
+        const senderSocketId = getSocketId(message.sender);
+
+        // Emit updated message to receiver
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("message:reacted", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+
+        // Emit updated message to sender as well
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("message:reacted", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+        return updatedChat;
     };
     UpdateReactToMessage = async (userId, messageId, emoji) => {
         const message = await Messages.findById(messageId);
@@ -177,16 +231,29 @@ class MessageService {
         );
 
         await message.save();
-        await message.populate("reactions.user", "name profile_pic _id");
+        const updatedChat = await Messages.findById(message._id)
+            .populate("sender", "name profile_pic _id email")
+            .populate("receiver", "name profile_pic _id email");
 
-        io.to(getSocketId(message.receiver)).emit("message:reacted", {
-            type: "reaction-delete",
-            messageId,
-            emoji,
-            userId,
-        });
+        const receiverSocketId = getSocketId(message.receiver);
+        const senderSocketId = getSocketId(message.sender);
 
-        return message;
+        // Emit updated message to receiver
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("message:deletedReact", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+
+        // Emit updated message to sender as well
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("message:deletedReact", {
+                receiverId: message.receiver,
+                chat: updatedChat,
+            });
+        }
+        return updatedChat;
     };
 }
 
