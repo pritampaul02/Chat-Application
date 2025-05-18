@@ -468,28 +468,28 @@ const ChatScreen = () => {
         if (!socket) return;
 
         socket?.on("send-message", async ({ reciverId, chat }) => {
-            console.log("send message ------>", chat);
+            // console.log("send message ------>", chat);
 
             dispatch(addMessage(chat));
         });
 
         socket?.on("message:updated", ({ receiverId, chat }) => {
-            console.log("Message edited:", chat);
+            // console.log("Message edited:", chat);
             dispatch(updateMessage(chat)); // New action to update existing message
         });
 
         socket?.on("message:deleted", ({ receiverId, chat }) => {
-            console.log("Message deleted:", chat);
+            // console.log("Message deleted:", chat);
             dispatch(deletedMessage(chat)); // New action to update existing message
         });
 
         socket?.on("message:reacted", ({ receiverId, chat }) => {
-            console.log("Message reacted:", chat);
+            // console.log("Message reacted:", chat);
             dispatch(reactedMessage(chat)); // New action to update existing message
         });
 
         socket?.on("message:deletedReact", ({ receiverId, chat }) => {
-            console.log("Message deletedReact:", chat);
+            // console.log("Message deletedReact:", chat);
             dispatch(deletedReaction(chat)); // New action to update existing message
         });
         return () => {
@@ -540,11 +540,11 @@ const ChatScreen = () => {
                     {messages.map((msg, idx) => (
                         <div
                             key={msg._id}
-                            // ref={
-                            //     idx === messages.length - 1
-                            //         ? lastMessageRef
-                            //         : null
-                            // }
+                            ref={
+                                idx === messages.length - 1
+                                    ? lastMessageRef
+                                    : null
+                            }
                         >
                             <MessageBubble
                                 message={msg}

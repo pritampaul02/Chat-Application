@@ -11,7 +11,7 @@ import { cloudinaryFileUploader, fileDestroy } from "../utils/fileUpload.js";
 export const createUser = async (req, res) => {
     try {
         const user = await UserService.createUser(req.body);
-        console.log("user", user);
+        // console.log("user", user);
         sendCookie(user, res, "User created successfully", HTTP_STATUS.OK);
     } catch (error) {
         console.error(error, "=====> error");
@@ -123,7 +123,7 @@ export const getAllUsersWithPost = async (req, res) => {
 export const getUserById = async (req, res) => {
     try {
         const { userId } = req.params;
-        console.log(userId);
+        // console.log(userId);
         const user = await UserService.getUserById(userId);
 
         sendResponse(res, {
@@ -305,7 +305,7 @@ export const getAllUser = async (req, res) => {
 
 export const sendFriendRequest = async (req, res) => {
     try {
-        console.log("this is friend request API", req.body);
+        // console.log("this is friend request API", req.body);
 
         const { id } = req.user;
 
@@ -329,7 +329,7 @@ export const sendFriendRequest = async (req, res) => {
 
 export const cancelFriendRequest = async (req, res) => {
     try {
-        console.log("Cancel Friend Request API hit");
+        // console.log("Cancel Friend Request API hit");
 
         const { id } = req.user;
 

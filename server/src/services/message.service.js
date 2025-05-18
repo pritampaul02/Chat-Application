@@ -26,6 +26,23 @@ class MessageService {
 
         const newMessage = await Messages.create(messageData);
 
+        sender.lastMessage = {
+            type: "sender",
+            isRead: newMessage.isRead,
+            editedAt: newMessage.editedAt,
+            createdAt: newMessage.createdAt,
+            message: body.message,
+        };
+        receiver.lastMessage = {
+            type: "receiver",
+            isRead: newMessage.isRead,
+            editedAt: newMessage.editedAt,
+            createdAt: newMessage.createdAt,
+            message: body.message,
+        };
+        await sender.save();
+        await receiver.save();
+
         const chat = await Messages.findById(newMessage._id)
             .populate("sender", "name profile_pic _id email")
             .populate("receiver", "name profile_pic _id email");

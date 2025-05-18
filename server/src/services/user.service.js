@@ -120,6 +120,13 @@ export const UserService = {
                                 name: "$$f.name",
                                 email: "$$f.email",
                                 profile_pic: "$$f.profile_pic",
+                                lastMessage: {
+                                    type: "$$f.lastMessage.type",
+                                    isRead: "$$f.lastMessage.isRead",
+                                    createdAt: "$$f.lastMessage.createdAt",
+                                    editedAt: "$$f.lastMessage.editedAt",
+                                    message: "$$f.lastMessage.message",
+                                },
                             },
                         },
                     },
@@ -347,9 +354,9 @@ export const UserService = {
     },
 
     async sendFriendRequest(userId, body) {
-        console.log("sendFriendRequest", body);
+        // console.log("sendFriendRequest", body);
         const sender = await Users.findById(userId);
-        console.log(sender, "sender");
+        // console.log(sender, "sender");
         if (!sender) {
             throw new Error("User Not Found (Sender)");
         }
@@ -390,9 +397,9 @@ export const UserService = {
 
         await sender.save();
         await receiver.save();
-        console.log(sender.name, "sender.name sdflksdjfj");
+        // console.log(sender.name, "sender.name ");
         const reciverSocketId = await getSocketId(receiverId);
-        console.log("reciver socket id ", reciverSocketId);
+        // console.log("reciver socket id ", reciverSocketId);
 
         io.to(reciverSocketId).emit("friendRequest", {
             senderId: userId,
@@ -400,7 +407,7 @@ export const UserService = {
         });
 
         const senderSocketId = await getSocketId(userId);
-        console.log("sender socket id ", senderSocketId);
+        // console.log("sender socket id ", senderSocketId);
 
         io.to(senderSocketId).emit("sendFriendRequest", {
             senderId: receiverId,
@@ -446,7 +453,7 @@ export const UserService = {
             //  console.log(receiver.friendsRequast);
 
             const reciverSocketId = await getSocketId(receiverId);
-            console.log("reciver socket id ", reciverSocketId);
+            // console.log("reciver socket id ", reciverSocketId);
 
             io.to(reciverSocketId).emit("manageSendFriendReq", {
                 senderId: userId,
@@ -454,7 +461,7 @@ export const UserService = {
             });
 
             const senderSocketId = await getSocketId(userId);
-            console.log("sender socket id ", senderSocketId);
+            // console.log("sender socket id ", senderSocketId);
 
             io.to(senderSocketId).emit("manageFriendReq", {
                 senderId: receiverId,
