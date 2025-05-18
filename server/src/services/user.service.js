@@ -353,7 +353,10 @@ export const UserService = {
             throw new Error("User Not Found (Sender)");
         }
 
-        const receiverId = body["requastId"];
+        const receiverId = body.requestId;
+
+
+
         const receiver = await Users.findById(receiverId);
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");

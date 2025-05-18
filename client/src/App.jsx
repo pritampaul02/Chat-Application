@@ -25,8 +25,9 @@ import ResetPassword from "./pages/ResetPassword";
 import FriendsLayout from "./layout/FriendsLayout";
 import FriendsProfile from "./components/friendsComponents/FriendsProfile";
 import { InfoIcon } from "lucide-react";
-import { initializeSocket } from "./store/socket/socketSlice";
+
 import { useRef } from "react";
+import { initializeSocket } from "./store/socket/socketSlice";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -41,10 +42,11 @@ const App = () => {
 
     useEffect(() => {
         if (user) {
-            dispatch(initializeSocket({ userId: user._id }));
-            console.log("ok");
+            initializeSocket({ userId: user._id })
+            // console.log("ok");
         }
     }, [user]);
+
 
     return (
         <BrowserRouter>
@@ -88,8 +90,8 @@ const App = () => {
 
                         <Route path="/friends" element={<FriendsLayout />}>
                             <Route index element={<Friends />} />
-                            <Route path=":id" element={<FriendsProfile />} />
                         </Route>
+                            <Route path="/friends/:id" element={<FriendsProfile />} />
                         {/* <Route path="friends" element={<Friends />} /> */}
                         <Route path="settings" element={<Settings />} />
                         <Route path="search" element={<SearchLayout />}>

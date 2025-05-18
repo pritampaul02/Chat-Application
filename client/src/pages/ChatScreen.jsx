@@ -20,6 +20,7 @@ import {
     reactToMessage,
 } from "../store/message/messageAction";
 import EmojiPicker from "emoji-picker-react";
+import { getSocket } from "../store/socket/socketSlice";
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
@@ -370,10 +371,13 @@ const ChatScreen = () => {
     const { messages } = useSelector((state) => state.chat);
     const { user } = useSelector((state) => state.userProfile);
     const userId = JSON.parse(sessionStorage.getItem("myUser"));
+    // const { socket } = useSelector((state) => state.socket);
 
     const scrollContainerRef = useRef(null);
     const lastMessageRef = useRef(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
+
+    const socket = getSocket()
 
     useEffect(() => {
         if (chatId) {
@@ -387,6 +391,23 @@ const ChatScreen = () => {
             lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages]);
+
+
+     // Listen for incoming messages from socket
+    useEffect(() => {
+        if (!socket) return;
+
+        socket?.on("send-message", async ({ reciverId, chat }) => {
+            console.log("send message ------>" , chat);
+            
+            dispatch(addMessage(chat));
+        });
+
+        return () => {
+            socket?.off("send-message");
+        };
+    }, [socket, dispatch]);
+
 
     const handleScroll = () => {
         const container = scrollContainerRef.current;

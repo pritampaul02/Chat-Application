@@ -26,6 +26,7 @@ class MessageService {
         console.log("receiver id", reciverSocketId);
         const senderSocketId = getSocketId(id);
         console.log("sender id", senderSocketId);
+
         if (reciverSocketId) {
             io.to(reciverSocketId).emit("send-message", {
                 reciverId: body.receiver,
@@ -36,12 +37,6 @@ class MessageService {
             io.to(senderSocketId).emit("meg-sent", { sender: id, chat });
         }
 
-        io.to(reciverSocketId).emit("send-message", {
-            reciverId: body.receiver,
-            chat,
-        });
-
-        io.to(senderSocketId).emit("meg-sent", { sender: id, chat });
         return chat;
     };
 

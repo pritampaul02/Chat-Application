@@ -17,7 +17,8 @@ const FriendsProfile = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const prevIdRef = useRef();
-
+    // console.log("---------------=====================>" , "send friend req page");
+    
     const { user: myUser } = useSelector((state) => state.auth);
     const myId = myUser?._id;
 
