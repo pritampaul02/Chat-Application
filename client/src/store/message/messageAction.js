@@ -38,7 +38,7 @@ export const reactToMessage = createAsyncThunk(
         console.log(messageId, emoji, "emoji");
         try {
             const res = await axiosInstance.patch(
-                `/message/edit/react/${messageId}`,
+                `/message/react/${messageId}`,
                 {
                     emoji,
                 }

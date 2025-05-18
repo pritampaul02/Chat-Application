@@ -5,6 +5,7 @@ import axiosInstance from "../../utils/axios";
 export const sendFriendRequest = createAsyncThunk(
     "friends/sendFriendRequest",
     async (requestId, { rejectWithValue }) => {
+        console.log("requestId", requestId);
         try {
             const { data } = await axiosInstance.post(
                 `/user/send-friend-requast`,
@@ -12,6 +13,7 @@ export const sendFriendRequest = createAsyncThunk(
             );
             return data.message;
         } catch (error) {
+            console.log("error", error);
             return rejectWithValue(
                 error.response?.data?.message || "Error sending request"
             );

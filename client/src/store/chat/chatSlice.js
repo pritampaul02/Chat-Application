@@ -27,13 +27,10 @@ export const sendMessage = createAsyncThunk(
             );
 
             // console.log("response "  , response);
-            
 
             return response.data;
         } catch (error) {
-
             // console.log("error " , error);
-            
 
             return rejectWithValue(error.response.data);
         }
@@ -48,17 +45,57 @@ const chatSlice = createSlice({
         error: null,
     },
     reducers: {
+        addMessage: (state, action) => {
+            const isPresent = state.messages.find(
+                (item) => item._id === action.payload._id
+            );
 
-        addMessage : (state, action) => {
-            
-            const isPresent = state.messages.find(item => item._id === action.payload._id )
-            console.log("update ============>" , isPresent);
-            const updateData = [...state.messages]
-            if(!isPresent){
-               updateData.push(action.payload)
-            } 
-            state.messages = updateData
-        }
+            const updateData = [...state.messages];
+            if (!isPresent) {
+                updateData.push(action.payload);
+            }
+            state.messages = updateData;
+        },
+
+        updateMessage: (state, action) => {
+            const updated = action.payload;
+            const index = state.messages.findIndex(
+                (msg) => msg._id === updated._id
+            );
+            if (index !== -1) {
+                state.messages[index] = updated;
+            }
+        },
+
+        deletedMessage: (state, action) => {
+            const deleted = action.payload;
+            const index = state.messages.findIndex(
+                (msg) => msg._id === deleted._id
+            );
+            if (index !== -1) {
+                state.messages[index] = deleted;
+            }
+        },
+
+        reactedMessage: (state, action) => {
+            const updated = action.payload;
+            const index = state.messages.findIndex(
+                (msg) => msg._id === updated._id
+            );
+            if (index !== -1) {
+                state.messages[index] = updated;
+            }
+        },
+
+        deletedReaction: (state, action) => {
+            const deleted = action.payload;
+            const index = state.messages.findIndex(
+                (msg) => msg._id === deleted._id
+            );
+            if (index !== -1) {
+                state.messages[index] = deleted;
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -80,11 +117,18 @@ const chatSlice = createSlice({
                 if (!Array.isArray(state.messages)) {
                     state.messages = []; // Fallback safety
                 }
-                state.loading = false
+                state.loading = false;
                 state.messages.push(action.payload?.data);
             });
     },
 });
 
-export const { addMessage, clearMessages } = chatSlice.actions;
+export const {
+    updateMessage,
+    reactedMessage,
+    deletedMessage,
+    addMessage,
+    deletedReaction,
+    clearMessages,
+} = chatSlice.actions;
 export default chatSlice.reducer;

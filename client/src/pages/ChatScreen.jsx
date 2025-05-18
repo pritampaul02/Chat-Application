@@ -12,6 +12,10 @@ import {
     addMessage,
     fetchMessages,
     sendMessage,
+    updateMessage,
+    deletedMessage,
+    reactedMessage,
+    deletedReaction,
 } from "../store/chat/chatSlice";
 import { fetchUserById } from "../store/userProfile/userProfileAction";
 import {
@@ -36,6 +40,12 @@ const MessageBubble = ({ message, isSender }) => {
     const longPressTimerRef = useRef(null);
 
     const formattedTime = new Date(message?.createdAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
+
+    const editedTime = new Date(message?.editedAt).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
@@ -118,7 +128,9 @@ const MessageBubble = ({ message, isSender }) => {
                             {!message.deleted && message.edited
                                 ? "Edited "
                                 : ""}
-                            {!message.deleted ? formattedTime : ""}
+                            {!message.deleted && message.edited
+                                ? editedTime
+                                : formattedTime}
                         </span>
                         {isSender &&
                             !message.deleted &&
@@ -212,11 +224,6 @@ const MessageBubble = ({ message, isSender }) => {
                                     <span
                                         title="Click to remove reaction"
                                         onClick={() => {
-                                            console.log(
-                                                "delete emoji hgjhgjg",
-                                                message._id,
-                                                r.emoji
-                                            );
                                             dispatch(
                                                 deleteReactToMessage({
                                                     messageId: message._id,
@@ -441,7 +448,7 @@ const ChatScreen = () => {
     const lastMessageRef = useRef(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
 
-    const socket = getSocket()
+    const socket = getSocket();
 
     useEffect(() => {
         if (chatId) {
@@ -456,22 +463,43 @@ const ChatScreen = () => {
         }
     }, [messages]);
 
-
-     // Listen for incoming messages from socket
+    // Listen for incoming messages from socket
     useEffect(() => {
         if (!socket) return;
 
         socket?.on("send-message", async ({ reciverId, chat }) => {
-            console.log("send message ------>" , chat);
-            
+            console.log("send message ------>", chat);
+
             dispatch(addMessage(chat));
         });
 
+        socket?.on("message:updated", ({ receiverId, chat }) => {
+            console.log("Message edited:", chat);
+            dispatch(updateMessage(chat)); // New action to update existing message
+        });
+
+        socket?.on("message:deleted", ({ receiverId, chat }) => {
+            console.log("Message deleted:", chat);
+            dispatch(deletedMessage(chat)); // New action to update existing message
+        });
+
+        socket?.on("message:reacted", ({ receiverId, chat }) => {
+            console.log("Message reacted:", chat);
+            dispatch(reactedMessage(chat)); // New action to update existing message
+        });
+
+        socket?.on("message:deletedReact", ({ receiverId, chat }) => {
+            console.log("Message deletedReact:", chat);
+            dispatch(deletedReaction(chat)); // New action to update existing message
+        });
         return () => {
             socket?.off("send-message");
+            socket?.off("message:updated");
+            socket?.off("message:deleted");
+            socket?.off("message:reacted");
+            socket?.off("message:deletedReact");
         };
     }, [socket, dispatch]);
-
 
     const handleScroll = () => {
         const container = scrollContainerRef.current;

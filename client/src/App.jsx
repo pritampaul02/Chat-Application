@@ -29,14 +29,12 @@ import { InfoIcon } from "lucide-react";
 import { useRef } from "react";
 import { getSocket, initializeSocket } from "./store/socket/socketSlice";
 
-
-
 const App = () => {
     const dispatch = useDispatch();
     const loadUserCalled = useRef(false);
     const { user } = useSelector((state) => state.auth);
-    const  socket = getSocket()
-    
+    const socket = getSocket();
+
     useEffect(() => {
         if (!loadUserCalled.current) {
             dispatch(loadUser());
@@ -46,44 +44,54 @@ const App = () => {
 
     useEffect(() => {
         if (user) {
-            initializeSocket({ userId: user._id })
+            initializeSocket({ userId: user._id });
             // console.log("ok");
         }
     }, [user]);
 
+    // useEffect(() => {
+    //     if (!socket) return;
 
-    useEffect(()=>{
-      if(!socket) return
-          
-          socket.on("friendRequest" , (senderId , senderName  )=>{
-              console.log("friend Request reciver  =======>" , senderId , senderName);
-              dispatch(loadUser());
-              alert(`${senderName} send you a friend request`)
-          })
-      
-          socket.on("sendFriendRequest" , (reciverId  , reciverName )=>{
-              console.log("friend Request sender =======>" , reciverId , reciverName);
-              dispatch(loadUser());
-              alert(`${reciverName}  friend request send success`)
-          })
-      
-          socket.on("manageFriendReq" , (senderId  , senderName  )=>{
-              console.log("friend Request sender   =======>" , senderId , senderName);
-              dispatch(loadUser());
-              alert(`${senderName} send you a friend request`)
-          })
-      
-          socket.on("manageSendFriendReq" , (reciverId , reciverName  )=>{
-              console.log("friend Request reciver =======>" , reciverId , reciverName);
-              dispatch(loadUser());
-              alert(`${reciverName}  friend request send success`)
-          })
-      
-      
-      
-    } , [ socket ])
+    //     socket.on("friendRequest", (senderId, senderName) => {
+    //         console.log(
+    //             "friend Request reciver  =======>",
+    //             senderId,
+    //             senderName
+    //         );
+    //         dispatch(loadUser());
+    //         alert(`${senderName} send you a friend request`);
+    //     });
 
+    //     socket.on("sendFriendRequest", (reciverId, reciverName) => {
+    //         console.log(
+    //             "friend Request sender =======>",
+    //             reciverId,
+    //             reciverName
+    //         );
+    //         dispatch(loadUser());
+    //         alert(`${reciverName}  friend request send success`);
+    //     });
 
+    //     socket.on("manageFriendReq", (senderId, senderName) => {
+    //         console.log(
+    //             "friend Request sender   =======>",
+    //             senderId,
+    //             senderName
+    //         );
+    //         dispatch(loadUser());
+    //         alert(`${senderName} send you a friend request`);
+    //     });
+
+    //     socket.on("manageSendFriendReq", (reciverId, reciverName) => {
+    //         console.log(
+    //             "friend Request reciver =======>",
+    //             reciverId,
+    //             reciverName
+    //         );
+    //         dispatch(loadUser());
+    //         alert(`${reciverName}  friend request send success`);
+    //     });
+    // }, [socket]);
 
     return (
         <BrowserRouter>
@@ -111,8 +119,12 @@ const App = () => {
 
                         <Route path="/friends" element={<FriendsLayout />}>
                             <Route index element={<Friends />} />
+                            <Route
+                                path="/friends/:id"
+                                element={<FriendsProfile />}
+                            />
                         </Route>
-                            <Route path="/friends/:id" element={<FriendsProfile />} />
+
                         {/* <Route path="friends" element={<Friends />} /> */}
                         <Route path="settings" element={<Settings />} />
                         <Route path="search" element={<SearchLayout />}>
