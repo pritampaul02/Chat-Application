@@ -51,3 +51,20 @@ export const reactToMessage = createAsyncThunk(
         }
     }
 );
+
+export const deleteReactToMessage = createAsyncThunk(
+    "message/deleteReact",
+    async ({ messageId, emoji }, { rejectWithValue }) => {
+        try {
+            console.log(messageId, emoji, "delete emoji");
+            const res = await axiosInstance.delete(
+                `/message/delete/react/${messageId}`,
+                { data: { emoji } }
+            );
+            return res.data.data;
+        } catch (err) {
+            console.log(err);
+            return rejectWithValue(err.response.data.message);
+        }
+    }
+);

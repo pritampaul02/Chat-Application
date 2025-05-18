@@ -7,7 +7,7 @@ import searchReducer from "./search/searchSlice";
 import userProfileReducer from "./userProfile/userProfileSlice";
 import friendsReducer from "./friends/friendsSlice";
 import messageReducer from "../store/message/messageSlice";
-
+import statusReducer from "../store/status/statusSlice";
 const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -18,6 +18,7 @@ const store = configureStore({
         userProfile: userProfileReducer,
         friends: friendsReducer,
         message: messageReducer,
+        status: statusReducer,
     },
 });
 

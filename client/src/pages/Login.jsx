@@ -29,14 +29,14 @@ const Login = () => {
         }
     }, [user, navigate]);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => {
-                dispatch(clearError());
-            }, 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [error, dispatch]);
+    // useEffect(() => {
+    //     if (error) {
+    //         const timer = setTimeout(() => {
+    //             dispatch(clearError());
+    //         }, 4000);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [error, dispatch]);
 
     const validateForm = () => {
         let isValid = true;

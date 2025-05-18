@@ -27,12 +27,16 @@ import FriendsProfile from "./components/friendsComponents/FriendsProfile";
 import { InfoIcon } from "lucide-react";
 
 import { useRef } from "react";
-import { initializeSocket } from "./store/socket/socketSlice";
+import { getSocket, initializeSocket } from "./store/socket/socketSlice";
+
+
 
 const App = () => {
     const dispatch = useDispatch();
     const loadUserCalled = useRef(false);
     const { user } = useSelector((state) => state.auth);
+    const  socket = getSocket()
+    
     useEffect(() => {
         if (!loadUserCalled.current) {
             dispatch(loadUser());
@@ -46,6 +50,39 @@ const App = () => {
             // console.log("ok");
         }
     }, [user]);
+
+
+    useEffect(()=>{
+      if(!socket) return
+          
+          socket.on("friendRequest" , (senderId , senderName  )=>{
+              console.log("friend Request reciver  =======>" , senderId , senderName);
+              dispatch(loadUser());
+              alert(`${senderName} send you a friend request`)
+          })
+      
+          socket.on("sendFriendRequest" , (reciverId  , reciverName )=>{
+              console.log("friend Request sender =======>" , reciverId , reciverName);
+              dispatch(loadUser());
+              alert(`${reciverName}  friend request send success`)
+          })
+      
+          socket.on("manageFriendReq" , (senderId  , senderName  )=>{
+              console.log("friend Request sender   =======>" , senderId , senderName);
+              dispatch(loadUser());
+              alert(`${senderName} send you a friend request`)
+          })
+      
+          socket.on("manageSendFriendReq" , (reciverId , reciverName  )=>{
+              console.log("friend Request reciver =======>" , reciverId , reciverName);
+              dispatch(loadUser());
+              alert(`${reciverName}  friend request send success`)
+          })
+      
+      
+      
+    } , [ socket ])
+
 
 
     return (
@@ -69,23 +106,7 @@ const App = () => {
 
                         <Route path="status" element={<StatusLayout />}>
                             <Route index element={<Status />} />
-                            <Route
-                                path=":statusId"
-                                element={
-                                    <StatusPopup
-                                        onClose={() => {}}
-                                        status={{
-                                            type: "image",
-                                            src: "/assets/preview1.jpg",
-                                            text: "Parindon ki tarah",
-                                            caption: "nayagra waterfall",
-                                            bottomText: "Abb to aaja... 🥺😌🌧️",
-                                            timestamp: "Yesterday at 8:56 PM",
-                                            views: 18,
-                                        }}
-                                    />
-                                }
-                            />
+                            <Route path=":statusId" element={<StatusPopup />} />
                         </Route>
 
                         <Route path="/friends" element={<FriendsLayout />}>

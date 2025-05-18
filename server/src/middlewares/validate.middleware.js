@@ -8,7 +8,7 @@ export const validate = (schema) => (req, res, next) => {
             query: req.query,
             params: req.params,
         });
-
+        console.log("req.body", req.body);
         // If validation passes, proceed to the next middleware/controller
         next();
     } catch (error) {

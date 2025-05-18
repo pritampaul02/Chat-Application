@@ -8,7 +8,9 @@ class StatusValidations {
             type: z.enum(["text", "image", "video", "link", "poll"]),
             url: z.string().url().optional(),
             public_id: z.string().optional(),
+            image: z.string().optional(),
             text: z.string().optional(),
+            caption: z.string().optional(),
             background: z.string().optional(),
             isPublic: z.boolean().optional(),
             allowedUsers: z.array(z.string()).optional(),
@@ -24,11 +26,11 @@ class StatusValidations {
         }),
     });
 
-    // getMessage = z.object({
-    //     params: z.object({
-    //         reciverId: z.string().trim().min(1, "Reciver ID is required"),
-    //     }),
-    // });
+    viewStatus = z.object({
+        params: z.object({
+            statusId: z.string().trim().min(1, "status ID is required"),
+        }),
+    });
 
     // // Schema for updating a todo
     // update = z.object({

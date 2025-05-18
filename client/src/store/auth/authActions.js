@@ -13,7 +13,6 @@ export const registerUser = createAsyncThunk(
                 formData
             );
             if (data?.success && data?.token) {
-                sessionStorage.setItem("token", data.token);
                 sessionStorage.setItem("myUser", JSON.stringify(data.data));
             }
             return data;
@@ -33,7 +32,6 @@ export const loginUser = createAsyncThunk(
             const { data } = await axiosInstance.post(`/user/login`, formData);
 
             if (data?.success && data?.token) {
-                sessionStorage.setItem("token", data.token);
                 sessionStorage.setItem("myUser", JSON.stringify(data.data));
             }
 
@@ -52,7 +50,7 @@ export const logOutUser = createAsyncThunk(
         try {
             const { data } = await axiosInstance.get(`/user/logout`);
             sessionStorage.removeItem("myUser");
-            sessionStorage.removeItem("token");
+
             return data;
         } catch (error) {
             return rejectWithValue(
@@ -70,12 +68,10 @@ export const loadUser = createAsyncThunk(
         try {
             // console.log("api calling me");
             const user = sessionStorage.getItem("myUser");
-            const token = sessionStorage.getItem("token");
 
-            if (user && token) {
+            if (user) {
                 return {
                     ...JSON.parse(user),
-                    token,
                 };
             }
             const { data } = await axiosInstance.get(
