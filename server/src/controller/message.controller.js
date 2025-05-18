@@ -46,11 +46,11 @@ class MessageController {
 
     fetchMessage = async (req, res) => {
         try {
-            console.log("`this is fetch message api`");
+            // console.log("`this is fetch message api`");
 
             const { id } = req.user;
             const { receiverId } = req.params;
-            console.log(id, receiverId);
+            // console.log(id, receiverId);
             const data = await messageService.fetchMessage(id, receiverId);
 
             sendResponse(res, {
@@ -106,13 +106,13 @@ class MessageController {
             const { id: userId } = req.user;
             const { messageId } = req.params;
             const { emoji } = req.body;
-            console.log(req.body, "req.body");
+            // console.log(req.body, "req.body");
             const updated = await messageService.reactToMessage(
                 userId,
                 messageId,
                 emoji
             );
-            console.log(updated, "updated emoji");
+            // console.log(updated, "updated emoji");
 
             sendResponse(res, {
                 status: HTTP_STATUS.OK,

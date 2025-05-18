@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { RiChatNewLine } from "react-icons/ri";
-import { BsChatLeftTextFill } from "react-icons/bs";
+import { BsChatLeftTextFill, BsCheck2, BsCheck2All } from "react-icons/bs";
 import { Filter, Plus, Search } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChaListFriends } from "../../store/chatList/chatAction";
+import { FaMillSign } from "react-icons/fa6";
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
@@ -39,6 +40,21 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
             const lastSeen = friend?.lastSeen
                 ? new Date(friend.lastSeen).toLocaleTimeString()
                 : "";
+            const formattedTime = new Date(
+                friend?.lastMessage?.createdAt
+            ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+            });
+
+            const editedTime = new Date(
+                friend?.lastMessage?.editedAt
+            ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+            });
 
             return (
                 <NavLink
@@ -56,20 +72,37 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
                     />
                     <div className="ml-3 flex-1 min-w-0">
                         <div className="flex justify-between items-center">
-                            <span className="text-[1rem] truncate">
+                            <span className="text-[1rem]  truncate">
                                 {friend?.name}
                             </span>
-                            <span className="text-[12px] text-gray-500">
-                                {lastSeen}
-                            </span>
+                            {friend?.msgNotification && (
+                                <div className="bg-primary rounded-full h-4 w-4 flex justify-center items-center text-white text-xs">
+                                    <span>{friend?.msgNotification || ""}</span>{" "}
+                                </div>
+                            )}
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600 truncate">
-                                {friend?.lastMessage || "No messages yet"}
+                            {friend.lastMessage?.type === "receiver" ? (
+                                <span className="text-sm text-gray-600 truncate flex gap-3 items-center">
+                                    {friend.lastMessage?.isRead ? (
+                                        <BsCheck2 className="text-gray-600 text-sm transition" />
+                                    ) : (
+                                        <BsCheck2All className="text-gray-600 text-sm transition" />
+                                    )}
+
+                                    {friend?.lastMessage?.message || ""}
+                                </span>
+                            ) : friend.lastMessage?.type === "sender" ? (
+                                <span className="text-sm text-gray-600 truncate">
+                                    {friend?.lastMessage?.message || ""}
+                                </span>
+                            ) : null}
+
+                            <span className="text-[12px] text-gray-500">
+                                {friend.lastMessage?.edited
+                                    ? editedTime && editedTime
+                                    : formattedTime && formattedTime}
                             </span>
-                            <div className="bg-primary rounded-full h-4 w-4 flex justify-center items-center text-white text-xs">
-                                {friend?.msgNotification || 0}
-                            </div>
                         </div>
                     </div>
                 </NavLink>

@@ -97,6 +97,24 @@ const userSchema = new Schema(
             type: Date,
             default: null,
         },
+        lastMessage: {
+            type: {
+                type: String,
+                enum: ["sender", "receiver"],
+            },
+            isRead: {
+                type: Boolean,
+            },
+            editedAt: {
+                type: Date,
+            },
+            createdAt: {
+                type: Date,
+            },
+            message: {
+                type: String,
+            },
+        },
 
         twoFactorEnabled: {
             type: Boolean,
