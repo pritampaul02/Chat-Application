@@ -83,13 +83,14 @@ export const createImageStatus = createAsyncThunk(
     async (formData, { rejectWithValue }) => {
         try {
             console.log("formData", formData);
-            const { data } = await axiosInstance.post(
-                "/status/",
+            const { data } = await axios.post(
+                "http://localhost:5000/api/v1/status/",
                 { formData },
                 {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
+                    withCredentials: true,
                 }
             );
             return data;

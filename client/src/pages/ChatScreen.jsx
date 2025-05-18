@@ -540,11 +540,11 @@ const ChatScreen = () => {
                     {messages.map((msg, idx) => (
                         <div
                             key={msg._id}
-                            ref={
-                                idx === messages.length - 1
-                                    ? lastMessageRef
-                                    : null
-                            }
+                            // ref={
+                            //     idx === messages.length - 1
+                            //         ? lastMessageRef
+                            //         : null
+                            // }
                         >
                             <MessageBubble
                                 message={msg}
