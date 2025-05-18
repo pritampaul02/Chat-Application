@@ -25,9 +25,16 @@ export const sendMessage = createAsyncThunk(
                 `/message/send-message`,
                 messageData
             );
+
+            // console.log("response "  , response);
+            
+
             return response.data;
         } catch (error) {
-            console.log("error", error);
+
+            // console.log("error " , error);
+            
+
             return rejectWithValue(error.response.data);
         }
     }
@@ -41,9 +48,17 @@ const chatSlice = createSlice({
         error: null,
     },
     reducers: {
-        addMessage: (state, action) => {
-            state.messages.push(action.payload);
-        },
+
+        addMessage : (state, action) => {
+            
+            const isPresent = state.messages.find(item => item._id === action.payload._id )
+            console.log("update ============>" , isPresent);
+            const updateData = [...state.messages]
+            if(!isPresent){
+               updateData.push(action.payload)
+            } 
+            state.messages = updateData
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -65,15 +80,11 @@ const chatSlice = createSlice({
                 if (!Array.isArray(state.messages)) {
                     state.messages = []; // Fallback safety
                 }
-                state.messages.push(action.payload?.data);
-                console.log(
-                    "Message sent successfully:",
-                    action.payload?.data.message
-                );
+                state.loading = false
                 state.messages.push(action.payload?.data);
             });
     },
 });
 
-export const { addMessage } = chatSlice.actions;
+export const { addMessage, clearMessages } = chatSlice.actions;
 export default chatSlice.reducer;

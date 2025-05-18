@@ -25,13 +25,18 @@ import ResetPassword from "./pages/ResetPassword";
 import FriendsLayout from "./layout/FriendsLayout";
 import FriendsProfile from "./components/friendsComponents/FriendsProfile";
 import { InfoIcon } from "lucide-react";
-import { initializeSocket } from "./store/socket/socketSlice";
+
 import { useRef } from "react";
+import { getSocket, initializeSocket } from "./store/socket/socketSlice";
+
+
 
 const App = () => {
     const dispatch = useDispatch();
     const loadUserCalled = useRef(false);
     const { user } = useSelector((state) => state.auth);
+    const  socket = getSocket()
+    
     useEffect(() => {
         if (!loadUserCalled.current) {
             dispatch(loadUser());
@@ -41,10 +46,44 @@ const App = () => {
 
     useEffect(() => {
         if (user) {
-            dispatch(initializeSocket({ userId: user._id }));
-            console.log("ok");
+            initializeSocket({ userId: user._id })
+            // console.log("ok");
         }
     }, [user]);
+
+
+    useEffect(()=>{
+      if(!socket) return
+          
+          socket.on("friendRequest" , (senderId , senderName  )=>{
+              console.log("friend Request reciver  =======>" , senderId , senderName);
+              dispatch(loadUser());
+              alert(`${senderName} send you a friend request`)
+          })
+      
+          socket.on("sendFriendRequest" , (reciverId  , reciverName )=>{
+              console.log("friend Request sender =======>" , reciverId , reciverName);
+              dispatch(loadUser());
+              alert(`${reciverName}  friend request send success`)
+          })
+      
+          socket.on("manageFriendReq" , (senderId  , senderName  )=>{
+              console.log("friend Request sender   =======>" , senderId , senderName);
+              dispatch(loadUser());
+              alert(`${senderName} send you a friend request`)
+          })
+      
+          socket.on("manageSendFriendReq" , (reciverId , reciverName  )=>{
+              console.log("friend Request reciver =======>" , reciverId , reciverName);
+              dispatch(loadUser());
+              alert(`${reciverName}  friend request send success`)
+          })
+      
+      
+      
+    } , [ socket ])
+
+
 
     return (
         <BrowserRouter>
@@ -72,8 +111,8 @@ const App = () => {
 
                         <Route path="/friends" element={<FriendsLayout />}>
                             <Route index element={<Friends />} />
-                            <Route path=":id" element={<FriendsProfile />} />
                         </Route>
+                            <Route path="/friends/:id" element={<FriendsProfile />} />
                         {/* <Route path="friends" element={<Friends />} /> */}
                         <Route path="settings" element={<Settings />} />
                         <Route path="search" element={<SearchLayout />}>
