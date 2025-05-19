@@ -332,14 +332,15 @@ export const UserService = {
         return user;
     },
 
-    async resetPasswordWithOtp(otp, newPassword) {
-        const user = await Users.findOne({ otp }).select("+password");
+    async resetPasswordWithOtp(otp, email, newPassword) {
+        const user = await Users.findOne({ otp, email }).select("+password");
         if (!user || timeExpire(user.expireAt)) {
             throw new Error("Invalid or expired OTP");
         }
         user.password = newPassword;
         user.otp = null;
         await user.save({ validateBeforeSave: false });
+        console.log(user, "user", user.password, "new password", newPassword);
         return user;
     },
 
