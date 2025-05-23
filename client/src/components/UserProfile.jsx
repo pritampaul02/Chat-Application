@@ -9,6 +9,7 @@ import {
 } from "../store/friends/friendsAction";
 import { resetFriendState } from "../store/friends/friendsSlice";
 import { getMe } from "../store/auth/authActions";
+import { CircleUser } from "lucide-react";
 
 const UserProfile = () => {
     const { id } = useParams();
@@ -112,11 +113,17 @@ const UserProfile = () => {
                     )}
                 </div>
                 <div className="absolute bottom-[-40px] left-6 sm:left-10">
-                    <img
-                        src={user.profile_pic.url}
-                        alt={user.name}
-                        className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32  rounded-full border-4 border-white object-cover shadow-lg"
-                    />
+                    {user.profile_pic?.url ? (
+                        <img
+                            src={user.profile_pic.url}
+                            alt={user.name}
+                            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32  rounded-full border-4 border-white object-cover shadow-lg"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <CircleUser className="w-16 h-16" />
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -172,11 +179,11 @@ const UserProfile = () => {
             <div className="px-4 sm:px-6 md:px-10 py-6 space-y-2">
                 <h2 className="text-lg font-semibold text-gray-800">Bio</h2>
                 <p>{user.bio}</p>
-                <p className="text-gray-700 whitespace-pre-line">
+                {/* <p className="text-gray-700 whitespace-pre-line">
                     🌟 Simple boy{"\n"}
                     👨‍💻 Digital Creator{"\n"}
                     🎓 Studied at Panskura Banamali College
-                </p>
+                </p> */}
                 <p>
                     <CiLocationOn className="inline text-2xl" /> From{" "}
                     <span className="font-medium">{user.location}</span>

@@ -65,11 +65,18 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
                         isActive ? "bg-[#00A3FF33]" : ""
                     }`}
                 >
-                    <img
-                        src={friend?.profile_pic?.url || IMG_LINK}
-                        alt="avatar"
-                        className="h-12 w-12 rounded-full object-cover bg-[#f0f2f5]"
-                    />
+                    {friend?.profile_pic?.url ? (
+                        <img
+                            src={friend?.profile_pic?.url || IMG_LINK}
+                            alt="avatar"
+                            className="h-12 w-12 rounded-full object-cover bg-[#f0f2f5]"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <CircleUser className="w-16 h-16" />
+                        </div>
+                    )}
+
                     <div className="ml-3 flex-1 min-w-0">
                         <div className="flex justify-between items-center">
                             <span className="text-[1rem]  truncate">
@@ -164,17 +171,20 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
                         </p>
                     </div>
                     <div className="pb-4">
-                        {loading ? (
-                            <p className="px-6 py-2 text-sm">
-                                Loading chats...
-                            </p>
-                        ) : error ? (
-                            <p className="px-6 py-2 text-sm text-red-500">
-                                {error}
-                            </p>
-                        ) : (
-                            renderChats()
-                        )}
+                        {
+                            // loading ? (
+                            //     <p className="px-6 py-2 text-sm">
+                            //         Loading chats...
+                            //     </p>
+                            // ) :
+                            error ? (
+                                <p className="px-6 py-2 text-sm text-red-500">
+                                    {error}
+                                </p>
+                            ) : (
+                                renderChats()
+                            )
+                        }
                     </div>
                 </div>
             </div>
