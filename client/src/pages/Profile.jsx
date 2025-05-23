@@ -25,10 +25,10 @@ const Profile = () => {
 
     useEffect(() => {
         if (myUser) {
-            setBio(myUser.bio || "");
-            setLocation(myUser.location || "");
-            setProfileImage(myUser.profile_pic.url);
-            setCoverImage(myUser.coverPhoto.url);
+            setBio(myUser?.bio || "");
+            setLocation(myUser?.location || "");
+            setProfileImage(myUser?.profile_pic?.url);
+            setCoverImage(myUser?.coverPhoto?.url);
         }
     }, [myUser]);
 

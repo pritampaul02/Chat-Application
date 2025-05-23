@@ -33,8 +33,7 @@ const userSchema = new Schema(
         profile_pic: {
             url: {
                 type: String,
-                default:
-                    "https://res.cloudinary.com/dab0ekhmy/image/upload/v1728130610/thik-ai/gvjpvq3xljmnw2vwdkag.avif",
+                default: null,
             },
             public_id: {
                 type: String,
@@ -44,8 +43,7 @@ const userSchema = new Schema(
         coverPhoto: {
             url: {
                 type: String,
-                default:
-                    "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwallpapercave.com%2Fnature-laptop-wallpapers&psig=AOvVaw3NYwdNJQiooWKqgBTSBS5-&ust=1745733552378000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMCbsbiC9YwDFQAAAAAdAAAAABAJ",
+                default: null,
             },
             public_id: {
                 type: String,
