@@ -192,8 +192,8 @@ const FriendsProfile = () => {
                 <h2 className="text-lg font-semibold text-gray-800">Bio</h2>
                 <p className="text-gray-700 whitespace-pre-line">
                     {user.bio || "No bio available."}
-                    {"\n"}🌟 Simple boy{"\n"}👨‍💻 Digital Creator{"\n"}🎓 Studied
-                    at Panskura Banamali College
+                    {/* {"\n"}🌟 Simple boy{"\n"}👨‍💻 Digital Creator{"\n"}🎓 Studied
+                    at Panskura Banamali College */}
                 </p>
             </div>
         </div>

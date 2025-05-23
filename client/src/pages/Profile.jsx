@@ -94,9 +94,9 @@ const Profile = () => {
             <div className="w-full max-w-5xl bg-white rounded-md shadow relative">
                 {/* === Cover Photo === */}
                 <div className="relative w-full h-[16rem] sm:h-[20rem] md:h-[22rem] bg-gray-200 rounded-t-md overflow-hidden">
-                    {coverImage ? (
+                    {myUser?.coverPhoto?.url ? (
                         <img
-                            src={coverImage}
+                            src={myUser?.coverPhoto?.url}
                             alt="cover"
                             className="w-full h-full object-cover"
                         />
@@ -118,9 +118,9 @@ const Profile = () => {
                 {/* === Profile Picture === */}
                 <div className="absolute left-4 sm:left-8 top-[calc(16rem-3.5rem)] sm:top-[calc(20rem-4rem)] z-30">
                     <div className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-200">
-                        {profileImage ? (
+                        {myUser?.profile_pic?.url ? (
                             <img
-                                src={profileImage}
+                                src={myUser?.profile_pic?.url}
                                 alt="profile"
                                 className="w-full h-full object-cover rounded-full"
                             />
@@ -170,7 +170,7 @@ const Profile = () => {
                         </h3>
                         <p className="text-sm text-gray-700 mt-2">{bio}</p>
                         <ul className="mt-4 space-y-2 text-sm text-gray-600">
-                            <li>
+                            {/* <li>
                                 🎓 Studied at{" "}
                                 <span className="font-medium">ABC College</span>
                             </li>
@@ -185,7 +185,7 @@ const Profile = () => {
                                 <span className="font-medium">
                                     High School 123
                                 </span>
-                            </li>
+                            </li> */}
                             <li>
                                 <CiLocationOn className="inline text-lg" /> From{" "}
                                 <span className="font-medium">{location}</span>
