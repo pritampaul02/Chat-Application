@@ -71,6 +71,10 @@ const userSchema = new Schema(
             default: "online",
         },
 
+        last_online: {
+            type: Date,
+        },
+
         isVerified: {
             type: Boolean,
             default: false,

@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { SocketContextProvider } from "../context/socketContext";
 
 const ProtectedRoute = () => {
     const { user, loading } = useSelector((state) => state.auth);
@@ -12,7 +13,7 @@ const ProtectedRoute = () => {
         return <Navigate to="/login" replace />;
     }
 
-    return <Outlet />;
+    return <SocketContextProvider><Outlet /></SocketContextProvider>;
 };
 
 export default ProtectedRoute;

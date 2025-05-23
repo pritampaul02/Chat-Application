@@ -26,6 +26,7 @@ import {
 } from "../store/message/messageAction";
 import EmojiPicker from "emoji-picker-react";
 import { getSocket } from "../store/socket/socketSlice";
+import { useSocketContext } from "../context/socketContext";
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
@@ -436,6 +437,7 @@ const MessageInput = () => {
 };
 
 const ChatScreen = () => {
+    const {socket} = useSocketContext();
     const { toggleSidebar } = useOutletContext();
     const dispatch = useDispatch();
     const { chatId } = useParams();
@@ -447,8 +449,6 @@ const ChatScreen = () => {
     const scrollContainerRef = useRef(null);
     const lastMessageRef = useRef(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
-
-    const socket = getSocket();
 
     useEffect(() => {
         if (chatId) {

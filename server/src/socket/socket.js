@@ -15,6 +15,7 @@ const io = new Server(server, {
 });
 
 const userSocketMap = {}; // { userId: socketId }
+const socketUserMap = {}; // { userId: socketId }
 
 // Socket.io connection
 io.on("connection", (socket) => {
@@ -27,6 +28,7 @@ io.on("connection", (socket) => {
 
     console.log("✅ User connected:", userId);
     userSocketMap[userId] = socket.id;
+    socketUserMap[socket.id] = userId;
 
     // Update DB status
     UserService.userStatusChanger(userId, "online");
@@ -35,8 +37,10 @@ io.on("connection", (socket) => {
     io.emit("onlineUsers", Object.keys(userSocketMap));
 
     // Handle disconnection
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
+        const userId = socketUserMap[socket.id];
         console.log("❌ User disconnected:", userId);
+        await UserService.updateLastLogin(userId);
         delete userSocketMap[userId];
         UserService.userStatusChanger(userId, "offline");
         io.emit("onlineUsers", Object.keys(userSocketMap));

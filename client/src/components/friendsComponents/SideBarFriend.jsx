@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChaListFriends } from "../../store/chatList/chatAction";
-import socket from "../../utils/socket";
+import { useSocketContext } from "../../context/socketContext";
 
 const UserCard = ({ user, showActions }) => (
     <div className="flex items-start p-4 gap-3 hover:bg-[#00A3FF22] rounded-md">
@@ -40,6 +40,7 @@ const UserCard = ({ user, showActions }) => (
 );
 
 const SideBarFriend = () => {
+    const {socket} = useSocketContext();
     const [activeTab, setActiveTab] = useState("Friend Requests");
     const [search, setSearch] = useState("");
     const dispatch = useDispatch();
