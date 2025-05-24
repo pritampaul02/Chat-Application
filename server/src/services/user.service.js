@@ -120,6 +120,8 @@ export const UserService = {
                                 name: "$$f.name",
                                 email: "$$f.email",
                                 profile_pic: "$$f.profile_pic",
+                                status: "$$f.status",
+                                last_online: "$$f.last_online",
                                 lastMessage: {
                                     type: "$$f.lastMessage.type",
                                     isRead: "$$f.lastMessage.isRead",
@@ -512,4 +514,18 @@ export const UserService = {
             console.error("somthing went wrong", error);
         }
     },
+
+    async updateLastLogin(userId) {
+        console.log("$$$$$=====+++++", userId)
+        if (!userId || userId == "undefined") return;
+
+        await Users.updateOne(
+            {
+                _id: userId
+            },
+            {
+                last_online: Date.now()
+            }
+        )
+    }
 };

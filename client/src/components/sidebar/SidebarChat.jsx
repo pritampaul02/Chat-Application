@@ -6,6 +6,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChaListFriends } from "../../store/chatList/chatAction";
 import { FaMillSign } from "react-icons/fa6";
+import moment from 'moment';
 
 const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
@@ -16,6 +17,23 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
     const [searchTerm, setSearchTerm] = useState("");
 
     const { loading, error, user } = useSelector((state) => state.chatList);
+
+    const formatLastOnline = (dateTime) => {
+        const now = moment();
+        const lastTime = moment(dateTime);
+        const nowDay = now.format("DD");
+        const lastDay = lastTime.format("DD");
+        const diff = now.diff(lastTime, 'minutes');
+
+        if (nowDay != lastDay){
+            return lastTime.format("DD/MM/YYYY");
+        }
+
+        if (diff < 60)
+            return 'Just now'
+        else
+            return moment(dateTime).format("HH:mm")
+    }
 
     useEffect(() => {
         dispatch(fetchChaListFriends());
@@ -79,9 +97,16 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
 
                     <div className="ml-3 flex-1 min-w-0">
                         <div className="flex justify-between items-center">
-                            <span className="text-[1rem]  truncate">
-                                {friend?.name}
-                            </span>
+                            <div className="flex flex-row justify-between items-center w-100">
+                                <span className="text-[1rem]  truncate">
+                                    {friend?.name}
+                                </span>
+                                {
+                                    friend?.status == "online" ?
+                                    <span className="h-2 w-2 rounded-full bg-green-500"></span> :
+                                    <span className="text-xs text-slate-500">{formatLastOnline(friend.last_online)}</span>
+                                }
+                            </div>
                             {friend?.msgNotification && (
                                 <div className="bg-primary rounded-full h-4 w-4 flex justify-center items-center text-white text-xs">
                                     <span>{friend?.msgNotification || ""}</span>{" "}

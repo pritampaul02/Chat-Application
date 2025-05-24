@@ -27,13 +27,12 @@ import FriendsProfile from "./components/friendsComponents/FriendsProfile";
 import { InfoIcon } from "lucide-react";
 
 import { useRef } from "react";
-import { getSocket, initializeSocket } from "./store/socket/socketSlice";
+// import { getSocket, initializeSocket } from "./store/socket/socketSlice";
 
 const App = () => {
     const dispatch = useDispatch();
     const loadUserCalled = useRef(false);
     const { user } = useSelector((state) => state.auth);
-    const socket = getSocket();
 
     useEffect(() => {
         if (!loadUserCalled.current) {
@@ -42,12 +41,12 @@ const App = () => {
         }
     }, [dispatch]);
 
-    useEffect(() => {
-        if (user) {
-            initializeSocket({ userId: user._id });
-            // console.log("ok");
-        }
-    }, [user]);
+    // useEffect(() => {
+    //     if (user) {
+    //         initializeSocket({ userId: user._id });
+    //         // console.log("ok");
+    //     }
+    // }, [user]);
 
     // useEffect(() => {
     //     if (!socket) return;
