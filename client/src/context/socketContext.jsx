@@ -8,7 +8,7 @@ const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
     const dispatch = useDispatch();
-  const SOCKET_URL = "ws://localhost:5001"; // Replace with your server URL
+  const SOCKET_URL = import.meta.env.VITE_BACKEND_BASE_URI; // Replace with your server URL
   const [socket, setSocket] = useState(null);
 
   const handleConnect = (socket) => {
