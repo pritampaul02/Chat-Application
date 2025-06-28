@@ -37,7 +37,7 @@ const RequestPasswordReset = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-cover bg-[url(./public/assets/background_image.jpg)] p-4">
+        <div className="min-h-screen flex items-center justify-center bg-cover bg-[url(https://res.cloudinary.com/dyyy9djvx/image/upload/v1751125716/background_image_fvpfcp.jpg)] p-4">
             <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-xl shadow-lg p-6">
                 <h2 className="text-2xl text-white text-center mb-6">
                     Forgot Password?
