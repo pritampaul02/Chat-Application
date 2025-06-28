@@ -92,7 +92,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg)] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-cover bg-[url(./public/assets/background_image.jpg)] flex items-center justify-center p-4">
             <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/10">
                 <div className="p-8">
                     <div className="text-center mb-8">

@@ -92,7 +92,7 @@ const ResetPassword = () => {
     const timerColor = timer <= 60 ? "text-red-400" : "text-green-400";
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg)] p-4">
+        <div className="min-h-screen flex items-center justify-center bg-cover bg-[url(./public/assets/background_image.jpg)] p-4">
             <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-xl shadow-lg p-6">
                 <h2 className="text-2xl text-white text-center mb-6">
                     Reset Password
