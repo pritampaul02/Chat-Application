@@ -31,7 +31,7 @@ const IMG_LINK =
     "https://www.pngarts.com/files/5/User-Avatar-PNG-Transparent-Image.png";
 
 const LONG_PRESS_DURATION = 500; // 500ms
-const MessageBubble = ({ message, isSender }) => {
+const MessageBubble = ({ message, isSender, showDate }) => {
     const [showActions, setShowActions] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -101,159 +101,204 @@ const MessageBubble = ({ message, isSender }) => {
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Close options when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest(".group") && !e.target.closest(".absolute")) {
+                setShowOptions(false);
+                setShowActions(false);
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // current date
+    const currentDate = new Date();
+    console.log(
+        "current",
+        currentDate.toDateString(),
+        "hello",
+        new Date(message?.createdAt).toDateString()
+    );
+    //    if( message?.createdAt.toDateString() === currentDate.toDateString()) {
+
     return (
-        <div
-            className={`flex relative mb-4 px-2 sm:px-4 ${
-                isSender ? "justify-end" : "justify-start"
-            }`}
-            onMouseDown={handlePressStart}
-            onMouseUp={handlePressEnd}
-            onMouseLeave={handlePressEnd}
-            onTouchStart={handlePressStart}
-            onTouchEnd={handlePressEnd}
-        >
-            <div className="relative group max-w-[85%] sm:max-w-[75%] md:max-w-[60%]">
-                {/* Message Bubble */}
-                <div
-                    className={`p-3 rounded-2xl text-sm break-words relative ${
-                        isSender
-                            ? "bg-primary text-white rounded-tr-none"
-                            : "bg-white border border-gray-200 rounded-tl-none"
-                    }`}
-                >
-                    <p>{message?.message}</p>
+        <>
+            {showDate && (
+                <div className="p-2 break-words flex justify-center items-center">
+                    <p className="text-xs text-gray-500">
+                        {new Date(message?.createdAt).toDateString() ===
+                        currentDate.toDateString()
+                            ? "Today"
+                            : new Date(message?.createdAt).toDateString()}
+                    </p>
+                </div>
+            )}
+            <div
+                className={`flex relative mb-4 px-2 sm:px-4 ${
+                    isSender ? "justify-end" : "justify-start"
+                }`}
+                onMouseDown={handlePressStart}
+                onMouseUp={handlePressEnd}
+                onMouseLeave={handlePressEnd}
+                onTouchStart={handlePressStart}
+                onTouchEnd={handlePressEnd}
+            >
+                <div className="relative group max-w-[85%] sm:max-w-[75%] md:max-w-[60%]">
+                    {/* current date */}
 
-                    {/* Timestamp and read status */}
-                    <div className="mt-1 text-xs text-right flex items-center justify-end gap-1">
-                        <span>
-                            {!message.deleted && message.edited
-                                ? "Edited "
-                                : ""}
-                            {!message.deleted && message.edited
-                                ? editedTime
-                                : formattedTime}
-                        </span>
-                        {isSender &&
-                            !message.deleted &&
-                            (message?.read ? (
-                                <BsCheck2All className="text-blue-100 text-sm" />
-                            ) : (
-                                <BsCheck2 className="text-blue-100 text-sm" />
-                            ))}
+                    {/* Message Bubble */}
+                    <div
+                        className={`p-3 rounded-2xl text-sm break-words relative ${
+                            isSender
+                                ? "bg-primary text-white rounded-tr-none"
+                                : "bg-white border border-gray-200 rounded-tl-none"
+                        }`}
+                    >
+                        <p>{message?.message}</p>
+
+                        {/* Timestamp and read status */}
+                        <div className="mt-1 text-xs text-right flex items-center justify-end gap-1">
+                            <span>
+                                {!message.deleted && message.edited
+                                    ? "Edited "
+                                    : ""}
+                                {!message.deleted && message.edited
+                                    ? editedTime
+                                    : formattedTime}
+                            </span>
+                            {isSender &&
+                                !message.deleted &&
+                                (message?.read ? (
+                                    <BsCheck2All className="text-blue-100 text-sm" />
+                                ) : (
+                                    <BsCheck2 className="text-blue-100 text-sm" />
+                                ))}
+                        </div>
+
+                        {/* Reaction Emoji (clickable) */}
+                        {!message.deleted && message.reactions?.length > 0 && (
+                            <div
+                                className="absolute -bottom-4 left-0 px-1 py-0.5 rounded-full text-lg cursor-pointer"
+                                onClick={() =>
+                                    setShowReactionUsers((prev) => !prev)
+                                }
+                            >
+                                {message.reactions.map((r, i) => (
+                                    <span key={i}>{r.emoji}</span>
+                                ))}
+                            </div>
+                        )}
                     </div>
-
-                    {/* Reaction Emoji (clickable) */}
-                    {!message.deleted && message.reactions?.length > 0 && (
-                        <div
-                            className="absolute -bottom-4 left-0 px-1 py-0.5 rounded-full text-lg cursor-pointer"
-                            onClick={() =>
-                                setShowReactionUsers((prev) => !prev)
-                            }
+                    {/* Action Button */}
+                    {showActions && (
+                        <button
+                            className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-100 transition"
+                            onClick={() => setShowOptions((prev) => !prev)}
                         >
-                            {message.reactions.map((r, i) => (
-                                <span key={i}>{r.emoji}</span>
-                            ))}
+                            <EllipsisVertical size={18} />
+                        </button>
+                    )}
+                    {/* Dropdown Options */}
+                    {showOptions && (
+                        <div className="absolute top-10 right-0 z-30 bg-white shadow-lg rounded-md p-2 text-sm space-y-1 w-28">
+                            {isSender && (
+                                <>
+                                    <button
+                                        className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
+                                        onClick={handleEditMessage}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
+                                        onClick={handleDeleteMessage}
+                                    >
+                                        Delete
+                                    </button>
+                                </>
+                            )}
+                            <button
+                                className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
+                                onClick={() =>
+                                    setShowEmojiPicker(!showEmojiPicker)
+                                }
+                            >
+                                React
+                            </button>
+                        </div>
+                    )}
+                    {/* Emoji Picker */}
+                    {showEmojiPicker && (
+                        <div
+                            ref={pickerRef}
+                            className="absolute top-16 right-0 z-40"
+                        >
+                            <EmojiPicker
+                                onEmojiClick={handleEmojiClick}
+                                theme="light"
+                                height={350}
+                                width={300}
+                            />
+                        </div>
+                    )}
+
+                    {/* Emoji Reaction Users List */}
+                    {showReactionUsers && (
+                        <div
+                            className={`absolute top-full -left-40 md:top-full md:left-0 w-55 md:w-60 mt-2 bg-white border ${
+                                isSender
+                                    ? "translate-x-2"
+                                    : "translate-x-45 md:translate-x-0    "
+                            } border-gray-300 rounded shadow p-2 z-40`}
+                        >
+                            <p className="font-semibold mb-2 text-sm text-gray-700">
+                                Reacted by:
+                            </p>
+                            <ul className="space-y-1 text-sm max-h-40 overflow-auto">
+                                {message.reactions.map((r, i) => (
+                                    <li
+                                        key={i}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <span
+                                            title="Click to remove reaction"
+                                            onClick={() => {
+                                                dispatch(
+                                                    deleteReactToMessage({
+                                                        messageId: message._id,
+                                                        emoji: r.emoji,
+                                                    })
+                                                );
+                                            }}
+                                            className="text-lg cursor-pointer"
+                                        >
+                                            {r.emoji}
+                                        </span>
+                                        <img
+                                            src={r.user?.profile_pic?.url}
+                                            alt="profile"
+                                            className="w-6 h-6 rounded-full"
+                                        />
+                                        <span className="text-gray-800">
+                                            {r.user?.name}
+                                        </span>
+                                        <span className="text-gray-800">
+                                            {new Date(
+                                                r.reactedAt
+                                            ).toLocaleString()}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     )}
                 </div>
-                {/* Action Button */}
-                {showActions && (
-                    <button
-                        className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-100 transition"
-                        onClick={() => setShowOptions((prev) => !prev)}
-                    >
-                        <EllipsisVertical size={18} />
-                    </button>
-                )}
-                {/* Dropdown Options */}
-                {showOptions && (
-                    <div className="absolute top-10 right-0 z-30 bg-white shadow-lg rounded-md p-2 text-sm space-y-1 w-28">
-                        {isSender && (
-                            <>
-                                <button
-                                    className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
-                                    onClick={handleEditMessage}
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
-                                    onClick={handleDeleteMessage}
-                                >
-                                    Delete
-                                </button>
-                            </>
-                        )}
-                        <button
-                            className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
-                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        >
-                            React
-                        </button>
-                    </div>
-                )}
-                {/* Emoji Picker */}
-                {showEmojiPicker && (
-                    <div
-                        ref={pickerRef}
-                        className="absolute top-16 right-0 z-40"
-                    >
-                        <EmojiPicker
-                            onEmojiClick={handleEmojiClick}
-                            theme="light"
-                            height={350}
-                            width={300}
-                        />
-                    </div>
-                )}
-
-                {/* Emoji Reaction Users List */}
-                {showReactionUsers && (
-                    <div
-                        className={`absolute top-full -left-40 md:top-full md:left-0 w-55 md:w-60 mt-2 bg-white border ${
-                            isSender
-                                ? "translate-x-2"
-                                : "translate-x-45 md:translate-x-0    "
-                        } border-gray-300 rounded shadow p-2 z-40`}
-                    >
-                        <p className="font-semibold mb-2 text-sm text-gray-700">
-                            Reacted by:
-                        </p>
-                        <ul className="space-y-1 text-sm max-h-40 overflow-auto">
-                            {message.reactions.map((r, i) => (
-                                <li key={i} className="flex items-center gap-2">
-                                    <span
-                                        title="Click to remove reaction"
-                                        onClick={() => {
-                                            dispatch(
-                                                deleteReactToMessage({
-                                                    messageId: message._id,
-                                                    emoji: r.emoji,
-                                                })
-                                            );
-                                        }}
-                                        className="text-lg cursor-pointer"
-                                    >
-                                        {r.emoji}
-                                    </span>
-                                    <img
-                                        src={r.user?.profile_pic?.url}
-                                        alt="profile"
-                                        className="w-6 h-6 rounded-full"
-                                    />
-                                    <span className="text-gray-800">
-                                        {r.user?.name}
-                                    </span>
-                                    <span className="text-gray-800">
-                                        {new Date(r.reactedAt).toLocaleString()}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
             </div>
-        </div>
+        </>
     );
 };
 
@@ -537,21 +582,35 @@ const ChatScreen = () => {
                 ref={scrollContainerRef}
             >
                 <div className="max-w-3xl mx-auto ">
-                    {messages.map((msg, idx) => (
-                        <div
-                            key={msg._id}
-                            // ref={
-                            //     idx === messages.length - 1
-                            //         ? lastMessageRef
-                            //         : null
-                            // }
-                        >
-                            <MessageBubble
-                                message={msg}
-                                isSender={msg?.sender?._id === userId._id}
-                            />
-                        </div>
-                    ))}
+                    {messages.map((msg, idx) => {
+                        const currentDate = new Date(
+                            msg.createdAt
+                        ).toDateString();
+                        const prevDate =
+                            idx > 0
+                                ? new Date(
+                                      messages[idx - 1].createdAt
+                                  ).toDateString()
+                                : null;
+                        const showDate = currentDate !== prevDate;
+
+                        return (
+                            <div
+                                key={msg._id}
+                                // ref={
+                                //     idx === messages.length - 1
+                                //         ? lastMessageRef
+                                //         : null
+                                // }
+                            >
+                                <MessageBubble
+                                    message={msg}
+                                    isSender={msg?.sender?._id === userId._id}
+                                    showDate={showDate}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
