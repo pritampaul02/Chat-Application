@@ -115,7 +115,7 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen bg-cover bg-[url(https://img.freepik.com/free-photo/sunlight-shining-single-mountain-top-sunset-with-dark-cloudy-sky_181624-377.jpg?t=st=1743610986~exp=1743614586~hmac=771c52380ca61e0b2dd3b784a8b4bbe86cbf2cd643adf5202c62a5c9a62ebdb3&w=996)] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-cover bg-[url(./public/assets/background_image.jpg)] flex items-center justify-center p-4">
             <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/10">
                 <div className="p-8">
                     <div className="text-center mb-8">
