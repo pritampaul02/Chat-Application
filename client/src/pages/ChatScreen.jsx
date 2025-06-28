@@ -532,11 +532,11 @@ const ChatScreen = () => {
             <ChatHeader toggleSidebar={toggleSidebar} contact={contact} />
 
             <div
-                className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-gray-50"
+                className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-[url(./assets/wallpaper.jpg)]  "
                 onScroll={handleScroll}
                 ref={scrollContainerRef}
             >
-                <div className="max-w-3xl mx-auto">
+                <div className="max-w-3xl mx-auto ">
                     {messages.map((msg, idx) => (
                         <div
                             key={msg._id}
