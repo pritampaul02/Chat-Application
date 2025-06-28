@@ -58,13 +58,34 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
             const lastSeen = friend?.lastSeen
                 ? new Date(friend.lastSeen).toLocaleTimeString()
                 : "";
-            const formattedTime = new Date(
+            let formattedTime = new Date(
                 friend?.lastMessage?.createdAt
             ).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: true,
             });
+            if (
+                friend?.lastMessage?.createdAt === null ||
+                friend?.lastMessage?.createdAt === undefined
+            ) {
+                formattedTime = "";
+            }
+            // const formattedTime = new Date(
+            //     friend?.lastMessage?.createdAt
+            // ).toLocaleTimeString([], {
+            //     hour: "2-digit",
+            //     minute: "2-digit",
+            //     hour12: true,
+            // });
+
+            let messages = friend?.lastMessage?.message;
+            if (
+                friend?.lastMessage?.message === null ||
+                friend?.lastMessage?.message === undefined
+            ) {
+                messages = "No message yet";
+            }
 
             const editedTime = new Date(
                 friend?.lastMessage?.editedAt
@@ -122,11 +143,17 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
                                         <BsCheck2All className="text-gray-600 text-sm transition" />
                                     )}
 
-                                    {friend?.lastMessage?.message || ""}
+                                    {/* {friend?.lastMessage?.message
+                                        ? friend?.lastMessage?.message
+                                        : "No message yet"} */}
+                                    {messages}
                                 </span>
                             ) : friend.lastMessage?.type === "sender" ? (
                                 <span className="text-sm text-gray-600 truncate">
-                                    {friend?.lastMessage?.message || ""}
+                                    {/* {friend?.lastMessage?.message
+                                        ? friend?.lastMessage?.message
+                                        : "No message yet"} */}
+                                    {messages}
                                 </span>
                             ) : null}
 
