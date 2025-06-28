@@ -532,7 +532,7 @@ const ChatScreen = () => {
             <ChatHeader toggleSidebar={toggleSidebar} contact={contact} />
 
             <div
-                className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-[url(./assets/wallpaper.jpg)]  "
+                className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 bg-[url(https://res.cloudinary.com/dyyy9djvx/image/upload/v1751126205/download_adnznx.jpg)] "
                 onScroll={handleScroll}
                 ref={scrollContainerRef}
             >
