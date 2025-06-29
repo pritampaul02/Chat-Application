@@ -9,13 +9,15 @@ import {
     LogOut,
     CircleFadingPlus,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logOutUser } from "../../store/auth/authActions";
+import useScreenSize from "../Hooks/useScreenSize";
 
 const Header = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { width, height } = useScreenSize();
 
     const handleLogout = async () => {
         try {
@@ -25,7 +27,11 @@ const Header = () => {
             console.error("Logout failed:", error);
         }
     };
-
+    const location = useLocation();
+    const isActive =
+        location.pathname === `/chat/${location.pathname.split("/")[2]}`;
+    const isMobile = width < 768;
+    console.log("isMobile:", isMobile, "Width:", width, isActive);
     return (
         <>
             {/* Desktop & Tablet Sidebar */}
@@ -86,7 +92,11 @@ const Header = () => {
             </nav>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-50 border-t flex justify-around items-center h-14 z-50 shadow">
+            <nav
+                className={`md:hidden fixed bottom-0 left-0 right-0 bg-slate-50 border-t flex justify-around items-center h-14 z-50 shadow ${
+                    isActive && isMobile && "hidden"
+                }`}
+            >
                 <IconLink to="/chat" title="Chat" icon={<MessageSquare />} />
                 <IconLink
                     to="/status"
