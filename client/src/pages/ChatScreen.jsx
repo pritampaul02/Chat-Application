@@ -121,7 +121,6 @@ const MessageBubble = ({ message, isSender, showDate }) => {
     const currentDate = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    console.log(yesterday.toDateString());
 
     //    if( message?.createdAt.toDateString() === currentDate.toDateString()) {
     // formatting the date
@@ -416,7 +415,7 @@ const MessageInput = () => {
     }, []);
 
     return (
-        <footer className="bg-white mb-14 md:mb-0 border-t border-gray-200 p-2 sm:p-3 relative">
+        <footer className="bg-white  mb-0 border-t border-gray-200 p-2 sm:p-3 relative">
             {imageFile && (
                 <div className="mb-2 relative w-fit">
                     <img
