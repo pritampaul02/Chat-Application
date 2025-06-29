@@ -115,14 +115,22 @@ const MessageBubble = ({ message, isSender, showDate }) => {
     }, []);
 
     // current date
+
+    // console.log(formattedDate);
+
     const currentDate = new Date();
-    console.log(
-        "current",
-        currentDate.toDateString(),
-        "hello",
-        new Date(message?.createdAt).toDateString()
-    );
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    console.log(yesterday.toDateString());
+
     //    if( message?.createdAt.toDateString() === currentDate.toDateString()) {
+    // formatting the date
+    const createdAt = new Date(message?.createdAt);
+    const day = createdAt.getDate();
+    const month = createdAt.toLocaleString("default", { month: "short" });
+    const year = createdAt.getFullYear();
+
+    const formatted = `${day} ${month} ${year}`;
 
     return (
         <>
@@ -132,7 +140,10 @@ const MessageBubble = ({ message, isSender, showDate }) => {
                         {new Date(message?.createdAt).toDateString() ===
                         currentDate.toDateString()
                             ? "Today"
-                            : new Date(message?.createdAt).toDateString()}
+                            : new Date(message?.createdAt).toDateString() ===
+                              yesterday.toDateString()
+                            ? "Yesterday"
+                            : formatted}
                     </p>
                 </div>
             )}
