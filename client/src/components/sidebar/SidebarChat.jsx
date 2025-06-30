@@ -198,20 +198,17 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
                         </p>
                     </div>
                     <div className="pb-4">
-                        {
-                            // loading ? (
-                            //     <p className="px-6 py-2 text-sm">
-                            //         Loading chats...
-                            //     </p>
-                            // ) :
-                            error ? (
-                                <p className="px-6 py-2 text-sm text-red-500">
-                                    {error}
-                                </p>
-                            ) : (
-                                renderChats()
-                            )
-                        }
+                        {loading ? (
+                            <p className="px-6 py-2 text-sm">
+                                Loading chats...
+                            </p>
+                        ) : error ? (
+                            <p className="px-6 py-2 text-sm text-red-500">
+                                {error}
+                            </p>
+                        ) : (
+                            renderChats()
+                        )}
                     </div>
                 </div>
             </div>
