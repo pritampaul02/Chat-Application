@@ -576,11 +576,7 @@ const ChatScreen = () => {
               avatar: user.profile_pic?.url,
               status: "Online",
           }
-        : {
-              name: "Unknown",
-              avatar: IMG_LINK,
-              status: "Offline",
-          };
+        : "";
 
     return (
         <div className="flex flex-col h-full md:h-full relative">
