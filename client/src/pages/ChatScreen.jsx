@@ -137,16 +137,31 @@ const MessageBubble = ({ message, isSender, showDate }) => {
             {showDate && (
                 <div className="p-2 break-words flex justify-center items-center">
                     <p className="text-xs text-gray-500">
-                        {new Date(message?.createdAt).toDateString() ===
-                        currentDate.toDateString()
-                            ? "Today"
-                            : new Date(message?.createdAt).toDateString() ===
-                              yesterday.toDateString()
-                            ? "Yesterday"
-                            : formatted}
+                        {(() => {
+                            const createdDate = new Date(message?.createdAt);
+                            const today = new Date();
+                            const diffTime =
+                                today.setHours(0, 0, 0, 0) -
+                                createdDate.setHours(0, 0, 0, 0);
+                            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+                            if (diffDays === 0) return "Today";
+                            if (diffDays === 1) return "Yesterday";
+                            if (diffDays > 1 && diffDays <= 6)
+                                return createdDate.toLocaleDateString("en-US", {
+                                    weekday: "long",
+                                });
+
+                            return createdDate.toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                            }); // e.g., 29 Jun 2025
+                        })()}
                     </p>
                 </div>
             )}
+
             <div
                 className={`flex relative mb-4 px-2 sm:px-4 ${
                     isSender ? "justify-end" : "justify-start"
@@ -576,11 +591,7 @@ const ChatScreen = () => {
               avatar: user.profile_pic?.url,
               status: "Online",
           }
-        : {
-              name: "Unknown",
-              avatar: IMG_LINK,
-              status: "Offline",
-          };
+        : "";
 
     return (
         <div className="flex flex-col h-full md:h-full relative">
@@ -607,11 +618,11 @@ const ChatScreen = () => {
                         return (
                             <div
                                 key={msg._id}
-                                // ref={
-                                //     idx === messages.length - 1
-                                //         ? lastMessageRef
-                                //         : null
-                                // }
+                                ref={
+                                    idx === messages.length - 1
+                                        ? lastMessageRef
+                                        : null
+                                }
                             >
                                 <MessageBubble
                                     message={msg}
