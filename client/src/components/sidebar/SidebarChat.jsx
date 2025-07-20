@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { RiChatNewLine } from "react-icons/ri";
 import { BsChatLeftTextFill, BsCheck2, BsCheck2All } from "react-icons/bs";
-import { Filter, Plus, Search } from "lucide-react";
+import { CircleUser, Filter, Plus, Search } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChaListFriends } from "../../store/chatList/chatAction";
@@ -111,8 +111,8 @@ const SidebarChat = ({ isOpen = true, onClose }) => {
                             className="h-12 w-12 rounded-full object-cover bg-[#f0f2f5]"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <CircleUser className="w-16 h-16" />
+                        <div className="h-12 w-12 rounded-full object-cover bg-[#f0f2f5]">
+                            <CircleUser className="w-12 h-12 text-gray-500" />
                         </div>
                     )}
 
