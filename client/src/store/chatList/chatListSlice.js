@@ -25,12 +25,12 @@ const chatListSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchChaListFriends.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-                state.success = null;
-                state.fetchChaListFriends = false;
-            })
+            // .addCase(fetchChaListFriends.pending, (state) => {
+            //     state.loading = true;
+            //     state.error = null;
+            //     state.success = null;
+            //     state.fetchChaListFriends = false;
+            // })
             .addCase(fetchChaListFriends.fulfilled, (state, action) => {
                 state.loading = false;
                 state.success = true;
