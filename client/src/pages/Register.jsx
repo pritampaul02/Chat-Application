@@ -119,6 +119,11 @@ const Register = () => {
             <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/10">
                 <div className="p-8">
                     <div className="text-center mb-8">
+                        <img
+                            src="/icon.png"
+                            alt="Chat Logo"
+                            className="w-16 h-16 mx-auto mb-3 object-contain drop-shadow-md hover:scale-105 transition-transform"
+                        />
                         <h1 className="text-3xl font-bold text-white mb-2">
                             Create Account
                         </h1>
@@ -134,7 +139,7 @@ const Register = () => {
                                 htmlFor="profilepic"
                                 className="relative cursor-pointer group"
                             >
-                                <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-white/20 group-hover:border-teal-400 transition-all">
+                                <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-white/20 group-hover:border-[#00A1FF] transition-all">
                                     {formData.profilepicPreview ? (
                                         <img
                                             src={formData.profilepicPreview}
@@ -142,10 +147,10 @@ const Register = () => {
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <FiCamera className="text-3xl text-white/50 group-hover:text-teal-400" />
+                                        <FiCamera className="text-3xl text-white/50 group-hover:text-[#00A1FF]" />
                                     )}
                                 </div>
-                                <div className="absolute bottom-0 right-0 bg-teal-500 rounded-full p-2">
+                                <div className="absolute bottom-0 right-0 bg-[#00A1FF] rounded-full p-2 shadow-md">
                                     <FiCamera className="text-white text-sm" />
                                 </div>
                             </label>
@@ -169,7 +174,7 @@ const Register = () => {
                                     value={formData.name}
                                     onChange={handleChange}
                                     placeholder="Username"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-[#00A1FF] text-white placeholder-white/30 ${
                                         errors.name
                                             ? "border-red-500"
                                             : "border-white/10"
@@ -193,7 +198,7 @@ const Register = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder="Email address"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-[#00A1FF] text-white placeholder-white/30 ${
                                         errors.email
                                             ? "border-red-500"
                                             : "border-white/10"
@@ -217,7 +222,7 @@ const Register = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     placeholder="Password"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-[#00A1FF] text-white placeholder-white/30 ${
                                         errors.password
                                             ? "border-red-500"
                                             : "border-white/10"
@@ -241,7 +246,7 @@ const Register = () => {
                                     value={formData.confirmpassword}
                                     onChange={handleChange}
                                     placeholder="Confirm password"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 text-white placeholder-white/30 ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-[#00A1FF] text-white placeholder-white/30 ${
                                         errors.confirmpassword
                                             ? "border-red-500"
                                             : "border-white/10"
@@ -259,7 +264,7 @@ const Register = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full flex items-center justify-center py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full flex items-center justify-center cursor-pointer py-3 px-4 rounded-xl bg-[#00A1FF] hover:bg-[#008fe6] text-white font-semibold shadow-lg shadow-[#00A1FF]/30 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 "Creating account..."
@@ -281,7 +286,7 @@ const Register = () => {
                             Already have an account?{" "}
                             <Link
                                 to="/login"
-                                className="text-teal-400 hover:underline font-medium"
+                                className="text-[#00A1FF] hover:underline font-semibold"
                             >
                                 Sign in
                             </Link>

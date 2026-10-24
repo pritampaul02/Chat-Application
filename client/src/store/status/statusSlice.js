@@ -53,8 +53,11 @@ const statusSlice = createSlice({
 
             .addCase(deleteStatus.fulfilled, (state, action) => {
                 state.statuses = state.statuses.filter(
-                    (s) => s._id !== action.payload
+                    (s) => String(s._id) !== String(action.payload)
                 );
+                if (String(state.currentStatus?._id) === String(action.payload)) {
+                    state.currentStatus = null;
+                }
                 state.success = true;
             })
             .addCase(createTextStatus.fulfilled, (state) => {

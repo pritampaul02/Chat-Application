@@ -20,7 +20,7 @@ const ChatPanel = ({ chat }) => {
             </header>
 
             {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto bg-[url('/assets/chat-bg.png')] bg-cover">
+            <div className="flex-1 p-4 overflow-y-auto bg-slate-950">
                 {chat.messages.map((msg, i) => (
                     <div
                         key={i}

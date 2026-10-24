@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
     Chat,
@@ -24,10 +24,10 @@ import RequestPasswordReset from "./pages/ReqPasswordReset";
 import ResetPassword from "./pages/ResetPassword";
 import FriendsLayout from "./layout/FriendsLayout";
 import FriendsProfile from "./components/friendsComponents/FriendsProfile";
-import { InfoIcon } from "lucide-react";
-
-import { useRef } from "react";
-// import { getSocket, initializeSocket } from "./store/socket/socketSlice";
+import CallModal from "./components/call/CallModal";
+import GroupCallModal from "./components/call/GroupCallModal";
+import { notificationService } from "./utils/notification";
+import axiosInstance from "./utils/axios";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -41,59 +41,19 @@ const App = () => {
         }
     }, [dispatch]);
 
-    // useEffect(() => {
-    //     if (user) {
-    //         initializeSocket({ userId: user._id });
-    //         // console.log("ok");
-    //     }
-    // }, [user]);
-
-    // useEffect(() => {
-    //     if (!socket) return;
-
-    //     socket.on("friendRequest", (senderId, senderName) => {
-    //         console.log(
-    //             "friend Request reciver  =======>",
-    //             senderId,
-    //             senderName
-    //         );
-    //         dispatch(loadUser());
-    //         alert(`${senderName} send you a friend request`);
-    //     });
-
-    //     socket.on("sendFriendRequest", (reciverId, reciverName) => {
-    //         console.log(
-    //             "friend Request sender =======>",
-    //             reciverId,
-    //             reciverName
-    //         );
-    //         dispatch(loadUser());
-    //         alert(`${reciverName}  friend request send success`);
-    //     });
-
-    //     socket.on("manageFriendReq", (senderId, senderName) => {
-    //         console.log(
-    //             "friend Request sender   =======>",
-    //             senderId,
-    //             senderName
-    //         );
-    //         dispatch(loadUser());
-    //         alert(`${senderName} send you a friend request`);
-    //     });
-
-    //     socket.on("manageSendFriendReq", (reciverId, reciverName) => {
-    //         console.log(
-    //             "friend Request reciver =======>",
-    //             reciverId,
-    //             reciverName
-    //         );
-    //         dispatch(loadUser());
-    //         alert(`${reciverName}  friend request send success`);
-    //     });
-    // }, [socket]);
+    useEffect(() => {
+        if (user?._id) {
+            // Register service worker and subscribe to push notifications
+            notificationService.subscribeUserToPush(axiosInstance);
+        }
+    }, [user?._id]);
 
     return (
         <BrowserRouter>
+            {/* Global Voice & Video Calling Modals */}
+            <CallModal />
+            <GroupCallModal />
+
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -101,7 +61,6 @@ const App = () => {
                     path="/request-password-reset"
                     element={<RequestPasswordReset />}
                 />
-
                 <Route path="/reset-password" element={<ResetPassword />} />
 
                 <Route element={<ProtectedRoute />}>
@@ -116,15 +75,14 @@ const App = () => {
                             <Route path=":statusId" element={<StatusPopup />} />
                         </Route>
 
-                        <Route path="/friends" element={<FriendsLayout />}>
+                        <Route path="friends" element={<FriendsLayout />}>
                             <Route index element={<Friends />} />
                             <Route
-                                path="/friends/:id"
+                                path=":id"
                                 element={<FriendsProfile />}
                             />
                         </Route>
 
-                        {/* <Route path="friends" element={<Friends />} /> */}
                         <Route path="settings" element={<Settings />} />
                         <Route path="search" element={<SearchLayout />}>
                             <Route path=":name/:id" element={<UserProfile />} />

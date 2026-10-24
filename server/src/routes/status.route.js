@@ -4,11 +4,14 @@ import { validate } from "../middlewares/validate.middleware.js";
 import statusValidation from "../validations/status.validation.js";
 import statusController from "../controller/status.controller.js";
 
+import upload from "../middlewares/multer.middleware.js";
+
 const router = express.Router();
 //create a stuts
 router.post(
     "/",
     isAuthenticate,
+    upload.any(),
     validate(statusValidation.createStatus),
     statusController.createStatus
 );

@@ -1,44 +1,34 @@
-import React, { useState } from "react";
-// import Sidebar from "../components/Sidebar";
-import StatusPopup from "../components/StatusComponent/StatusPopup";
+import React from "react";
+import { CircleFadingPlus, Sparkles, Image, Video, Flame } from "lucide-react";
 
 const Status = () => {
     return (
-        <div className="flex items-center justify-center h-full bg-gray-50 select-none">
-            <div className="text-center p-8">
-                <p className="text-gray-600 mb-6">
-                    Click on a contact to view their status updates
+        <div className="hidden md:flex flex-col items-center justify-center h-full w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 select-none p-8 relative overflow-hidden font-sans transition-colors duration-200">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-1/4 -right-20 w-80 h-80 bg-[#00A1FF]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-1/4 -left-20 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 max-w-sm w-full text-center flex flex-col items-center">
+                <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#00A1FF] via-sky-400 to-blue-600 p-[2px] shadow-2xl shadow-[#00A1FF]/20 mb-6 animate-pulse">
+                    <div className="w-full h-full bg-white dark:bg-slate-950 rounded-[22px] flex items-center justify-center shadow-inner">
+                        <CircleFadingPlus className="w-8 h-8 text-[#00A1FF]" />
+                    </div>
+                </div>
+
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                    Status & Daily Stories
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                    Select a contact from the sidebar to view their moments, or create your own update with photos, videos, or custom text gradients.
                 </p>
+
+                <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 px-4 py-2 rounded-xl backdrop-blur-md shadow-sm dark:shadow-none">
+                    <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                    <span>Disappears automatically after 24 hours</span>
+                </div>
             </div>
         </div>
-
-        // <section className="flex w-full ">
-        //     < />
-
-        //     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        //         <button
-        //             className="bg-green-500 px-4 py-2 rounded-md"
-        //             onClick={() => setShowPopup(true)}
-        //         >
-        //             Show Status
-        //         </button>
-
-        //         {showPopup && (
-        //             <StatusPopup
-        //                 onClose={() => setShowPopup(false)}
-        //                 status={{
-        //                     type: "video", // "image" | "video" | "text"
-        //                     src: "https://youtube.com/shorts/AyQNVN59rRA?si=CohbXKM738aHPCMj", // Only for image/video
-        //                     text: "Parindon ki tarah", // Only for text type
-        //                     caption: "Parindon ki tarah",
-        //                     bottomText: "Abb to aaja... 🥺😌🌧️",
-        //                     timestamp: "Yesterday at 8:56 PM",
-        //                     views: 18,
-        //                 }}
-        //             />
-        //         )}
-        //     </div>
-        // </section>
     );
 };
+
 export default Status;

@@ -85,6 +85,15 @@ const userSchema = new Schema(
         },
 
         deviceTokens: [String], // for push notifications
+        pushSubscriptions: [
+            {
+                endpoint: String,
+                keys: {
+                    p256dh: String,
+                    auth: String,
+                },
+            },
+        ],
 
         friends: [{ type: Schema.Types.ObjectId, ref: "user" }],
         friendRequests: [{ type: Schema.Types.ObjectId, ref: "user" }],

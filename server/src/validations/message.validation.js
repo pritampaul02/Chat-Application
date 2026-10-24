@@ -5,13 +5,13 @@ class MessageValidations {
     // Schema for creating a todo
     create = z.object({
         body: z.object({
-            // sender: z.string().trim().min(1, "Sender ID is required"),
-            receiver: z.string().trim().min(1, "Reciver ID is required"),
+            receiver: z.string().trim().min(1, "Receiver ID is required"),
             receiverModel: z
                 .string()
                 .trim()
-                .min(1, "Receiver model is required"),
-            message: z.string().trim().min(1, "message is required"),
+                .optional()
+                .default("user"),
+            message: z.string().optional().default(""),
         }),
     });
 

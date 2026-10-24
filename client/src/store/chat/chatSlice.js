@@ -32,7 +32,9 @@ export const sendMessage = createAsyncThunk(
         } catch (error) {
             // console.log("error " , error);
 
-            return rejectWithValue(error.response.data);
+            return rejectWithValue(
+                error.response?.data || { message: error.message }
+            );
         }
     }
 );
@@ -87,14 +89,64 @@ const chatSlice = createSlice({
             }
         },
 
-        deletedReaction: (state, action) => {
-            const deleted = action.payload;
-            const index = state.messages.findIndex(
-                (msg) => msg._id === deleted._id
-            );
-            if (index !== -1) {
-                state.messages[index] = deleted;
+        updateMessageStatus: (state, action) => {
+            const { messageId, status, deliveredAt, readAt } = action.payload || {};
+            const msg = state.messages.find((m) => m._id === messageId);
+            if (msg) {
+                msg.status = status;
+                if (deliveredAt) {
+                    msg.deliveredAt =
+                        typeof deliveredAt === "object" && typeof deliveredAt?.toISOString === "function"
+                            ? deliveredAt.toISOString()
+                            : String(deliveredAt);
+                }
+                if (readAt) {
+                    msg.readAt =
+                        typeof readAt === "object" && typeof readAt?.toISOString === "function"
+                            ? readAt.toISOString()
+                            : String(readAt);
+                    msg.isRead = true;
+                }
             }
+        },
+
+        markAllMessagesAsRead: (state, action) => {
+            const { readerId, readAt } = action.payload || {};
+            const isoReadAt = readAt
+                ? typeof readAt === "object" && typeof readAt?.toISOString === "function"
+                    ? readAt.toISOString()
+                    : String(readAt)
+                : new Date().toISOString();
+
+            state.messages.forEach((msg) => {
+                // If the message was sent to this reader, it is now read
+                const receiverId = msg.receiver?._id || msg.receiver;
+                if (String(receiverId) === String(readerId) || !readerId) {
+                    msg.status = "read";
+                    msg.isRead = true;
+                    msg.readAt = isoReadAt;
+                }
+            });
+        },
+
+        markMessagesDeliveredBulk: (state, action) => {
+            const { messageIds, deliveredAt } = action.payload || {};
+            const isoDeliveredAt = deliveredAt
+                ? typeof deliveredAt === "object" && typeof deliveredAt?.toISOString === "function"
+                    ? deliveredAt.toISOString()
+                    : String(deliveredAt)
+                : new Date().toISOString();
+
+            const idsSet = new Set((messageIds || []).map(String));
+            state.messages.forEach((msg) => {
+                if (idsSet.has(String(msg._id)) && msg.status === "sent") {
+                    msg.status = "delivered";
+                    msg.deliveredAt = isoDeliveredAt;
+                }
+            });
+        },
+        clearMessages: (state) => {
+            state.messages = [];
         },
     },
     extraReducers: (builder) => {
@@ -102,6 +154,7 @@ const chatSlice = createSlice({
             .addCase(fetchMessages.pending, (state) => {
                 state.loading = true;
                 state.error = null;
+                state.messages = [];
             })
             .addCase(fetchMessages.fulfilled, (state, action) => {
                 state.loading = false;
@@ -129,6 +182,9 @@ export const {
     deletedMessage,
     addMessage,
     deletedReaction,
+    updateMessageStatus,
+    markAllMessagesAsRead,
+    markMessagesDeliveredBulk,
     clearMessages,
 } = chatSlice.actions;
 export default chatSlice.reducer;

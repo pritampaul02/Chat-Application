@@ -9,11 +9,13 @@ class MessageController {
             const { id } = req.user;
             let imageData = null;
 
+            const file = req.file || (req.files && req.files[0]);
+
             // Upload image to Cloudinary if file exists
-            if (req.file) {
+            if (file) {
                 imageData = await cloudinaryFileUploader(
-                    req.file.buffer,
-                    req.file.mimetype,
+                    file.buffer,
+                    file.mimetype,
                     "chat/messages"
                 );
 
@@ -46,12 +48,14 @@ class MessageController {
 
     fetchMessage = async (req, res) => {
         try {
-            // console.log("`this is fetch message api`");
-
             const { id } = req.user;
             const { receiverId } = req.params;
-            // console.log(id, receiverId);
             const data = await messageService.fetchMessage(id, receiverId);
+
+            // Automatically mark messages from receiverId to id as read
+            messageService.markMessagesAsRead(id, receiverId).catch((err) => {
+                console.error("Auto markMessagesAsRead error:", err);
+            });
 
             sendResponse(res, {
                 status: HTTP_STATUS.OK,
@@ -66,6 +70,26 @@ class MessageController {
                 success: false,
                 message: error.message || "something went wrong",
                 error,
+            });
+        }
+    };
+
+    markAsRead = async (req, res) => {
+        try {
+            const { id } = req.user;
+            const { senderId } = req.params;
+            const result = await messageService.markMessagesAsRead(id, senderId);
+            sendResponse(res, {
+                status: HTTP_STATUS.OK,
+                data: result,
+                message: "messages marked as read",
+                success: true,
+            });
+        } catch (error) {
+            sendResponse(res, {
+                status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+                success: false,
+                message: error.message || "something went wrong",
             });
         }
     };

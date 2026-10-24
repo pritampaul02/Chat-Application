@@ -27,9 +27,7 @@ const statusSchema = new mongoose.Schema(
         },
         image: {
             type: String,
-            required: function () {
-                return this.type === "image";
-            },
+            default: "",
         },
 
         text: {

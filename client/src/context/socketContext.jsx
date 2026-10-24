@@ -1,63 +1,161 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
-import { loadUser } from "../store/auth/authActions";
 import { fetchChaListFriends } from "../store/chatList/chatAction";
+import {
+    addMessage,
+    updateMessageStatus,
+    markAllMessagesAsRead,
+    markMessagesDeliveredBulk,
+} from "../store/chat/chatSlice";
+import {
+    updateFriendLastMessage,
+    updateFriendReadReceipt,
+} from "../store/chatList/chatListSlice";
+import { notificationService } from "../utils/notification";
 
-const SocketContext = createContext();
+const SocketContext = createContext({
+    socket: null,
+    onlineUsers: [],
+    isConnected: false,
+});
 
 export const SocketContextProvider = ({ children }) => {
     const dispatch = useDispatch();
-  const SOCKET_URL = import.meta.env.VITE_BACKEND_BASE_URI; // Replace with your server URL
-  const [socket, setSocket] = useState(null);
+    const { user } = useSelector((state) => state.auth);
+    const [socket, setSocket] = useState(null);
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [isConnected, setIsConnected] = useState(false);
 
-  const handleConnect = (socket) => {
-    console.log("Socket connected with ID:", socket.id);
-  }
+    const SOCKET_URL = import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000";
 
-  const handleDisconnect = (socket) => {
-    console.log("Socket disconnected with ID:", socket.id);
-  }
+    useEffect(() => {
+        if (!user?._id) {
+            if (socket) {
+                socket.disconnect();
+                setSocket(null);
+                setIsConnected(false);
+            }
+            return;
+        }
 
-  const handleStatus = (socket) => {
-    console.log("Socket status with ID:", socket.id);
-    dispatch(fetchChaListFriends());
-  }
+        const socketClient = io(SOCKET_URL, {
+            query: {
+                userId: user._id,
+            },
+            transports: ["websocket"],
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+        });
 
-  
-  useEffect(() => {
-      const myUser = JSON.parse(sessionStorage.getItem("myUser"));
-      const socketClient = io(SOCKET_URL, {
-        query: {
-          userId: myUser?._id,
-        },
-        transports: ["websocket"],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      });
-      setSocket(socketClient);
-  }, [])
+        socketClient.on("connect", () => {
+            console.log("⚡ Socket connected with ID:", socketClient.id);
+            setIsConnected(true);
+        });
 
-  useEffect(() => {
-    console.log("Socket changing")
-    if (!socket) return;
-      socket.on("connection", handleConnect);
-    
-      socket.on("disconnect", handleDisconnect);
-    
-      socket.on("onlineUsers", handleStatus);
+        socketClient.on("disconnect", () => {
+            console.log("🔌 Socket disconnected");
+            setIsConnected(false);
+        });
 
-      return () => {
-        socket.off("connection", handleConnect);
-        socket.off("disconnect", handleDisconnect);
-        socket.off("onlineUsers", handleStatus);
-      }
-  }, [socket])
+        socketClient.on("onlineUsers", (users) => {
+            setOnlineUsers(users);
+        });
 
-  return <SocketContext.Provider value={{socket}}>{children}</SocketContext.Provider>;
+        // Incoming message
+        socketClient.on("send-message", ({ receiverId, chat }) => {
+            dispatch(addMessage(chat));
+            notificationService.playReceiveSound();
+
+            const senderId = chat?.sender?._id || chat?.sender;
+            const currentPath = window.location.pathname;
+            const isViewingThisChat = currentPath === `/chat/${senderId}`;
+
+            // Update friend last message, increment unread count if not viewing, and move to top immediately
+            dispatch(
+                updateFriendLastMessage({
+                    friendId: senderId,
+                    message: chat,
+                    isIncoming: true,
+                    isCurrentChat: isViewingThisChat,
+                })
+            );
+
+            // Push Notification
+            const senderName = chat?.sender?.name || "New Message";
+            const text = chat?.message || (chat?.type === "image" ? "📷 Image" : "Sent a message");
+            notificationService.showNotification(`New message from ${senderName}`, {
+                body: text,
+                icon: chat?.sender?.profile_pic?.url || "/icon.png",
+            });
+        });
+
+        // Sent message acknowledgement (e.g. from other session or sync)
+        socketClient.on("meg-sent", ({ sender, chat }) => {
+            const recipientId = chat?.receiver?._id || chat?.receiver;
+            dispatch(
+                updateFriendLastMessage({
+                    friendId: recipientId,
+                    message: chat,
+                    isIncoming: false,
+                    isCurrentChat: true,
+                })
+            );
+        });
+
+        // Message status updates
+        socketClient.on("message:status-update", (data) => {
+            dispatch(updateMessageStatus(data));
+        });
+
+        socketClient.on("messages:delivered", (data) => {
+            dispatch(markMessagesDeliveredBulk(data));
+        });
+
+        socketClient.on("messages:read", (data) => {
+            dispatch(markAllMessagesAsRead(data));
+            dispatch(updateFriendReadReceipt(data));
+        });
+
+        // Friend request updates
+        socketClient.on("friendRequest", ({ senderName }) => {
+            dispatch(fetchChaListFriends());
+            notificationService.playReceiveSound();
+            notificationService.showNotification("Friend Request", {
+                body: `${senderName} sent you a friend request`,
+            });
+        });
+
+        socketClient.on("manageSendFriendReq", ({ senderName, action }) => {
+            dispatch(fetchChaListFriends());
+            notificationService.showNotification("Friend Request Update", {
+                body: `${senderName} ${action === "accept" ? "accepted" : "declined"} your friend request`,
+            });
+        });
+
+        socketClient.on("cancelFriendRequest", () => {
+            dispatch(fetchChaListFriends());
+        });
+
+        socketClient.on("unfriend", () => {
+            dispatch(fetchChaListFriends());
+        });
+
+        setSocket(socketClient);
+
+        return () => {
+            socketClient.disconnect();
+        };
+    }, [user?._id, dispatch, SOCKET_URL]);
+
+    return (
+        <SocketContext.Provider value={{ socket, onlineUsers, isConnected }}>
+            {children}
+        </SocketContext.Provider>
+    );
 };
 
 export const useSocketContext = () => {
-  return useContext(SocketContext);
+    return useContext(SocketContext);
 };

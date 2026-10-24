@@ -96,6 +96,11 @@ const Login = () => {
             <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/10">
                 <div className="p-8">
                     <div className="text-center mb-8">
+                        <img
+                            src="/icon.png"
+                            alt="Chat Logo"
+                            className="w-16 h-16 mx-auto mb-3 object-contain drop-shadow-md hover:scale-105 transition-transform"
+                        />
                         <h1 className="text-3xl font-bold text-white mb-2">
                             Welcome Back
                         </h1>
@@ -113,7 +118,7 @@ const Login = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder="Email address"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-[#00A1FF] focus:border-transparent ${
                                         errors.email
                                             ? "border-red-500"
                                             : "border-white/10"
@@ -137,7 +142,7 @@ const Login = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     placeholder="Password"
-                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg focus:ring-2 focus:ring-[#00A1FF] focus:border-transparent ${
                                         errors.password
                                             ? "border-red-500"
                                             : "border-white/10"
@@ -156,7 +161,7 @@ const Login = () => {
                             <button
                                 type="button"
                                 onClick={handleForgotPassword}
-                                className="text-sm text-teal-400 hover:underline focus:outline-none"
+                                className="text-sm text-[#00A1FF] hover:underline focus:outline-none cursor-pointer"
                             >
                                 Forgot password?
                             </button>
@@ -166,7 +171,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full flex items-center justify-center cursor-pointer py-3 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all ${
+                            className={`w-full flex items-center justify-center cursor-pointer py-3 px-4 rounded-xl bg-[#00A1FF] hover:bg-[#008fe6] text-white font-semibold shadow-lg shadow-[#00A1FF]/30 active:scale-[0.98] transition-all ${
                                 loading ? "opacity-70 cursor-not-allowed" : ""
                             }`}
                         >
@@ -189,7 +194,7 @@ const Login = () => {
                             Don't have an account?{" "}
                             <Link
                                 to="/register"
-                                className="text-teal-400 hover:underline font-medium"
+                                className="text-[#00A1FF] hover:underline font-semibold"
                             >
                                 Sign up
                             </Link>

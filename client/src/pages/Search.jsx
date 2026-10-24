@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { IoSearch } from "react-icons/io5";
-import { UserRoundPlus } from "lucide-react";
+import { Search as SearchIcon, UserPlus, UserCheck, UserX, MessageSquare, CircleUser } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { fetchUsers } from "../store/search/searchAction";
@@ -10,6 +9,7 @@ import {
     cancelFriendRequest,
     sendFriendRequest,
 } from "../store/friends/friendsAction";
+import { getMe } from "../store/auth/authActions";
 
 const Search = () => {
     const dispatch = useDispatch();
@@ -19,13 +19,12 @@ const Search = () => {
     const { users, query, loading, hasMore } = useSelector(
         (state) => state.search
     );
-
     const { sending, success } = useSelector((state) => state.friends);
+    const currentUser = useSelector((state) => state.auth.user);
+    const myId = currentUser?._id;
 
-    const myUser = JSON.parse(sessionStorage.getItem("myUser"));
-    const myId = myUser?._id;
-    const sentRequests = myUser?.sentFriendRequests || [];
-    const friends = myUser?.friends || [];
+    const sentRequests = currentUser?.sentFriendRequests || [];
+    const friends = currentUser?.friends || [];
 
     useEffect(() => {
         if (query) {
@@ -45,6 +44,18 @@ const Search = () => {
         dispatch(resetFriendState());
     }, [dispatch]);
 
+    const handleSendReq = async (targetId) => {
+        await dispatch(sendFriendRequest(targetId));
+        dispatch(getMe());
+        dispatch(resetFriendState());
+    };
+
+    const handleCancelReq = async (targetId) => {
+        await dispatch(cancelFriendRequest(targetId));
+        dispatch(getMe());
+        dispatch(resetFriendState());
+    };
+
     const dedupedUsers = useMemo(() => {
         const seen = new Set();
         return users.filter((user) => {
@@ -63,161 +74,128 @@ const Search = () => {
                 const isActive = location.pathname === userPath;
                 const isIam = myId === user._id;
 
+                const isFriend = friends.some((f) => (f?._id || f) === user._id);
+                const hasSent = sentRequests.some((r) => (r?._id || r) === user._id);
+
                 return (
                     <div
                         key={user._id}
-                        className={`flex items-center justify-between px-4 py-2 rounded-lg transition ${
-                            isActive ? "bg-[#E5F4FF]" : "hover:bg-[#F0F4F7]"
+                        className={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 ${
+                            isActive
+                                ? "bg-slate-100 dark:bg-slate-800/80 border border-[#00A1FF]/40"
+                                : "hover:bg-slate-100 dark:hover:bg-slate-800/40 border border-transparent"
                         }`}
                     >
                         <Link
                             to={userPath}
-                            className="flex items-center gap-3 flex-1"
+                            className="flex items-center gap-3 flex-1 min-w-0"
                         >
-                            <img
-                                src={user.profile_pic?.url}
-                                alt={user.name}
-                                className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <div className="flex flex-col">
-                                <span className="text-sm font-medium text-gray-900">
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 flex items-center justify-center shrink-0">
+                                {user.profile_pic?.url ? (
+                                    <img
+                                        src={user.profile_pic.url}
+                                        alt={user.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <CircleUser className="w-6 h-6 text-slate-400" />
+                                )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate hover:text-[#00A1FF]">
                                     {user.name}
+                                </span>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                                    {user.bio || "Member"}
                                 </span>
                             </div>
                         </Link>
 
-                        <div className="ml-2">
-                            {friends.includes(user._id) ? (
+                        <div className="ml-2 shrink-0">
+                            {isFriend ? (
                                 <button
-                                    onClick={() =>
-                                        navigate(`/chat/${user._id}`)
-                                    }
-                                    className="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded-md hover:bg-gray-300"
+                                    onClick={() => navigate(`/chat/${user._id}`)}
+                                    className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[#00A1FF] text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/60 transition-colors cursor-pointer flex items-center gap-1"
                                 >
-                                    Message
+                                    <MessageSquare size={13} />
+                                    <span>Chat</span>
                                 </button>
-                            ) : sentRequests.includes(user._id) ? (
+                            ) : hasSent ? (
                                 <button
-                                    onClick={() =>
-                                        dispatch(cancelFriendRequest(user._id))
-                                    }
+                                    onClick={() => handleCancelReq(user._id)}
                                     disabled={sending}
-                                    className="bg-primary text-white text-sm px-3 py-1 rounded-md hover:opacity-90"
+                                    className="bg-slate-100 dark:bg-slate-800 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/60 transition-colors cursor-pointer"
                                 >
-                                    {sending ? "Cancelling..." : "Unsend"}
+                                    Unsend
                                 </button>
                             ) : isIam ? (
                                 <button
                                     onClick={() => navigate(`/profile`)}
-                                    className="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded-md hover:bg-gray-300"
+                                    className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/60 cursor-pointer"
                                 >
-                                    View My Profile
+                                    Me
                                 </button>
                             ) : (
                                 <button
-                                    onClick={() =>
-                                        dispatch(sendFriendRequest(user._id))
-                                    }
+                                    onClick={() => handleSendReq(user._id)}
                                     disabled={sending}
-                                    className={`text-sm px-3 py-1 rounded-md shadow ${
-                                        sending || success
-                                            ? "bg-blue-300 text-white cursor-not-allowed"
-                                            : "bg-primary text-white hover:bg-primary-200"
-                                    }`}
+                                    className="bg-[#00A1FF] hover:bg-[#008fe6] text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-md shadow-[#00A1FF]/25 active:scale-95 transition-all cursor-pointer flex items-center gap-1 disabled:opacity-50"
                                 >
-                                    {sending ? (
-                                        "Sending..."
-                                    ) : success ? (
-                                        "Request Sent"
-                                    ) : (
-                                        <>
-                                            <UserRoundPlus className="inline mr-1 w-4 h-4" />
-                                            Add Friend
-                                        </>
-                                    )}
+                                    <UserPlus size={13} />
+                                    <span>Add</span>
                                 </button>
                             )}
                         </div>
                     </div>
                 );
             }),
-        [
-            dedupedUsers,
-            location.pathname,
-            myId,
-            friends,
-            sentRequests,
-            sending,
-            success,
-            dispatch,
-            navigate,
-        ]
+        [dedupedUsers, location.pathname, myId, friends, sentRequests, sending, navigate]
     );
 
     return (
-        <div className="w-full md:ml-14 md:w-[22rem] bg-white border-r border-gray-200 h-screen flex flex-col">
-            <div className="w-full px-6 pb-3 pt-4 sticky top-0 bg-white z-10">
-                <h1 className="text-2xl font-semibold mb-3 mt-4 text-gray-800">
-                    Search
-                </h1>
-                <div className="flex items-center h-10 border border-gray-300 rounded-md px-3 bg-white hover:shadow transition">
+        <aside className="w-full h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-r border-slate-200 dark:border-slate-800/80 flex flex-col font-sans text-slate-800 dark:text-slate-100 transition-colors duration-200">
+            {/* Header */}
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800/80 flex flex-col gap-3">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Search & Explore</h1>
+                <div className="relative flex items-center">
+                    <SearchIcon size={16} className="absolute left-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
                     <input
                         type="text"
+                        placeholder="Search people by name..."
                         value={query}
-                        name="name"
                         onChange={handleInputChange}
-                        placeholder="Search people..."
-                        className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-500"
+                        className="w-full bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs rounded-xl pl-9 pr-4 py-2.5 outline-none focus:border-[#00A1FF]/50 transition-colors"
                     />
-                    <IoSearch className="text-gray-500 text-xl" />
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-h-[calc(100vh-120px)]">
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, index) => (
-                        <div
-                            key={index}
-                            className="flex items-center justify-between animate-pulse px-4 py-2"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-200"></div>
-                                <div className="flex flex-col gap-1">
-                                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                                </div>
-                            </div>
-                            <div className="w-20 h-8 bg-gray-200 rounded-md"></div>
-                        </div>
-                    ))
+            {/* User Search Results */}
+            <main className="flex-1 overflow-y-auto customScrollbar p-3 space-y-1">
+                {loading && dedupedUsers.length === 0 ? (
+                    <div className="py-12 text-center text-xs text-slate-400 dark:text-slate-500 animate-pulse">
+                        Searching members...
+                    </div>
+                ) : dedupedUsers.length === 0 ? (
+                    <div className="py-12 text-center text-xs text-slate-400 dark:text-slate-500 px-6">
+                        {query ? "No users found." : "Type a name above to search for people."}
+                    </div>
                 ) : (
                     <>
                         {userList}
-
-                        {!loading &&
-                            hasMore &&
-                            hasMore >= 10 &&
-                            dedupedUsers.length <= 10 && (
-                                <div className="text-center mt-4">
-                                    <button
-                                        onClick={handleShowMore}
-                                        className="text-blue-600 hover:underline text-sm font-medium"
-                                    >
-                                        Show more
-                                    </button>
-                                </div>
-                            )}
-
-                        {!loading && query && dedupedUsers.length === 0 && (
-                            <div className="text-center text-gray-500 mt-10 text-sm">
-                                No users found for "
-                                <span className="font-semibold">{query}</span>"
+                        {hasMore && (
+                            <div className="pt-2 text-center">
+                                <button
+                                    onClick={handleShowMore}
+                                    className="text-xs text-[#00A1FF] hover:text-[#008fe6] font-semibold cursor-pointer"
+                                >
+                                    Load more...
+                                </button>
                             </div>
                         )}
                     </>
                 )}
-            </div>
-        </div>
+            </main>
+        </aside>
     );
 };
 
