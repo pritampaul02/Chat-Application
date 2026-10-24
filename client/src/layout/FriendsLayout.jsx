@@ -4,22 +4,26 @@ import SideBarFriend from "../components/friendsComponents/SideBarFriend";
 
 const FriendsLayout = () => {
     const location = useLocation();
-    const showSearch = location.pathname === "/friends";
-    console.log("showSearch", showSearch);
+    const isRootFriends = location.pathname === "/friends";
+
     return (
-        <section className="flex w-full h-screen overflow-hidden">
+        <section className="flex w-full h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+            {/* Friends Sidebar (full width on mobile if on /friends, hidden on mobile if viewing a friend profile) */}
             <div
-                className={`w-[100%] md:w-[25rem] border-r border-gray-200 shrink-0 overflow-y-auto 
-                ${showSearch ? "block" : "hidden"} 
-                md:block`}
+                className={`w-full md:w-80 lg:w-96 border-r border-slate-200 dark:border-slate-800/80 shrink-0 h-full overflow-hidden ${
+                    isRootFriends ? "block" : "hidden"
+                } md:block`}
             >
                 <SideBarFriend />
             </div>
 
-            <div className="flex-1 flex justify-center overflow-y-auto">
-                <div className="w-full md:w-[60rem] h-full">
-                    <Outlet />
-                </div>
+            {/* Profile Detail View Area */}
+            <div
+                className={`flex-1 h-full overflow-hidden ${
+                    isRootFriends ? "hidden md:flex" : "flex"
+                }`}
+            >
+                <Outlet />
             </div>
         </section>
     );

@@ -140,7 +140,7 @@ class UserValidation {
     manageFriendRequest = z.object({
         body: z.object({
             requestId: z.string().min(1, "Request ID is required"),
-            action: z.enum(["accept", "reject"], {
+            action: z.enum(["accept", "reject", "unfriend"], {
                 errorMap: () => ({ message: "Invalid action" }),
             }),
         }),

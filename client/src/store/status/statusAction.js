@@ -1,6 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../utils/axios";
-import axios from "axios";
 
 export const fetchStatuses = createAsyncThunk(
     "status/fetchStatuses",
@@ -51,13 +50,12 @@ export const deleteStatus = createAsyncThunk(
     "status/deleteStatus",
     async (statusId, { rejectWithValue }) => {
         try {
-            const res = await axiosInstance.delete(
-                `/status/delete/${statusId}`
-            );
-            return res.data.status; // adjust based on your API response
+            await axiosInstance.delete(`/status/delete/${statusId}`);
+            return statusId;
         } catch (err) {
+            console.error("deleteStatus error:", err);
             return rejectWithValue(
-                err.response?.data?.error || "Failed to delete status"
+                err.response?.data?.message || err.message || "Failed to delete status"
             );
         }
     }
@@ -66,14 +64,14 @@ export const deleteStatus = createAsyncThunk(
 export const createTextStatus = createAsyncThunk(
     "status/createText",
     async (payload, { rejectWithValue }) => {
-        console.log("payload", payload);
         try {
             const { data } = await axiosInstance.post("/status/", payload);
-            console.log("status res", data);
             return data;
         } catch (err) {
-            console.log("status error", err);
-            return rejectWithValue(err.response.data.message);
+            console.error("createTextStatus error:", err);
+            return rejectWithValue(
+                err.response?.data?.message || err.message || "Failed to create status"
+            );
         }
     }
 );
@@ -82,21 +80,20 @@ export const createImageStatus = createAsyncThunk(
     "status/createImage",
     async (formData, { rejectWithValue }) => {
         try {
-            console.log("formData", formData);
-            const { data } = await axios.post(
-                "http://localhost:5000/api/v1/status/",
-                { formData },
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                    withCredentials: true,
-                }
-            );
+            const { data } = await axiosInstance.post("/status/", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
             return data;
         } catch (err) {
-            console.log("status error", err);
-            return rejectWithValue(err.response.data.message);
+            console.error("createImageStatus error:", err);
+            const message =
+                err.response?.data?.message ||
+                (err.response?.data?.errors && err.response.data.errors[0]?.message) ||
+                err.message ||
+                "Failed to upload status";
+            return rejectWithValue(message);
         }
     }
 );
@@ -105,13 +102,13 @@ export const createPollStatus = createAsyncThunk(
     "status/createPoll",
     async (payload, { rejectWithValue }) => {
         try {
-            console.log("payload", payload);
             const { data } = await axiosInstance.post("/status/", payload);
-            console.log("status res", data);
             return data;
         } catch (err) {
-            console.log("status error", err);
-            return rejectWithValue(err.response.data.message);
+            console.error("createPollStatus error:", err);
+            return rejectWithValue(
+                err.response?.data?.message || err.message || "Failed to create poll status"
+            );
         }
     }
 );

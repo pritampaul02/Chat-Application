@@ -12,30 +12,40 @@ class MessageService {
             throw new Error("User not found");
         }
 
+        const receiverSocketId = getSocketId(body.receiver);
+        const senderSocketId = getSocketId(id);
+
+        const isReceiverOnline = !!receiverSocketId;
+        const initialStatus = isReceiverOnline ? "delivered" : "sent";
+        const deliveredAt = isReceiverOnline ? new Date() : null;
+
         const messageData = {
             sender: id,
             receiver: body.receiver,
             receiverModel: body.receiverModel,
             message: body.message || "",
+            status: initialStatus,
+            deliveredAt,
+            isRead: false,
         };
 
         if (body.image) {
             messageData.image = body.image;
-            messageData.imageId = body.imageId; // optional: useful if you want to delete it later
+            messageData.imageId = body.imageId;
         }
 
         const newMessage = await Messages.create(messageData);
 
         sender.lastMessage = {
             type: "sender",
-            isRead: newMessage.isRead,
+            isRead: false,
             editedAt: newMessage.editedAt,
             createdAt: newMessage.createdAt,
             message: body.message,
         };
         receiver.lastMessage = {
             type: "receiver",
-            isRead: newMessage.isRead,
+            isRead: false,
             editedAt: newMessage.editedAt,
             createdAt: newMessage.createdAt,
             message: body.message,
@@ -47,9 +57,6 @@ class MessageService {
             .populate("sender", "name profile_pic _id email")
             .populate("receiver", "name profile_pic _id email");
 
-        const receiverSocketId = getSocketId(body.receiver);
-        const senderSocketId = getSocketId(id);
-
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("send-message", {
                 receiverId: body.receiver,
@@ -58,9 +65,93 @@ class MessageService {
         }
         if (senderSocketId) {
             io.to(senderSocketId).emit("meg-sent", { sender: id, chat });
+            if (isReceiverOnline) {
+                io.to(senderSocketId).emit("message:status-update", {
+                    messageId: chat._id,
+                    status: "delivered",
+                    deliveredAt,
+                });
+            }
         }
 
         return chat;
+    };
+
+    markMessagesAsRead = async (userId, senderId) => {
+        const now = new Date();
+        const updated = await Messages.updateMany(
+            {
+                sender: senderId,
+                receiver: userId,
+                $or: [
+                    { isRead: false },
+                    { status: { $in: ["sent", "delivered"] } },
+                ],
+            },
+            {
+                $set: {
+                    status: "read",
+                    isRead: true,
+                    readAt: now,
+                },
+            }
+        );
+
+        await Users.findByIdAndUpdate(userId, { "lastMessage.isRead": true });
+        await Users.findByIdAndUpdate(senderId, { "lastMessage.isRead": true });
+
+        const senderSocketId = getSocketId(senderId);
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("messages:read", {
+                readerId: userId,
+                senderId: senderId,
+                readAt: now,
+            });
+        }
+
+        const readerSocketId = getSocketId(userId);
+        if (readerSocketId) {
+            io.to(readerSocketId).emit("messages:read", {
+                readerId: userId,
+                senderId: senderId,
+                readAt: now,
+            });
+        }
+
+        return { success: true, count: updated.modifiedCount };
+    };
+
+    markMessagesAsDelivered = async (userId) => {
+        const now = new Date();
+        const pendingMessages = await Messages.find({
+            receiver: userId,
+            status: "sent",
+        }).select("_id sender");
+
+        if (!pendingMessages || pendingMessages.length === 0) return;
+
+        await Messages.updateMany(
+            { receiver: userId, status: "sent" },
+            { $set: { status: "delivered", deliveredAt: now } }
+        );
+
+        const senderMap = {};
+        for (const msg of pendingMessages) {
+            const sId = msg.sender.toString();
+            if (!senderMap[sId]) senderMap[sId] = [];
+            senderMap[sId].push(msg._id);
+        }
+
+        for (const [sId, messageIds] of Object.entries(senderMap)) {
+            const sSocket = getSocketId(sId);
+            if (sSocket) {
+                io.to(sSocket).emit("messages:delivered", {
+                    receiverId: userId,
+                    messageIds,
+                    deliveredAt: now,
+                });
+            }
+        }
     };
 
     fetchMessage = async (id, receiverId) => {

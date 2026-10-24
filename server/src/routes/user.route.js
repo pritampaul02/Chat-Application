@@ -24,6 +24,9 @@ import {
     getUserById,
     cancelFriendRequest,
     updateMyProfile,
+    saveDeviceToken,
+    getVapidPublicKeyHandler,
+    subscribePush,
 } from "../controller/user.controller.js";
 
 import { isAuthenticate } from "../middlewares/authentication.middleware.js";
@@ -154,6 +157,9 @@ router
         "/change-password",
         validate(userValidation.changePasswordWithOldPassword),
         ChangePasswordWithOldPassword
-    );
+    )
+    .post("/device-token", isAuthenticate, saveDeviceToken)
+    .get("/push/vapid-key", getVapidPublicKeyHandler)
+    .post("/push/subscribe", isAuthenticate, subscribePush);
 
 export const userRouter = router;

@@ -3,6 +3,7 @@ import { validate } from "../middlewares/validate.middleware.js";
 import { isAuthenticate } from "../middlewares/authentication.middleware.js";
 import messageValidation from "../validations/message.validation.js";
 import messageController from "../controller/message.controller.js";
+import upload from "../middlewares/multer.middleware.js";
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router
     .post(
         "/send-message",
         isAuthenticate,
+        upload.any(),
         validate(messageValidation.create),
         messageController.sendMessage
     )
@@ -18,6 +20,11 @@ router
         isAuthenticate,
         validate(messageValidation.getMessage),
         messageController.fetchMessage
+    )
+    .patch(
+        "/read/:senderId",
+        isAuthenticate,
+        messageController.markAsRead
     )
     .patch(
         "/edit/:messageId",

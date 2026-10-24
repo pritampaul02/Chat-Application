@@ -1,26 +1,151 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @theme {
-    --color-primary: oklch(0.69 0.174067 245.0123);
+    --color-brand: #00A1FF;
+    --color-brand-hover: #008ee6;
+    --color-brand-light: #38bdf8;
+    --color-brand-dark: #0077cc;
+    --color-primary: #00A1FF;
+    --color-primary-hover: #008ee6;
+    --color-primary-light: #38bdf8;
+    --color-accent: #00c8ff;
 }
 
-.customScrollbar {
-    appearance: none;
+:root {
+    --brand-color: #00A1FF;
+    --brand-hover: #008ee6;
+    --brand-glow: rgba(0, 161, 255, 0.35);
+    color-scheme: dark;
 }
-.customScrollbar {
-    height: calc(100% - 88px);
+
+:root.light {
+    color-scheme: light;
 }
-*::-webkit-scrollbar {
-    width: 5.5px;
-    height: calc(100% - 88px);
+
+:root.dark {
+    color-scheme: dark;
 }
-*::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 10px;
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 }
-*::-webkit-scrollbar-thumb:hover {
-    background-color: #555;
+
+html.dark body {
+    background-color: #0b0f19;
+    color: #f1f5f9;
 }
-*::-webkit-scrollbar-track {
-    background-color: transparent;
+
+html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
 }
+
+/* Glassmorphism primitives */
+.glass-panel {
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+html.light .glass-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.glass-dock {
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html.light .glass-dock {
+    background: rgba(255, 255, 255, 0.95);
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 161, 255, 0.6);
+}
+
+/* Typing wave dots */
+@keyframes typingBounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    30% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.typing-dot-1 {
+    animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dot-2 {
+    animation: typingBounce 1.2s infinite ease-in-out 0.2s;
+}
+.typing-dot-3 {
+    animation: typingBounce 1.2s infinite ease-in-out 0.4s;
+}
+
+/* Brand glow helper */
+.glow-primary {
+    box-shadow: 0 0 20px -3px rgba(0, 161, 255, 0.45);
+}
+
+.glow-cyan {
+    box-shadow: 0 0 20px -3px rgba(0, 200, 255, 0.45);
+}
+
+/* Telegram / WhatsApp-grade Chat Canvas Wallpaper */
+.chat-canvas-bg {
+    background-color: #f1f5f9;
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 161, 255, 0.06) 0%, transparent 60%),
+        radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.22) 1px, transparent 0);
+    background-size: 100% 100%, 24px 24px;
+}
+
+html.dark .chat-canvas-bg {
+    background-color: #0b0f19;
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 161, 255, 0.08) 0%, transparent 70%),
+        radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.035) 1px, transparent 0);
+    background-size: 100% 100%, 28px 28px;
+}
+
+@keyframes messageIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(0.99);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animate-message {
+    animation: messageIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

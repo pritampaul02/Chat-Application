@@ -3,6 +3,7 @@ import { genarate6DigitOtp } from "../utils/OtpGenarate.js";
 import { fileDestroy, fileUploader } from "../utils/fileUpload.js";
 import { timeExpire } from "../utils/timeExpire.js";
 import { Users } from "../model/user.model.js";
+import { Messages } from "../model/message.model.js";
 import {
     manageFriendRequest,
     sendFriendRequest,
@@ -108,6 +109,10 @@ export const UserService = {
                     coverPhoto: 1,
                     location: 1,
                     bio: 1,
+                    status: 1,
+                    last_online: 1,
+                    lastSeen: 1,
+                    isOnline: 1,
                     totalFriends: { $size: "$friends" },
                     totalFriendRequests: { $size: "$friendRequests" },
 
@@ -122,13 +127,8 @@ export const UserService = {
                                 profile_pic: "$$f.profile_pic",
                                 status: "$$f.status",
                                 last_online: "$$f.last_online",
-                                lastMessage: {
-                                    type: "$$f.lastMessage.type",
-                                    isRead: "$$f.lastMessage.isRead",
-                                    createdAt: "$$f.lastMessage.createdAt",
-                                    editedAt: "$$f.lastMessage.editedAt",
-                                    message: "$$f.lastMessage.message",
-                                },
+                                lastSeen: "$$f.lastSeen",
+                                isOnline: "$$f.isOnline",
                             },
                         },
                     },
@@ -162,7 +162,133 @@ export const UserService = {
 
         if (!user.length) throw new Error("User not found");
 
-        return user[0]; // Return the first (and only) matched user
+        const currentUser = user[0];
+        const friendList = currentUser.friends || [];
+
+        if (friendList.length > 0) {
+            const friendObjectIds = friendList.map(
+                (f) => new mongoose.Types.ObjectId(f._id)
+            );
+            const userObjectId = new mongoose.Types.ObjectId(id);
+
+            // 1. Calculate unread counts per friend (messages sent to current user that are not yet read)
+            const unreadAgg = await Messages.aggregate([
+                {
+                    $match: {
+                        receiver: userObjectId,
+                        sender: { $in: friendObjectIds },
+                        isRead: false,
+                    },
+                },
+                {
+                    $group: {
+                        _id: "$sender",
+                        count: { $sum: 1 },
+                    },
+                },
+            ]);
+
+            const unreadMap = {};
+            unreadAgg.forEach((item) => {
+                unreadMap[item._id.toString()] = item.count;
+            });
+
+            // 2. Fetch the latest message for each pairwise conversation
+            const lastMsgAgg = await Messages.aggregate([
+                {
+                    $match: {
+                        $or: [
+                            { sender: userObjectId, receiver: { $in: friendObjectIds } },
+                            { receiver: userObjectId, sender: { $in: friendObjectIds } },
+                        ],
+                    },
+                },
+                {
+                    $sort: { createdAt: -1 },
+                },
+                {
+                    $project: {
+                        sender: 1,
+                        receiver: 1,
+                        message: 1,
+                        type: 1,
+                        media: 1,
+                        image: 1,
+                        status: 1,
+                        isRead: 1,
+                        createdAt: 1,
+                        editedAt: 1,
+                        otherUser: {
+                            $cond: {
+                                if: { $eq: ["$sender", userObjectId] },
+                                then: "$receiver",
+                                else: "$sender",
+                            },
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: "$otherUser",
+                        lastMsg: { $first: "$$ROOT" },
+                    },
+                },
+            ]);
+
+            const lastMsgMap = {};
+            lastMsgAgg.forEach((item) => {
+                lastMsgMap[item._id.toString()] = item.lastMsg;
+            });
+
+            // 3. Attach conversation lastMessage, unread count, and notification badges
+            currentUser.friends = friendList.map((f) => {
+                const friendIdStr = f._id.toString();
+                const lastMsg = lastMsgMap[friendIdStr];
+                const unreadCount = unreadMap[friendIdStr] || 0;
+
+                let lastMessageObj = null;
+                if (lastMsg) {
+                    const isSender = String(lastMsg.sender) === String(id);
+                    lastMessageObj = {
+                        _id: lastMsg._id,
+                        sender: lastMsg.sender,
+                        receiver: lastMsg.receiver,
+                        type: isSender ? "sender" : "receiver",
+                        isRead: lastMsg.isRead,
+                        status: lastMsg.status || "sent",
+                        createdAt: lastMsg.createdAt,
+                        editedAt: lastMsg.editedAt,
+                        message:
+                            lastMsg.message ||
+                            (lastMsg.type === "image" || lastMsg.image || lastMsg.media
+                                ? "📷 Media"
+                                : ""),
+                    };
+                }
+
+                return {
+                    ...f,
+                    last_online: f.last_online || f.lastSeen || null,
+                    lastSeen: f.lastSeen || f.last_online || null,
+                    unreadCount,
+                    msgNotification: unreadCount,
+                    lastMessage: lastMessageObj,
+                };
+            });
+
+            // 4. Sort friends so that the most recent conversation always appears at the top
+            currentUser.friends.sort((a, b) => {
+                const timeA = a.lastMessage?.createdAt
+                    ? new Date(a.lastMessage.createdAt).getTime()
+                    : 0;
+                const timeB = b.lastMessage?.createdAt
+                    ? new Date(b.lastMessage.createdAt).getTime()
+                    : 0;
+                return timeB - timeA;
+            });
+        }
+
+        return currentUser;
     },
 
     async getAllUser(userId) {
@@ -421,6 +547,53 @@ export const UserService = {
         return data;
     },
 
+    async cancelFriendRequest(userId, body) {
+        const sender = await Users.findById(userId);
+        if (!sender) {
+            throw new Error("User Not Found (Sender)");
+        }
+        const receiverId = body.requestId;
+        const receiver = await Users.findById(receiverId);
+        if (!receiver) {
+            throw new Error("User Not Found (Receiver)");
+        }
+
+        sender.sentFriendRequests = sender.sentFriendRequests.filter(
+            (item) => String(item) !== String(receiverId)
+        );
+        sender.friendRequests = sender.friendRequests.filter(
+            (item) => String(item) !== String(receiverId)
+        );
+
+        receiver.friendRequests = receiver.friendRequests.filter(
+            (item) => String(item) !== String(userId)
+        );
+        receiver.sentFriendRequests = receiver.sentFriendRequests.filter(
+            (item) => String(item) !== String(userId)
+        );
+
+        await sender.save();
+        await receiver.save();
+
+        const reciverSocketId = await getSocketId(receiverId);
+        if (reciverSocketId) {
+            io.to(reciverSocketId).emit("cancelFriendRequest", {
+                senderId: userId,
+                senderName: sender.name,
+            });
+        }
+
+        const senderSocketId = await getSocketId(userId);
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("cancelFriendRequest", {
+                senderId: receiverId,
+                senderName: receiver.name,
+            });
+        }
+
+        return await this.getUserById(userId);
+    },
+
     async manageFriendRequest(userId, body) {
         const sender = await Users.findById(userId);
         if (!sender) {
@@ -430,6 +603,36 @@ export const UserService = {
         const receiver = await Users.findById(receiverId);
         if (!receiver) {
             throw new Error("User Not Found (Receiver)");
+        }
+
+        if (body["action"] === "unfriend") {
+            sender.friends = sender.friends.filter(
+                (item) => String(item) !== String(receiverId)
+            );
+            receiver.friends = receiver.friends.filter(
+                (item) => String(item) !== String(userId)
+            );
+
+            await sender.save();
+            await receiver.save();
+
+            const reciverSocketId = await getSocketId(receiverId);
+            if (reciverSocketId) {
+                io.to(reciverSocketId).emit("unfriend", {
+                    senderId: userId,
+                    senderName: sender.name,
+                });
+            }
+
+            const senderSocketId = await getSocketId(userId);
+            if (senderSocketId) {
+                io.to(senderSocketId).emit("unfriend", {
+                    senderId: receiverId,
+                    senderName: receiver.name,
+                });
+            }
+
+            return await this.getUserById(userId);
         }
 
         if (body["action"] === "accept") {
@@ -443,41 +646,54 @@ export const UserService = {
         }
 
         if (body["action"] === "reject" || body["action"] === "accept") {
-            //  Remove from pending requests
-
+            // Remove from pending requests on both sides
             sender.friendRequests = sender.friendRequests.filter(
-                (item) => String(item) !== receiverId
+                (item) => String(item) !== String(receiverId)
+            );
+            sender.sentFriendRequests = sender.sentFriendRequests.filter(
+                (item) => String(item) !== String(receiverId)
             );
             receiver.sentFriendRequests = receiver.sentFriendRequests.filter(
-                (item) => String(item) !== userId
+                (item) => String(item) !== String(userId)
             );
-
-            //  console.log(sender.sendFriendRequst);
-            //  console.log(receiver.friendsRequast);
-
-            const reciverSocketId = await getSocketId(receiverId);
-            // console.log("reciver socket id ", reciverSocketId);
-
-            io.to(reciverSocketId).emit("manageSendFriendReq", {
-                senderId: userId,
-                senderName: sender.name,
-            });
-
-            const senderSocketId = await getSocketId(userId);
-            // console.log("sender socket id ", senderSocketId);
-
-            io.to(senderSocketId).emit("manageFriendReq", {
-                senderId: receiverId,
-                senderName: receiver.name,
-            });
+            receiver.friendRequests = receiver.friendRequests.filter(
+                (item) => String(item) !== String(userId)
+            );
 
             await sender.save();
             await receiver.save();
+
+            const reciverSocketId = await getSocketId(receiverId);
+            if (reciverSocketId) {
+                io.to(reciverSocketId).emit("manageSendFriendReq", {
+                    senderId: userId,
+                    senderName: sender.name,
+                    action: body["action"],
+                });
+            }
+
+            const senderSocketId = await getSocketId(userId);
+            if (senderSocketId) {
+                io.to(senderSocketId).emit("manageFriendReq", {
+                    senderId: receiverId,
+                    senderName: receiver.name,
+                    action: body["action"],
+                });
+            }
+
             const data = await this.getUserById(userId);
             return data;
         } else {
             throw new Error("Invalid action");
         }
+    },
+
+    async registerDeviceToken(userId, token) {
+        if (!userId || !token) return;
+        await Users.findByIdAndUpdate(userId, {
+            $addToSet: { deviceTokens: token },
+        });
+        return { success: true };
     },
 
     async userStatusChanger(userId, status) {
@@ -487,45 +703,69 @@ export const UserService = {
                 throw new Error("User not found");
             }
 
+            const now = new Date();
             if (status === "offline") {
-                user.lastSeen = Date.now();
+                user.lastSeen = now;
+                user.last_online = now;
+                user.isOnline = false;
             } else {
-                user.lastSeen = null;
+                user.isOnline = true;
             }
 
             user.status = status;
             await user.save();
 
-            // Emit message using socket.io
-            const message =
-                status === "online"
-                    ? `${user.name} is now online`
-                    : `${user.name} went offlin`;
-
+            // Emit status update using socket.io
             io.emit("user-status-change", {
-                user: user,
+                userId: user._id,
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    status: user.status,
+                    lastSeen: user.lastSeen,
+                    last_online: user.last_online,
+                    isOnline: user.isOnline,
+                },
                 status: status,
-                message: message,
                 lastSeen: user.lastSeen,
+                last_online: user.last_online,
+                isOnline: user.isOnline,
             });
 
             return user;
         } catch (error) {
-            console.error("somthing went wrong", error);
+            console.error("Error in userStatusChanger:", error);
         }
     },
 
     async updateLastLogin(userId) {
-        console.log("$$$$$=====+++++", userId)
-        if (!userId || userId == "undefined") return;
+        if (!userId || userId === "undefined") return;
 
+        const now = new Date();
         await Users.updateOne(
+            { _id: userId },
             {
-                _id: userId
-            },
-            {
-                last_online: Date.now()
+                last_online: now,
+                lastSeen: now,
+                isOnline: false,
+                status: "offline",
             }
-        )
-    }
+        );
+
+        io.emit("user:last-seen", {
+            userId,
+            lastSeen: now,
+            last_online: now,
+            isOnline: false,
+            status: "offline",
+        });
+    },
+
+    async savePushSubscription(userId, subscription) {
+        if (!userId || !subscription || !subscription.endpoint) return;
+        await Users.findByIdAndUpdate(userId, {
+            $addToSet: { pushSubscriptions: subscription },
+        });
+        return { success: true };
+    },
 };

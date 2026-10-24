@@ -7,6 +7,7 @@ import { RESPONSE_MESSAGES } from "../constants/responseMessage.constants.js";
 import { uploadToCloudinary } from "../middlewares/multer.middleware.js";
 import { Users } from "../model/user.model.js";
 import { cloudinaryFileUploader, fileDestroy } from "../utils/fileUpload.js";
+import { getVapidPublicKey } from "../utils/webPush.js";
 
 export const createUser = async (req, res) => {
     try {
@@ -533,5 +534,60 @@ export const updateMyProfile = async (req, res) => {
     } catch (err) {
         console.error(err);
         return res.status(400).json({ message: "Profile update failed" });
+    }
+};
+
+export const saveDeviceToken = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { token } = req.body;
+        await UserService.registerDeviceToken(id, token);
+        sendResponse(res, {
+            status: HTTP_STATUS.OK,
+            success: true,
+            message: "Device token registered successfully",
+        });
+    } catch (err) {
+        sendResponse(res, {
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            success: false,
+            message: err.message || "Failed to save device token",
+        });
+    }
+};
+
+export const getVapidPublicKeyHandler = async (req, res) => {
+    try {
+        const key = getVapidPublicKey();
+        sendResponse(res, {
+            status: HTTP_STATUS.OK,
+            success: true,
+            data: { publicKey: key },
+        });
+    } catch (err) {
+        sendResponse(res, {
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            success: false,
+            message: err.message || "Failed to get VAPID key",
+        });
+    }
+};
+
+export const subscribePush = async (req, res) => {
+    try {
+        const userId = req.user._id || req.user.id;
+        const subscription = req.body.subscription || req.body;
+        await UserService.savePushSubscription(userId, subscription);
+        sendResponse(res, {
+            status: HTTP_STATUS.OK,
+            success: true,
+            message: "Push subscription saved successfully",
+        });
+    } catch (err) {
+        sendResponse(res, {
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            success: false,
+            message: err.message || "Failed to save push subscription",
+        });
     }
 };

@@ -4,9 +4,9 @@ export const validate = (schema) => (req, res, next) => {
     try {
         // Validate request against the schema
         schema.parse({
-            body: req.body,
-            query: req.query,
-            params: req.params,
+            body: req.body || {},
+            query: req.query || {},
+            params: req.params || {},
         });
         console.log("req.body", req.body);
         // If validation passes, proceed to the next middleware/controller

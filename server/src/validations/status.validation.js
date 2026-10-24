@@ -6,23 +6,15 @@ class StatusValidations {
     createStatus = z.object({
         body: z.object({
             type: z.enum(["text", "image", "video", "link", "poll"]),
-            url: z.string().url().optional(),
+            url: z.string().optional(),
             public_id: z.string().optional(),
             image: z.string().optional(),
             text: z.string().optional(),
             caption: z.string().optional(),
             background: z.string().optional(),
-            isPublic: z.boolean().optional(),
-            allowedUsers: z.array(z.string()).optional(),
-            poll: z
-                .object({
-                    question: z.string().min(1, "Poll question is required"),
-                    options: z
-                        .array(z.string())
-                        .min(2, "Poll must have at least 2 options"),
-                    // .max(6, "Poll can have at most 6 options"),
-                })
-                .optional(),
+            isPublic: z.any().optional(),
+            allowedUsers: z.any().optional(),
+            poll: z.any().optional(),
         }),
     });
 
