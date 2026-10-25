@@ -119,21 +119,17 @@ export const updateProfile = createAsyncThunk(
         }
 
         try {
-            const res = await axios.patch(
-                `${
-                    import.meta.env.VITE_BACKEND_BASE_URI
-                }/api/v1/user/update-all-my-profile`,
-                formData,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                    withCredentials: true,
-                }
+            const res = await axiosInstance.patch(
+                `/user/update-all-my-profile`,
+                formData
             );
             console.log(res.data);
             return res.data;
         } catch (err) {
             console.log(err);
-            return rejectWithValue(err.response?.data?.message);
+            return rejectWithValue(
+                err.response?.data?.message || err.message || "Failed to update profile"
+            );
         }
     }
 );
