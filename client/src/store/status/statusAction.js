@@ -80,11 +80,7 @@ export const createImageStatus = createAsyncThunk(
     "status/createImage",
     async (formData, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post("/status/", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const { data } = await axiosInstance.post("/status/", formData);
             return data;
         } catch (err) {
             console.error("createImageStatus error:", err);

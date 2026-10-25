@@ -59,9 +59,11 @@ class MessageValidations {
         params: z.object({
             messageId: z.string().trim().min(1, "message ID is required"),
         }),
-        body: z.object({
-            emoji: z.string().trim().min(1, "Emoji is required"),
-        }),
+        body: z
+            .object({
+                emoji: z.string().trim().optional(),
+            })
+            .optional(),
     });
 }
 

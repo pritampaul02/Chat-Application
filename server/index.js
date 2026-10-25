@@ -15,13 +15,16 @@ import { app } from "./src/socket/socket.js";
 import { messageRouter } from "./src/routes/message.routes.js";
 import { statusRoute } from "./src/routes/status.route.js";
 
-// Add this line before cors middleware
-app.use(express.json());
+// Trust reverse proxy in production (Render, Vercel, Railway, etc.)
+app.set("trust proxy", 1);
+
+// CORS must be the first middleware
 app.use(corsConfig);
 app.use(cookieParser());
-app.use(bodyParser.json({ limit: "50mb" }));
+
+// Body parser with 50mb limit for large payloads / media base64
 app.use(express.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // all routes
 

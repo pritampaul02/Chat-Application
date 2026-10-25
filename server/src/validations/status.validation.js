@@ -5,7 +5,10 @@ class StatusValidations {
     // Schema for creating a status
     createStatus = z.object({
         body: z.object({
-            type: z.enum(["text", "image", "video", "link", "poll"]),
+            type: z
+                .enum(["text", "image", "video", "link", "poll"])
+                .optional()
+                .default("text"),
             url: z.string().optional(),
             public_id: z.string().optional(),
             image: z.string().optional(),
