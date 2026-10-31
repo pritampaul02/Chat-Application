@@ -44,7 +44,7 @@ class MessageController {
         image: imageData?.url || null,
         imageId: imageData?.public_id || null,
       });
-      console.log("data", data);
+      console.log("data  ===========>  fixed", data);
 
       sendResponse(res, {
         status: HTTP_STATUS.CREATED,

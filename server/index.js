@@ -33,7 +33,7 @@ app.use("/api/v1/message", messageRouter);
 app.use("/api/v1/status", statusRoute);
 
 app.get("/", (req, res) => {
-    res.send("application is run ");
+  res.send("application is run ");
 });
 
 const PORT = process.env.PORT || 5000;
@@ -41,5 +41,8 @@ const PORT = process.env.PORT || 5000;
 dbConnection();
 
 server.listen({ port: PORT, host: "0.0.0.0" }, () => {
-    console.log(" your server is running successfully ", PORT);
+  console.log(
+    "========================== your server is running successfully ============================",
+    PORT,
+  );
 });
