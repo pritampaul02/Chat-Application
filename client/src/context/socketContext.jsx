@@ -27,7 +27,9 @@ export const SocketContextProvider = ({ children }) => {
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
 
-    const SOCKET_URL = import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000";
+    const SOCKET_URL = String(
+        import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000"
+    ).trim().replace(/\/+$/, "");
 
     useEffect(() => {
         const currentUserId = user?._id || user?.id || user?.data?._id;

@@ -69,9 +69,6 @@ class MessageService {
         ]);
 
         const chat = populatedChat.toObject ? populatedChat.toObject() : populatedChat;
-        if (body.tempId) {
-            chat.tempId = body.tempId;
-        }
 
         // Emit real-time socket events immediately
         if (receiverSocketId) {
@@ -85,13 +82,11 @@ class MessageService {
             io.to(senderSocketId).emit("meg-sent", {
                 sender: id,
                 chat,
-                tempId: body.tempId,
             });
 
             if (isReceiverOnline) {
                 io.to(senderSocketId).emit("message:status-update", {
                     messageId: chat._id,
-                    tempId: body.tempId,
                     status: "delivered",
                     deliveredAt,
                 });

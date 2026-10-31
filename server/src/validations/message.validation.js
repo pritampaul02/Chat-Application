@@ -10,7 +10,7 @@ class MessageValidations {
                 receiverId: z.string().trim().optional(),
                 receiverModel: z.string().trim().optional().default("user"),
                 message: z.string().optional().default(""),
-                tempId: z.string().optional(),
+                image: z.string().optional().nullable(),
             })
             .passthrough()
             .refine((data) => data.receiver || data.receiverId, {

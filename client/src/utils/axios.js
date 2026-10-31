@@ -1,5 +1,5 @@
 import axios from "axios";
-const rawBaseUrl = import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000";
+const rawBaseUrl = String(import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000").trim();
 const cleanBaseUrl = rawBaseUrl.replace(/\/+$/, "");
 
 const axiosInstance = axios.create({
