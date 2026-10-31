@@ -12,6 +12,8 @@ import mongoose from "mongoose";
 import { getSocketId, io } from "../socket/socket.js";
 import { Socket } from "socket.io";
 import { any } from "zod";
+import { PushNotification } from "../model/pushNotification.model.js";
+import { sendFriendRequestPushNotification } from "../utils/webPush.js";
 
 export const UserService = {
     async createUser(userData) {
@@ -545,6 +547,16 @@ export const UserService = {
             senderName: receiver.name,
         });
 
+        // Trigger push notification to receiver for friend request asynchronously
+        sendFriendRequestPushNotification({
+            receiverId,
+            senderId: userId,
+            senderName: sender.name,
+            senderAvatar: sender.profile_pic?.url || null,
+        }).catch((err) => {
+            console.error("sendFriendRequestPushNotification error:", err);
+        });
+
         const data = await this.getUserById(userId);
         return data;
     },
@@ -763,11 +775,38 @@ export const UserService = {
         });
     },
 
-    async savePushSubscription(userId, subscription) {
+    async savePushSubscription(userId, subscription, userAgent = "") {
         if (!userId || !subscription || !subscription.endpoint) return;
-        await Users.findByIdAndUpdate(userId, {
-            $addToSet: { pushSubscriptions: subscription },
-        });
+
+        await Promise.allSettled([
+            Users.findByIdAndUpdate(userId, {
+                $addToSet: { pushSubscriptions: subscription },
+            }),
+            PushNotification.findOneAndUpdate(
+                { endpoint: subscription.endpoint },
+                {
+                    user: userId,
+                    endpoint: subscription.endpoint,
+                    keys: subscription.keys,
+                    expirationTime: subscription.expirationTime || null,
+                    userAgent: userAgent || "",
+                    isActive: true,
+                },
+                { upsert: true, new: true }
+            ),
+        ]);
+        return { success: true };
+    },
+
+    async unsubscribePushSubscription(userId, endpoint) {
+        if (!userId || !endpoint) return;
+
+        await Promise.allSettled([
+            PushNotification.deleteOne({ endpoint }),
+            Users.findByIdAndUpdate(userId, {
+                $pull: { pushSubscriptions: { endpoint } },
+            }),
+        ]);
         return { success: true };
     },
 };

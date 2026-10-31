@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { notificationService } from "../utils/notification";
 import { useTheme } from "../context/ThemeContext";
+import axiosInstance from "../utils/axios";
 
 const Settings = () => {
     const user = useSelector((state) => state.auth.user);
@@ -26,8 +27,13 @@ const Settings = () => {
     );
 
     const handleEnableNotifications = async () => {
-        const perm = await notificationService.requestPermission();
-        setNotificationStatus(perm);
+        const permGranted = await notificationService.requestPermission();
+        if (typeof Notification !== "undefined") {
+            setNotificationStatus(Notification.permission);
+        }
+        if (permGranted) {
+            await notificationService.subscribeUserToPush(axiosInstance);
+        }
     };
 
     const handleTestSound = () => {

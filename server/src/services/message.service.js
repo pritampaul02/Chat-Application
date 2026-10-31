@@ -1,6 +1,7 @@
 import { Users } from "../model/user.model.js";
 import { Messages } from "../model/message.model.js";
 import { getSocketId, io } from "../socket/socket.js";
+import { sendMessagePushNotification } from "../utils/webPush.js";
 
 class MessageService {
     sendMessage = async (id, body) => {
@@ -92,6 +93,18 @@ class MessageService {
                 });
             }
         }
+
+        // Send Web Push notification to receiver asynchronously
+        sendMessagePushNotification({
+            receiverId,
+            senderId: id,
+            senderName: sender.name,
+            senderAvatar: sender.profile_pic?.url || null,
+            message: body.message || (body.image ? "📷 Photo" : "Sent a message"),
+            chatId: id,
+        }).catch((pushErr) => {
+            console.error("Message push notification error:", pushErr);
+        });
 
         // Await user updates to ensure consistency
         await updateUsersPromise;

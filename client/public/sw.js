@@ -1,4 +1,4 @@
-// Service Worker for Web Push Notifications & Incoming Call Alerts
+// Service Worker for Web Push Notifications (Messages, Incoming Calls & Alerts)
 self.addEventListener("install", (event) => {
     self.skipWaiting();
 });
@@ -10,15 +10,11 @@ self.addEventListener("activate", (event) => {
 // Listen for incoming push notification
 self.addEventListener("push", (event) => {
     let payload = {
-        title: "Incoming Call",
-        body: "A friend is calling you...",
+        title: "New Notification",
+        body: "You have a new update",
         icon: "/icon.png",
         badge: "/icon.png",
-        tag: "call-alert",
-        actions: [
-            { action: "accept", title: "📞 Accept" },
-            { action: "reject", title: "❌ Decline" },
-        ],
+        tag: "general-notification",
         data: {},
     };
 
@@ -31,19 +27,32 @@ self.addEventListener("push", (event) => {
         }
     }
 
+    const notifData = payload.data || {};
+    const isCall =
+        notifData.callType ||
+        payload.type === "call" ||
+        notifData.type === "call" ||
+        (payload.tag && payload.tag.startsWith("call-"));
+
+    const defaultCallActions = [
+        { action: "accept", title: "📞 Accept" },
+        { action: "reject", title: "❌ Decline" },
+    ];
+
     const options = {
         body: payload.body,
         icon: payload.icon || "/icon.png",
         badge: payload.badge || "/icon.png",
-        tag: payload.tag || "incoming-call",
+        tag: payload.tag || (isCall ? "incoming-call" : `msg-${Date.now()}`),
         renotify: true,
-        requireInteraction: true, // Keep notification on screen until user interacts
-        vibrate: [300, 150, 300, 150, 500],
-        actions: payload.actions || [
-            { action: "accept", title: "📞 Accept" },
-            { action: "reject", title: "❌ Decline" },
-        ],
-        data: payload.data || {},
+        requireInteraction: Boolean(isCall), // Keep call notifications on screen until interaction
+        vibrate: isCall ? [300, 150, 300, 150, 500] : [200, 100, 200],
+        actions: Array.isArray(payload.actions)
+            ? payload.actions
+            : isCall
+            ? defaultCallActions
+            : [],
+        data: notifData,
     };
 
     event.waitUntil(self.registration.showNotification(payload.title, options));
@@ -55,9 +64,21 @@ self.addEventListener("notificationclick", (event) => {
 
     const action = event.action;
     const data = event.notification.data || {};
-    const callerId = data.from || "";
+    const callerId = data.from || data.senderId || "";
     const callType = data.callType || "voice";
-    const targetUrl = data.url || `/chat/${callerId}?acceptCall=true&type=${callType}`;
+    const isCall = Boolean(data.callType) || data.type === "call";
+
+    // Build the target destination URL
+    let targetUrl = data.url;
+    if (!targetUrl) {
+        if (isCall && callerId) {
+            targetUrl = `/chat/${callerId}?acceptCall=true&type=${callType}`;
+        } else if (data.chatId || callerId) {
+            targetUrl = `/chat/${data.chatId || callerId}`;
+        } else {
+            targetUrl = "/";
+        }
+    }
 
     if (action === "reject") {
         // Broadcast reject event to any active tabs
@@ -74,17 +95,19 @@ self.addEventListener("notificationclick", (event) => {
         return;
     }
 
-    // Default click or "accept" action
+    // Default click or "accept" / "open" action
     event.waitUntil(
         self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
             // If any window is already open, focus it and notify it
             for (const client of clientList) {
                 if ("focus" in client) {
                     client.focus();
-                    client.postMessage({
-                        type: "CALL_ACCEPTED_FROM_NOTIFICATION",
-                        data,
-                    });
+                    if (isCall) {
+                        client.postMessage({
+                            type: "CALL_ACCEPTED_FROM_NOTIFICATION",
+                            data,
+                        });
+                    }
                     if ("navigate" in client && targetUrl) {
                         client.navigate(targetUrl);
                     }

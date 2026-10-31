@@ -576,7 +576,8 @@ export const subscribePush = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const subscription = req.body.subscription || req.body;
-    await UserService.savePushSubscription(userId, subscription);
+    const userAgent = req.headers["user-agent"] || "";
+    await UserService.savePushSubscription(userId, subscription, userAgent);
     sendResponse(res, {
       status: HTTP_STATUS.OK,
       success: true,
@@ -587,6 +588,25 @@ export const subscribePush = async (req, res) => {
       status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
       success: false,
       message: err.message || "Failed to save push subscription",
+    });
+  }
+};
+
+export const unsubscribePush = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const endpoint = req.body?.endpoint || req.body?.subscription?.endpoint;
+    await UserService.unsubscribePushSubscription(userId, endpoint);
+    sendResponse(res, {
+      status: HTTP_STATUS.OK,
+      success: true,
+      message: "Push subscription removed successfully",
+    });
+  } catch (err) {
+    sendResponse(res, {
+      status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      success: false,
+      message: err.message || "Failed to remove push subscription",
     });
   }
 };
