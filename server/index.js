@@ -41,8 +41,5 @@ const PORT = process.env.PORT || 5000;
 dbConnection();
 
 server.listen({ port: PORT, host: "0.0.0.0" }, () => {
-  console.log(
-    "========================== your server is running successfully ============================",
-    PORT,
-  );
+  console.log(" your server is running successfully ", PORT);
 });

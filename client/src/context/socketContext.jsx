@@ -14,6 +14,10 @@ import {
 } from "../store/chatList/chatListSlice";
 import { notificationService } from "../utils/notification";
 
+const SOCKET_URL = String(
+    import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000"
+).trim().replace(/\/+$/, "");
+
 const SocketContext = createContext({
     socket: null,
     onlineUsers: [],
@@ -27,20 +31,39 @@ export const SocketContextProvider = ({ children }) => {
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
 
-    const SOCKET_URL = String(
-        import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000"
-    ).trim().replace(/\/+$/, "");
+    const socketRef = useRef(null);
+    const activeUserIdRef = useRef(null);
+
+    const currentUserId = user?._id || user?.id || user?.data?._id;
 
     useEffect(() => {
-        const currentUserId = user?._id || user?.id || user?.data?._id;
         if (!currentUserId) {
-            if (socket) {
-                socket.disconnect();
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
                 setSocket(null);
                 setIsConnected(false);
             }
+            activeUserIdRef.current = null;
             return;
         }
+
+        // If a socket is already active for this exact user, do not recreate!
+        if (
+            socketRef.current &&
+            activeUserIdRef.current === currentUserId &&
+            (socketRef.current.connected || socketRef.current.connecting)
+        ) {
+            return;
+        }
+
+        // If switching user, disconnect the previous socket
+        if (socketRef.current && activeUserIdRef.current !== currentUserId) {
+            socketRef.current.disconnect();
+            socketRef.current = null;
+        }
+
+        activeUserIdRef.current = currentUserId;
 
         const token =
             localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -54,12 +77,16 @@ export const SocketContextProvider = ({ children }) => {
                 userId: currentUserId,
             },
             transports: ["websocket", "polling"],
+            upgrade: true,
             reconnection: true,
             reconnectionAttempts: Infinity,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
             timeout: 20000,
         });
+
+        socketRef.current = socketClient;
+        setSocket(socketClient);
 
         socketClient.on("connect", () => {
             console.log("⚡ Socket connected with ID:", socketClient.id);
@@ -69,11 +96,26 @@ export const SocketContextProvider = ({ children }) => {
         socketClient.on("disconnect", (reason) => {
             console.log("🔌 Socket disconnected:", reason);
             setIsConnected(false);
+            // If the disconnect was triggered by server or transport drop, auto-reconnect
+            if (reason === "io server disconnect" || reason === "transport close") {
+                socketClient.connect();
+            }
+        });
+
+        socketClient.on("connect_error", (error) => {
+            console.warn("⚠️ Socket connection error:", error.message);
         });
 
         socketClient.on("onlineUsers", (users) => {
             setOnlineUsers(users);
         });
+
+        // Keep-alive heartbeat every 15s to prevent cloud proxy (Render/Vercel) idle disconnects
+        const heartbeatInterval = setInterval(() => {
+            if (socketClient && socketClient.connected) {
+                socketClient.emit("heartbeat");
+            }
+        }, 15000);
 
         // Incoming message
         socketClient.on("send-message", ({ receiverId, chat }) => {
@@ -154,12 +196,10 @@ export const SocketContextProvider = ({ children }) => {
             dispatch(fetchChaListFriends());
         });
 
-        setSocket(socketClient);
-
         return () => {
-            socketClient.disconnect();
+            clearInterval(heartbeatInterval);
         };
-    }, [user?._id, dispatch, SOCKET_URL]);
+    }, [currentUserId, dispatch]);
 
     return (
         <SocketContext.Provider value={{ socket, onlineUsers, isConnected }}>

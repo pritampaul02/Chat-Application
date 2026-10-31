@@ -37,14 +37,14 @@ class MessageController {
         };
       }
 
-      console.log("req.body in meg cont", req.body);
+      //   console.log("req.body in meg cont", req.body);
 
       const data = await messageService.sendMessage(id, {
         ...req.body,
         image: imageData?.url || null,
         imageId: imageData?.public_id || null,
       });
-      console.log("data  ===========>  fixed", data);
+      //   console.log("data  ===========>  fixed", data);
 
       sendResponse(res, {
         status: HTTP_STATUS.CREATED,

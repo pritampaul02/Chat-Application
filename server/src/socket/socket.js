@@ -13,10 +13,17 @@ const io = new Server(server, {
     cors: {
         origin: "*", // TODO: restrict in production
         methods: ["GET", "POST"],
+        credentials: true,
     },
+    pingInterval: 10000, // Send ping every 10s to keep connection alive through cloud proxies (Render, Vercel)
+    pingTimeout: 7000,   // Wait 7s before considering connection lost
+    transports: ["websocket", "polling"],
+    allowUpgrades: true,
+    connectTimeout: 30000,
 });
 
-const userSocketMap = {}; // { userId: socketId }
+const userSocketMap = {}; // { userId: socketId } -> current active socketId
+const userSockets = {};   // { userId: Set<socketId> } -> all active sockets for user
 const socketUserMap = {}; // { socketId: userId }
 const activeCalls = {}; // { callerId: receiverId }
 const groupRooms = {}; // { roomId: Set of { socketId, userId, userName, userAvatar } }
@@ -30,9 +37,17 @@ io.on("connection", async (socket) => {
         return;
     }
 
-    console.log("✅ User connected:", userId, "Socket ID:", socket.id);
+    if (!userSockets[userId]) {
+        userSockets[userId] = new Set();
+    }
+    userSockets[userId].add(socket.id);
     userSocketMap[userId] = socket.id;
     socketUserMap[socket.id] = userId;
+
+    // Join user room for multi-tab message broadcasting
+    socket.join(userId);
+
+    console.log(`✅ User connected: ${userId} Socket ID: ${socket.id} (Active sockets: ${userSockets[userId].size})`);
 
     // Update DB status
     UserService.userStatusChanger(userId, "online");
@@ -46,6 +61,11 @@ io.on("connection", async (socket) => {
 
     // Notify all clients of online users
     io.emit("onlineUsers", Object.keys(userSocketMap));
+
+    // Handle heartbeat to keep cloud proxy connection active
+    socket.on("heartbeat", () => {
+        socket.emit("heartbeat:ack");
+    });
 
     // ==========================================
     // Real-Time Read Receipts (Blue Ticks)
@@ -227,27 +247,39 @@ io.on("connection", async (socket) => {
     });
 
     // Handle disconnection
-    socket.on("disconnect", async () => {
+    socket.on("disconnect", async (reason) => {
         const uId = socketUserMap[socket.id];
-        console.log("❌ User disconnected:", uId);
-        if (uId) {
-            await UserService.updateLastLogin(uId);
-            delete userSocketMap[uId];
-            UserService.userStatusChanger(uId, "offline");
-            io.emit("onlineUsers", Object.keys(userSocketMap));
+        delete socketUserMap[socket.id];
 
-            // Clean up any ongoing calls
-            const partnerId = activeCalls[uId];
-            if (partnerId) {
-                const partnerSocket = userSocketMap[partnerId];
-                if (partnerSocket) {
-                    io.to(partnerSocket).emit("call:ended", { from: uId });
+        if (uId && userSockets[uId]) {
+            userSockets[uId].delete(socket.id);
+
+            // Only mark user offline if NO MORE active sockets exist for this user!
+            if (userSockets[uId].size === 0) {
+                delete userSockets[uId];
+                delete userSocketMap[uId];
+                console.log(`❌ User disconnected: ${uId} (Reason: ${reason})`);
+
+                await UserService.updateLastLogin(uId);
+                UserService.userStatusChanger(uId, "offline");
+                io.emit("onlineUsers", Object.keys(userSocketMap));
+
+                // Clean up any ongoing calls
+                const partnerId = activeCalls[uId];
+                if (partnerId) {
+                    const partnerSocket = userSocketMap[partnerId];
+                    if (partnerSocket) {
+                        io.to(partnerSocket).emit("call:ended", { from: uId });
+                    }
+                    delete activeCalls[uId];
+                    delete activeCalls[partnerId];
                 }
-                delete activeCalls[uId];
-                delete activeCalls[partnerId];
+            } else {
+                // User is still online on another socket/tab
+                userSocketMap[uId] = Array.from(userSockets[uId]).pop();
+                console.log(`ℹ️ Socket ${socket.id} closed for user ${uId} (${reason}), but user remains online via ${userSocketMap[uId]}`);
             }
         }
-        delete socketUserMap[socket.id];
 
         // Clean up from group rooms
         for (const roomId of Object.keys(groupRooms)) {
@@ -268,7 +300,7 @@ io.on("connection", async (socket) => {
 
 // Utility function to get a socket ID by userId
 const getSocketId = (userId) => {
-    return userSocketMap[userId];
+    return userSocketMap[userId] || null;
 };
 
 export { io, app, server, getSocketId };
