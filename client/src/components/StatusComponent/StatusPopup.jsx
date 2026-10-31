@@ -79,12 +79,14 @@ const StatusPopup = ({ autoCloseAfter = 6 }) => {
         setIsSendingReply(true);
 
         try {
-            const formData = new FormData();
-            formData.append("receiver", status.user._id);
-            formData.append("receiverModel", "user");
-            formData.append("message", `Replied to status: "${replyText.trim()}"`);
+            const payload = {
+                receiver: status.user._id,
+                receiverId: status.user._id,
+                receiverModel: "user",
+                message: `Replied to status: "${replyText.trim()}"`,
+            };
 
-            await dispatch(sendMessage(formData)).unwrap();
+            await dispatch(sendMessage(payload)).unwrap();
             setReplyText("");
             alert("Reply sent successfully!");
         } catch (err) {

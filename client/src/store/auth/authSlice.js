@@ -45,7 +45,8 @@ const authSlice = createSlice({
             })
             .addCase(registerUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
+                state.user = action.payload?.data || action.payload;
+                state.isAuthenticated = true;
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.loading = false;
@@ -58,7 +59,8 @@ const authSlice = createSlice({
             })
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
+                state.user = action.payload?.data || action.payload;
+                state.isAuthenticated = true;
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
@@ -72,9 +74,12 @@ const authSlice = createSlice({
             .addCase(logOutUser.fulfilled, (state) => {
                 state.loading = false;
                 state.user = null;
+                state.isAuthenticated = false;
             })
             .addCase(logOutUser.rejected, (state, action) => {
                 state.loading = false;
+                state.user = null;
+                state.isAuthenticated = false;
                 state.error = action.payload;
             })
 
@@ -84,11 +89,13 @@ const authSlice = createSlice({
             })
             .addCase(loadUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
+                state.user = action.payload?.data || action.payload;
+                state.isAuthenticated = !!(state.user?._id || state.user?.id);
             })
             .addCase(loadUser.rejected, (state) => {
                 state.loading = false;
                 state.user = null;
+                state.isAuthenticated = false;
             })
 
             // get me to get current user current information
@@ -97,11 +104,13 @@ const authSlice = createSlice({
             })
             .addCase(getMe.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
+                state.user = action.payload?.data || action.payload;
+                state.isAuthenticated = !!(state.user?._id || state.user?.id);
             })
             .addCase(getMe.rejected, (state) => {
                 state.loading = false;
                 state.user = null;
+                state.isAuthenticated = false;
             })
             // edit  my profile
 

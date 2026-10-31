@@ -189,11 +189,16 @@ class NotificationService {
 
             if (!subscription) {
                 // Fetch public VAPID key from backend
-                const res = await apiClient.get("/user/push/vapid-key");
-                const vapidPublicKey = res.data?.data?.publicKey;
+                let vapidPublicKey = null;
+                try {
+                    const res = await apiClient.get("/user/push/vapid-key");
+                    vapidPublicKey = res.data?.data?.publicKey;
+                } catch (keyErr) {
+                    // Push not enabled on this backend deployment
+                    return null;
+                }
 
                 if (!vapidPublicKey) {
-                    console.debug("No VAPID public key returned from server");
                     return null;
                 }
 
@@ -206,10 +211,14 @@ class NotificationService {
 
             if (subscription) {
                 // Send subscription to server
-                await apiClient.post("/user/push/subscribe", {
-                    subscription: subscription.toJSON(),
-                });
-                console.log("✅ Successfully registered push notification subscription");
+                try {
+                    await apiClient.post("/user/push/subscribe", {
+                        subscription: subscription.toJSON(),
+                    });
+                    console.log("✅ Successfully registered push notification subscription");
+                } catch (pushErr) {
+                    // Push route may not be deployed yet on remote server
+                }
             }
 
             return subscription;

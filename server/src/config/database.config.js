@@ -3,10 +3,21 @@ import mongoose from "mongoose";
 export const dbConnection = async () => {
     try {
         const uri = process.env.DB_URI;
-        await mongoose.connect(uri);
+        if (!uri) {
+            console.error("❌ DB_URI is missing in environment variables");
+            return;
+        }
 
-        console.info("database connect ");
+        await mongoose.connect(uri, {
+            maxPoolSize: 50,
+            minPoolSize: 10,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            autoIndex: true,
+        });
+
+        console.info("✅ Database connected with high-performance connection pool");
     } catch (error) {
-        console.error("error => ", error);
+        console.error("❌ Database connection error => ", error);
     }
 };

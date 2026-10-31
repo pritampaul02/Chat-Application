@@ -3,17 +3,21 @@ import { useSelector } from "react-redux";
 import { SocketContextProvider } from "../context/socketContext";
 
 const ProtectedRoute = () => {
-    const { user, loading } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
 
-    // if (loading) {
-    //     return <div className="text-center mt-10">Loading...</div>;
-    // }
+  // if (loading) {
+  //     return <div className="text-center mt-10">Loading...</div>;
+  // }
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-    return <SocketContextProvider><Outlet /></SocketContextProvider>;
+  return (
+    <SocketContextProvider>
+      <Outlet />
+    </SocketContextProvider>
+  );
 };
 
 export default ProtectedRoute;

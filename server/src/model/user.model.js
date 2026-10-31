@@ -161,8 +161,8 @@ userSchema.pre("save", async function (next) {
         return next();
     }
     try {
-        // hashing password
-        this.password = await bcrypt.hash(this.password, 16);
+        // hashing password with optimal salt rounds (10) for production speed & security
+        this.password = await bcrypt.hash(this.password, 10);
         next();
     } catch (error) {
         return next(error);
@@ -173,6 +173,11 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
+
+// High-speed query indexes
+userSchema.index({ friends: 1 });
+userSchema.index({ isOnline: 1, lastSeen: -1 });
+userSchema.index({ name: 1 });
 
 export const Users = model("user", userSchema);
 

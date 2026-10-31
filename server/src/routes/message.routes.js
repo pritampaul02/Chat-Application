@@ -15,28 +15,16 @@ router
         validate(messageValidation.create),
         messageController.sendMessage
     )
-    .get(
-        "/:receiverId",
-        isAuthenticate,
-        validate(messageValidation.getMessage),
-        messageController.fetchMessage
-    )
     .patch(
         "/read/:senderId",
         isAuthenticate,
         messageController.markAsRead
     )
     .patch(
-        "/edit/:messageId",
+        "/edit/react/:messageId",
         isAuthenticate,
-        validate(messageValidation.editMessage),
-        messageController.editMessage
-    )
-    .delete(
-        "/:messageId",
-        isAuthenticate,
-        validate(messageValidation.deleteMessage),
-        messageController.deleteMessage
+        validate(messageValidation.updateReactMessage),
+        messageController.updateReactToMessage
     )
     .patch(
         "/react/:messageId",
@@ -45,16 +33,27 @@ router
         messageController.reactToMessage
     )
     .patch(
-        "/edit/react/:messageId",
+        "/edit/:messageId",
         isAuthenticate,
-        validate(messageValidation.updateReactMessage),
-        messageController.updateReactToMessage
+        validate(messageValidation.editMessage),
+        messageController.editMessage
     )
-    // delete react
     .delete(
         "/delete/react/:messageId",
         isAuthenticate,
         validate(messageValidation.deleteReactMessage),
         messageController.deleteReactToMessage
+    )
+    .delete(
+        "/:messageId",
+        isAuthenticate,
+        validate(messageValidation.deleteMessage),
+        messageController.deleteMessage
+    )
+    .get(
+        "/:receiverId",
+        isAuthenticate,
+        validate(messageValidation.getMessage),
+        messageController.fetchMessage
     );
 export const messageRouter = router;

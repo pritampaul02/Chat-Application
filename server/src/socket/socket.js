@@ -99,8 +99,18 @@ io.on("connection", async (socket) => {
                 callType: callType || "voice",
             });
             socket.emit("call:unavailable", {
-                reason: "User is offline. A call notification with Accept/Reject actions was sent to their device.",
+                reason: "User is offline. A notification was sent to their device.",
                 sentPush: true,
+            });
+            return;
+        }
+
+        // Check if callee is already engaged in another call
+        if (activeCalls[userToCall] && activeCalls[userToCall] !== userId) {
+            console.log(`⚠️ Callee ${userToCall} is busy in another call`);
+            socket.emit("call:busy", {
+                receiverId: userToCall,
+                reason: "User is busy on another call",
             });
             return;
         }
@@ -111,13 +121,15 @@ io.on("connection", async (socket) => {
             from: userId,
             callerName,
             callerAvatar,
-            callType, // "voice" or "video"
+            callType: callType || "voice",
         });
     });
 
     socket.on("call:accept", ({ to, signal }) => {
         const callerSocketId = userSocketMap[to];
         console.log(`📞 Call accepted by ${userId} for ${to}`);
+        activeCalls[userId] = to;
+        activeCalls[to] = userId;
         if (callerSocketId) {
             io.to(callerSocketId).emit("call:accepted", {
                 signal,
@@ -128,7 +140,7 @@ io.on("connection", async (socket) => {
 
     socket.on("call:ice-candidate", ({ to, candidate }) => {
         const targetSocketId = userSocketMap[to];
-        if (targetSocketId) {
+        if (targetSocketId && candidate) {
             io.to(targetSocketId).emit("call:ice-candidate", {
                 candidate,
                 from: userId,

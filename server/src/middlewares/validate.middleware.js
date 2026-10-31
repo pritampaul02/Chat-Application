@@ -2,37 +2,66 @@ import { HTTP_STATUS } from "../constants/statusCode.constants.js";
 
 export const validate = (schema) => (req, res, next) => {
     try {
-        req.body = req.body || {};
+        if (!schema) return next();
 
-        // Validate request against the schema
-        const parsed = schema.parse({
-            body: req.body,
-            query: req.query || {},
-            params: req.params || {},
-        });
+        const reqBody = req.body ?? {};
+        const reqQuery = req.query ?? {};
+        const reqParams = req.params ?? {};
 
-        if (parsed.body !== undefined) req.body = parsed.body;
-        if (parsed.params !== undefined) req.params = parsed.params;
-        // In Express 5, req.query is a getter-only property. Mutate it via Object.assign if needed.
-        if (parsed.query && typeof req.query === "object") {
-            Object.assign(req.query, parsed.query);
+        // Check if schema expects { body, query, params }
+        const hasShape = schema.shape && (schema.shape.body || schema.shape.query || schema.shape.params);
+
+        if (hasShape) {
+            const dataToValidate = {};
+            if (schema.shape.body) dataToValidate.body = reqBody;
+            if (schema.shape.query) dataToValidate.query = reqQuery;
+            if (schema.shape.params) dataToValidate.params = reqParams;
+
+            const parsed = schema.parse(dataToValidate);
+
+            if (parsed.body !== undefined) {
+                req.body = parsed.body;
+            }
+            if (parsed.params !== undefined) {
+                try {
+                    req.params = parsed.params;
+                } catch {
+                    Object.assign(req.params, parsed.params);
+                }
+            }
+            if (parsed.query !== undefined) {
+                try {
+                    Object.defineProperty(req, "query", {
+                        value: parsed.query,
+                        writable: true,
+                        configurable: true,
+                        enumerable: true,
+                    });
+                } catch {
+                    if (typeof req.query === "object" && req.query !== null) {
+                        Object.assign(req.query, parsed.query);
+                    }
+                }
+            }
+        } else if (typeof schema.parse === "function") {
+            // Direct schema for req.body
+            const parsed = schema.parse(reqBody);
+            if (parsed !== undefined) req.body = parsed;
         }
 
-        // If validation passes, proceed to the next middleware/controller
+        // Proceed to next middleware
         next();
     } catch (error) {
-        // If validation fails, extract and format error messages
         const errors = error.errors?.map((err) => ({
             path: err.path.join("."),
             message: err.message,
             er: err,
-        })) || [{ message: error.message }];
+        })) || [{ message: error.message || "Validation failed" }];
 
         console.error("Validation error:", errors);
-        // Send validation error response
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
-            message: "Validation failed",
+            message: errors[0]?.message || "Validation failed",
             errors,
         });
     }

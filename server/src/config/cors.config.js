@@ -33,8 +33,10 @@ const corsConfig = cors({
         "Cookie",
         "X-Requested-With",
         "Accept",
+        "x-access-token",
     ],
     credentials: true,
+    maxAge: 86400, // Cache preflight requests for 24 hours to reduce latency
 });
 
 export default corsConfig;
