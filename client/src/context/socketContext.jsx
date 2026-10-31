@@ -30,7 +30,8 @@ export const SocketContextProvider = ({ children }) => {
     const SOCKET_URL = import.meta.env.VITE_BACKEND_BASE_URI || "http://localhost:5000";
 
     useEffect(() => {
-        if (!user?._id) {
+        const currentUserId = user?._id || user?.id || user?.data?._id;
+        if (!currentUserId) {
             if (socket) {
                 socket.disconnect();
                 setSocket(null);
@@ -39,14 +40,23 @@ export const SocketContextProvider = ({ children }) => {
             return;
         }
 
+        const token =
+            localStorage.getItem("token") || sessionStorage.getItem("token");
+
         const socketClient = io(SOCKET_URL, {
             query: {
-                userId: user._id,
+                userId: currentUserId,
             },
-            transports: ["websocket"],
+            auth: {
+                token,
+                userId: currentUserId,
+            },
+            transports: ["websocket", "polling"],
             reconnection: true,
-            reconnectionAttempts: 10,
+            reconnectionAttempts: Infinity,
             reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000,
         });
 
         socketClient.on("connect", () => {
@@ -54,8 +64,8 @@ export const SocketContextProvider = ({ children }) => {
             setIsConnected(true);
         });
 
-        socketClient.on("disconnect", () => {
-            console.log("🔌 Socket disconnected");
+        socketClient.on("disconnect", (reason) => {
+            console.log("🔌 Socket disconnected:", reason);
             setIsConnected(false);
         });
 

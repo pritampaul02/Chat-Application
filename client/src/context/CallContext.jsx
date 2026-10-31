@@ -9,7 +9,11 @@ const ICE_SERVERS = {
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
         { urls: "stun:stun2.l.google.com:19302" },
+        { urls: "stun:stun3.l.google.com:19302" },
+        { urls: "stun:stun4.l.google.com:19302" },
+        { urls: "stun:global.stun.twilio.com:3478" },
     ],
+    iceCandidatePoolSize: 10,
 };
 
 export const CallContextProvider = ({ children }) => {
@@ -41,6 +45,8 @@ export const CallContextProvider = ({ children }) => {
     const groupPeersRef = useRef({}); // { socketId: RTCPeerConnection }
     const durationIntervalRef = useRef(null);
     const screenStreamRef = useRef(null);
+    // Queue candidates arriving before remoteDescription is ready
+    const iceCandidatesQueueRef = useRef([]);
 
     // Update localStreamRef whenever localStream changes
     useEffect(() => {
@@ -76,7 +82,14 @@ export const CallContextProvider = ({ children }) => {
                     noiseSuppression: true,
                     autoGainControl: true,
                 },
-                video: type === "video" ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" } : false,
+                video:
+                    type === "video"
+                        ? {
+                              width: { ideal: 1280 },
+                              height: { ideal: 720 },
+                              facingMode: "user",
+                          }
+                        : false,
             };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             setLocalStream(stream);
@@ -86,7 +99,9 @@ export const CallContextProvider = ({ children }) => {
             // Fallback: try audio only
             if (type === "video") {
                 try {
-                    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const audioStream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                    });
                     setLocalStream(audioStream);
                     return audioStream;
                 } catch (e) {
@@ -100,8 +115,17 @@ export const CallContextProvider = ({ children }) => {
     // Clean up streams and peer connection
     const cleanupCall = useCallback(() => {
         notificationService.stopRingtone();
+        iceCandidatesQueueRef.current = [];
         if (pcRef.current) {
-            pcRef.current.close();
+            try {
+                pcRef.current.onicecandidate = null;
+                pcRef.current.ontrack = null;
+                pcRef.current.onconnectionstatechange = null;
+                pcRef.current.oniceconnectionstatechange = null;
+                pcRef.current.close();
+            } catch (e) {
+                console.debug("PC close error:", e);
+            }
             pcRef.current = null;
         }
         if (localStreamRef.current) {
@@ -121,6 +145,75 @@ export const CallContextProvider = ({ children }) => {
         setIsScreenSharing(false);
     }, []);
 
+    // Helper to drain queued ICE candidates
+    const drainQueuedCandidates = async (pc) => {
+        if (!pc || !pc.remoteDescription) return;
+        const queue = [...iceCandidatesQueueRef.current];
+        iceCandidatesQueueRef.current = [];
+        for (const candidate of queue) {
+            try {
+                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (err) {
+                console.warn("Error adding queued ICE candidate:", err);
+            }
+        }
+    };
+
+    // Helper to configure common RTCPeerConnection event handlers
+    const setupPeerConnectionEvents = (pc, targetUserId) => {
+        // When remote stream tracks arrive
+        pc.ontrack = (event) => {
+            console.log("Remote track received:", event.streams[0]);
+            if (event.streams && event.streams[0]) {
+                setRemoteStream(event.streams[0]);
+            }
+        };
+
+        // ICE candidate generation
+        pc.onicecandidate = (event) => {
+            if (event.candidate && targetUserId) {
+                socket?.emit("call:ice-candidate", {
+                    to: targetUserId,
+                    candidate: event.candidate,
+                });
+            }
+        };
+
+        // Connection state tracking
+        pc.onconnectionstatechange = () => {
+            console.log("WebRTC connectionState:", pc.connectionState);
+            if (pc.connectionState === "connected") {
+                setCallState("connected");
+            } else if (pc.connectionState === "failed") {
+                console.warn("Connection failed, attempting ICE restart...");
+                if (typeof pc.restartIce === "function") {
+                    pc.restartIce();
+                } else {
+                    cleanupCall();
+                }
+            } else if (
+                pc.connectionState === "disconnected" ||
+                pc.connectionState === "closed"
+            ) {
+                cleanupCall();
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            console.log("WebRTC iceConnectionState:", pc.iceConnectionState);
+            if (
+                pc.iceConnectionState === "connected" ||
+                pc.iceConnectionState === "completed"
+            ) {
+                setCallState("connected");
+            } else if (pc.iceConnectionState === "failed") {
+                if (typeof pc.restartIce === "function") {
+                    pc.restartIce();
+                }
+            }
+        };
+    };
+
     // Clean up group call
     const cleanupGroupCall = useCallback(() => {
         Object.values(groupPeersRef.current).forEach((peer) => peer.close());
@@ -136,15 +229,23 @@ export const CallContextProvider = ({ children }) => {
     }, []);
 
     // 1-on-1 Call: Start Call
-    const startCall = async ({ userToCall, userName, userAvatar, type = "voice" }) => {
+    const startCall = async ({
+        userToCall,
+        userName,
+        userAvatar,
+        type = "voice",
+    }) => {
         if (!socket) return;
+        iceCandidatesQueueRef.current = [];
         setCallType(type);
         setCallPartner({ id: userToCall, name: userName, avatar: userAvatar });
         setCallState("calling");
 
         const stream = await getMediaStream(type);
         if (!stream) {
-            alert("Could not access camera/microphone. Please allow browser permissions.");
+            alert(
+                "Could not access camera/microphone. Please allow browser permissions."
+            );
             setCallState("idle");
             return;
         }
@@ -155,27 +256,23 @@ export const CallContextProvider = ({ children }) => {
         // Add local tracks to peer connection
         stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-        // When remote stream tracks arrive
-        pc.ontrack = (event) => {
-            console.log("Remote track received:", event.streams[0]);
-            setRemoteStream(event.streams[0]);
-        };
-
-        // ICE candidate generation
-        pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                socket.emit("call:ice-candidate", {
-                    to: userToCall,
-                    candidate: event.candidate,
-                });
-            }
-        };
+        // Configure event handlers
+        setupPeerConnectionEvents(pc, userToCall);
 
         try {
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            const myUser = JSON.parse(sessionStorage.getItem("myUser")) || {};
+            let myUser = {};
+            try {
+                myUser =
+                    JSON.parse(sessionStorage.getItem("myUser")) ||
+                    JSON.parse(localStorage.getItem("myUser")) ||
+                    {};
+            } catch (e) {
+                console.debug(e);
+            }
+
             socket.emit("call:initiate", {
                 userToCall,
                 signalData: offer,
@@ -205,23 +302,15 @@ export const CallContextProvider = ({ children }) => {
         pcRef.current = pc;
 
         stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-        pc.ontrack = (event) => {
-            console.log("Remote track received on answer:", event.streams[0]);
-            setRemoteStream(event.streams[0]);
-        };
-
-        pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                socket.emit("call:ice-candidate", {
-                    to: callPartner.id,
-                    candidate: event.candidate,
-                });
-            }
-        };
+        setupPeerConnectionEvents(pc, callPartner.id);
 
         try {
-            await pc.setRemoteDescription(new RTCSessionDescription(incomingSignal));
+            await pc.setRemoteDescription(
+                new RTCSessionDescription(incomingSignal)
+            );
+            // Drain any candidates received while phone was ringing
+            await drainQueuedCandidates(pc);
+
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
@@ -278,13 +367,18 @@ export const CallContextProvider = ({ children }) => {
     const toggleScreenShare = async () => {
         if (!isScreenSharing) {
             try {
-                const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                const screenStream =
+                    await navigator.mediaDevices.getDisplayMedia({
+                        video: true,
+                    });
                 screenStreamRef.current = screenStream;
                 const screenTrack = screenStream.getVideoTracks()[0];
 
                 if (pcRef.current) {
                     const senders = pcRef.current.getSenders();
-                    const videoSender = senders.find((s) => s.track && s.track.kind === "video");
+                    const videoSender = senders.find(
+                        (s) => s.track && s.track.kind === "video"
+                    );
                     if (videoSender) {
                         videoSender.replaceTrack(screenTrack);
                     } else {
@@ -313,7 +407,9 @@ export const CallContextProvider = ({ children }) => {
         if (localStreamRef.current && pcRef.current) {
             const videoTrack = localStreamRef.current.getVideoTracks()[0];
             const senders = pcRef.current.getSenders();
-            const videoSender = senders.find((s) => s.track && s.track.kind === "video");
+            const videoSender = senders.find(
+                (s) => s.track && s.track.kind === "video"
+            );
             if (videoSender && videoTrack) {
                 videoSender.replaceTrack(videoTrack);
             }
@@ -350,7 +446,13 @@ export const CallContextProvider = ({ children }) => {
         if (!socket) return;
 
         // Incoming call received
-        const handleIncomingCall = ({ signal, from, callerName, callerAvatar, callType }) => {
+        const handleIncomingCall = ({
+            signal,
+            from,
+            callerName,
+            callerAvatar,
+            callType,
+        }) => {
             console.log(`Incoming ${callType} call from ${callerName} (${from})`);
             setCallPartner({ id: from, name: callerName, avatar: callerAvatar });
             setIncomingSignal(signal);
@@ -377,8 +479,12 @@ export const CallContextProvider = ({ children }) => {
             console.log("Call accepted by peer!");
             if (pcRef.current && signal) {
                 try {
-                    await pcRef.current.setRemoteDescription(new RTCSessionDescription(signal));
+                    await pcRef.current.setRemoteDescription(
+                        new RTCSessionDescription(signal)
+                    );
                     setCallState("connected");
+                    // Drain candidates that arrived before remoteDescription was accepted
+                    await drainQueuedCandidates(pcRef.current);
                 } catch (err) {
                     console.error("Set remote description on accepted error:", err);
                 }
@@ -387,18 +493,23 @@ export const CallContextProvider = ({ children }) => {
 
         // ICE candidate received
         const handleIceCandidate = async ({ candidate }) => {
-            if (pcRef.current && candidate) {
+            if (!candidate) return;
+            const pc = pcRef.current;
+            if (pc && pc.remoteDescription && pc.remoteDescription.type) {
                 try {
-                    await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+                    await pc.addIceCandidate(new RTCIceCandidate(candidate));
                 } catch (err) {
-                    console.error("Add ICE candidate error:", err);
+                    console.warn("Add ICE candidate error:", err);
                 }
+            } else {
+                // Queue until remoteDescription is set!
+                iceCandidatesQueueRef.current.push(candidate);
             }
         };
 
-        // Call rejected or ended
+        // Call rejected, ended, or unavailable
         const handleCallRejected = () => {
-            alert("Call declined or unavailable.");
+            alert("Call declined.");
             cleanupCall();
         };
 
@@ -411,6 +522,11 @@ export const CallContextProvider = ({ children }) => {
             cleanupCall();
         };
 
+        const handleCallBusy = ({ reason }) => {
+            alert(reason || "User is currently busy on another call.");
+            cleanupCall();
+        };
+
         // Group calling listeners
         const handleAllParticipants = (participants) => {
             setGroupParticipants(participants);
@@ -418,13 +534,16 @@ export const CallContextProvider = ({ children }) => {
 
         const handleUserJoined = (newParticipant) => {
             setGroupParticipants((prev) => {
-                if (prev.find((p) => p.socketId === newParticipant.socketId)) return prev;
+                if (prev.find((p) => p.socketId === newParticipant.socketId))
+                    return prev;
                 return [...prev, newParticipant];
             });
         };
 
         const handleUserLeft = ({ socketId }) => {
-            setGroupParticipants((prev) => prev.filter((p) => p.socketId !== socketId));
+            setGroupParticipants((prev) =>
+                prev.filter((p) => p.socketId !== socketId)
+            );
             setGroupRemoteStreams((prev) => {
                 const next = { ...prev };
                 delete next[socketId];
@@ -442,6 +561,7 @@ export const CallContextProvider = ({ children }) => {
         socket.on("call:rejected", handleCallRejected);
         socket.on("call:ended", handleCallEnded);
         socket.on("call:unavailable", handleCallUnavailable);
+        socket.on("call:busy", handleCallBusy);
 
         socket.on("group-call:all-participants", handleAllParticipants);
         socket.on("group-call:user-joined", handleUserJoined);
@@ -454,6 +574,7 @@ export const CallContextProvider = ({ children }) => {
             socket.off("call:rejected", handleCallRejected);
             socket.off("call:ended", handleCallEnded);
             socket.off("call:unavailable", handleCallUnavailable);
+            socket.off("call:busy", handleCallBusy);
 
             socket.off("group-call:all-participants", handleAllParticipants);
             socket.off("group-call:user-joined", handleUserJoined);

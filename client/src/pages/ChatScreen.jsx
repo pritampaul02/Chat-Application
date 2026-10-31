@@ -20,6 +20,8 @@ import {
     addMessage,
     fetchMessages,
     sendMessage,
+    optimisticSendMessage,
+    markMessageFailed,
     updateMessage,
     deletedMessage,
     reactedMessage,
@@ -127,10 +129,28 @@ const MessageBubble = ({ message, isSender, showDate }) => {
 
         const status = message.status || (message.read || message.isRead ? "read" : "sent");
 
+        if (status === "sending") {
+            return (
+                <span title="Sending..." className="inline-flex items-center text-white/50 ml-1">
+                    <BsCheck2 className="w-4 h-4 opacity-40 animate-pulse" />
+                </span>
+            );
+        }
+        if (status === "failed") {
+            return (
+                <span title="Failed to send" className="inline-flex items-center text-rose-300 ml-1 font-bold">
+                    !
+                </span>
+            );
+        }
         if (status === "read") {
             return (
-                <span title="Read" className="inline-flex items-center text-sky-200 drop-shadow-sm ml-1">
-                    <BsCheck2All className="w-4 h-4 stroke-[0.4]" />
+                <span
+                    title="Read"
+                    className="inline-flex items-center text-[#00f0ff] ml-1"
+                    style={{ filter: "drop-shadow(0 1px 2px rgba(0, 30, 80, 0.7))" }}
+                >
+                    <BsCheck2All className="w-4 h-4 text-[#00f0ff]" />
                 </span>
             );
         }
@@ -532,14 +552,48 @@ const MessageInput = ({ chatId, socket }) => {
         }, 1500);
     };
 
+    const currentUser = useSelector((state) => state.auth.user);
+
     const handleSendMessage = () => {
         if (!chatId) return;
 
-        if (message.trim() || imageFile) {
+        const trimmedText = message.trim();
+        if (trimmedText || imageFile) {
+            const tempId = `temp_${Date.now()}_${Math.random()
+                .toString(36)
+                .substring(2, 9)}`;
+
+            // 1. Immediately render in UI (0ms latency, WhatsApp speed)
+            const optimisticMsg = {
+                _id: tempId,
+                tempId,
+                sender: currentUser || { _id: "me" },
+                receiver: { _id: chatId },
+                message: trimmedText,
+                image: previewUrl || null,
+                status: "sending",
+                createdAt: new Date().toISOString(),
+                isRead: false,
+            };
+
+            dispatch(optimisticSendMessage(optimisticMsg));
+
+            // 2. Immediately update sidebar chat list
+            dispatch(
+                updateFriendLastMessage({
+                    friendId: chatId,
+                    message: optimisticMsg,
+                    isIncoming: false,
+                    isCurrentChat: true,
+                })
+            );
+
+            // 3. Send payload with tempId for server correlation
             const formData = new FormData();
             formData.append("receiver", chatId);
             formData.append("receiverModel", "user");
-            if (message.trim()) formData.append("message", message.trim());
+            formData.append("tempId", tempId);
+            if (trimmedText) formData.append("message", trimmedText);
             if (imageFile) formData.append("image", imageFile);
 
             dispatch(sendMessage(formData)).then((res) => {

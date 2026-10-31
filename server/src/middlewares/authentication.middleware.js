@@ -3,45 +3,49 @@ import { Users } from "../model/user.model.js";
 
 export const isAuthenticate = async (req, res, next) => {
     try {
-        let token = req?.cookies?.token
-            ? req?.cookies?.token
-            : req.headers?.authorization || req.headers.cookie.split("=")[1];
-        // console.log("token====>", token);
+        let token = req?.cookies?.token;
 
-        // let token;
+        if (!token && req.headers?.authorization) {
+            token = req.headers.authorization;
+            if (token.startsWith("Bearer ")) {
+                token = token.slice(7).trim();
+            }
+        }
 
-        // if (req?.cookies?.token) {
-        //     token = req.cookies.token;
-        // } else if (req.headers?.authorization) {
-        //     token = req.headers.authorization;
-        // } else if (req.headers?.cookie?.includes("token=")) {
-        //     token = req.headers.cookie.split("token=")[1];
-        // }
+        if (!token && req.headers?.cookie) {
+            const match = req.headers.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+            if (match) token = match[1];
+        }
+
+        if (!token && req.headers?.["x-access-token"]) {
+            token = req.headers["x-access-token"];
+        }
 
         if (!token) {
-            console.log("User not authenticated");
             return res.status(401).json({
                 success: false,
                 message: "User not authenticated, please login first!",
             });
         }
 
-        // Fix: Extract token from 'Bearer <token>'
-        if (token.startsWith("Bearer ")) {
-            token = token.split(" ")[1];
-        }
-
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decoded) {
+        if (!decoded || !decoded._id) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid token. Authentication failed!",
             });
         }
 
-        // Fix: Exclude password when fetching the user
-        req.user = await Users.findById(decoded._id).select("-password");
+        const user = await Users.findById(decoded._id).select("-password").lean();
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User session expired or user not found. Please log in again.",
+            });
+        }
 
+        req.user = user;
+        req.user.id = user._id.toString();
         next();
     } catch (error) {
         console.error("Authentication error:", error);

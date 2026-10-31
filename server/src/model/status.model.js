@@ -112,6 +112,10 @@ const statusSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
+
+statusSchema.index({ user: 1, createdAt: -1 });
+statusSchema.index({ createdAt: -1 });
+
 export const Status = mongoose.model("Statu", statusSchema);
 
 // Feature	            Description

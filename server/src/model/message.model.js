@@ -143,4 +143,12 @@ const messageSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+// High-performance compound indexes for instant remote queries & read receipts
+messageSchema.index({ sender: 1, receiver: 1, createdAt: -1 });
+messageSchema.index({ receiver: 1, sender: 1, createdAt: -1 });
+messageSchema.index({ receiver: 1, isRead: 1 });
+messageSchema.index({ receiver: 1, status: 1 });
+messageSchema.index({ sender: 1, createdAt: -1 });
+messageSchema.index({ createdAt: -1 });
+
 export const Messages = mongoose.model("message", messageSchema);

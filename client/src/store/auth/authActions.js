@@ -13,7 +13,12 @@ export const registerUser = createAsyncThunk(
                 formData
             );
             if (data?.success && data?.token) {
-                sessionStorage.setItem("myUser", JSON.stringify(data.data));
+                localStorage.setItem("token", data.token);
+                sessionStorage.setItem("token", data.token);
+                if (data.data) {
+                    sessionStorage.setItem("myUser", JSON.stringify(data.data));
+                    localStorage.setItem("myUser", JSON.stringify(data.data));
+                }
             }
             return data;
         } catch (error) {
@@ -32,7 +37,12 @@ export const loginUser = createAsyncThunk(
             const { data } = await axiosInstance.post(`/user/login`, formData);
 
             if (data?.success && data?.token) {
-                sessionStorage.setItem("myUser", JSON.stringify(data.data));
+                localStorage.setItem("token", data.token);
+                sessionStorage.setItem("token", data.token);
+                if (data.data) {
+                    sessionStorage.setItem("myUser", JSON.stringify(data.data));
+                    localStorage.setItem("myUser", JSON.stringify(data.data));
+                }
             }
 
             return data;
@@ -43,6 +53,7 @@ export const loginUser = createAsyncThunk(
         }
     }
 );
+
 // LOGOUT THUNK
 export const logOutUser = createAsyncThunk(
     "auth/logOutUser",
@@ -50,9 +61,16 @@ export const logOutUser = createAsyncThunk(
         try {
             const { data } = await axiosInstance.get(`/user/logout`);
             sessionStorage.removeItem("myUser");
+            localStorage.removeItem("myUser");
+            sessionStorage.removeItem("token");
+            localStorage.removeItem("token");
 
             return data;
         } catch (error) {
+            sessionStorage.removeItem("myUser");
+            localStorage.removeItem("myUser");
+            sessionStorage.removeItem("token");
+            localStorage.removeItem("token");
             return rejectWithValue(
                 error.response?.data?.message || "Logout failed"
             );
@@ -61,24 +79,32 @@ export const logOutUser = createAsyncThunk(
 );
 
 // Fetch Current User Thunk (for session persist after refresh)
-// Updated loadUser thunk with proper cookie handling
 export const loadUser = createAsyncThunk(
     "auth/loadUser",
     async (_, { rejectWithValue }) => {
         try {
-            // console.log("api calling me");
-            const user = sessionStorage.getItem("myUser");
+            const cachedUser =
+                sessionStorage.getItem("myUser") ||
+                localStorage.getItem("myUser");
 
-            if (user) {
-                return {
-                    ...JSON.parse(user),
-                };
+            if (cachedUser) {
+                try {
+                    const parsed = JSON.parse(cachedUser);
+                    if (parsed && (parsed._id || parsed.id)) {
+                        return parsed;
+                    }
+                } catch (e) {
+                    console.debug("JSON parse error for cachedUser:", e);
+                }
             }
-            const { data } = await axiosInstance.get(
-                `/user/me` // API endpoint to get current user
-            );
-            sessionStorage.setItem("myUser", JSON.stringify(data));
-            return data; // Return the user data
+
+            const { data } = await axiosInstance.get(`/user/me`);
+            const userData = data?.data || data;
+            if (userData) {
+                sessionStorage.setItem("myUser", JSON.stringify(userData));
+                localStorage.setItem("myUser", JSON.stringify(userData));
+            }
+            return userData;
         } catch (error) {
             console.error(error);
             return rejectWithValue(

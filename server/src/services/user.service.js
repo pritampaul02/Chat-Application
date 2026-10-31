@@ -171,69 +171,71 @@ export const UserService = {
             );
             const userObjectId = new mongoose.Types.ObjectId(id);
 
-            // 1. Calculate unread counts per friend (messages sent to current user that are not yet read)
-            const unreadAgg = await Messages.aggregate([
-                {
-                    $match: {
-                        receiver: userObjectId,
-                        sender: { $in: friendObjectIds },
-                        isRead: false,
+            // Run unread counts and latest messages concurrently with Promise.all
+            const [unreadAgg, lastMsgAgg] = await Promise.all([
+                // 1. Calculate unread counts per friend (messages sent to current user that are not yet read)
+                Messages.aggregate([
+                    {
+                        $match: {
+                            receiver: userObjectId,
+                            sender: { $in: friendObjectIds },
+                            isRead: false,
+                        },
                     },
-                },
-                {
-                    $group: {
-                        _id: "$sender",
-                        count: { $sum: 1 },
+                    {
+                        $group: {
+                            _id: "$sender",
+                            count: { $sum: 1 },
+                        },
                     },
-                },
+                ]),
+                // 2. Fetch the latest message for each pairwise conversation
+                Messages.aggregate([
+                    {
+                        $match: {
+                            $or: [
+                                { sender: userObjectId, receiver: { $in: friendObjectIds } },
+                                { receiver: userObjectId, sender: { $in: friendObjectIds } },
+                            ],
+                        },
+                    },
+                    {
+                        $sort: { createdAt: -1 },
+                    },
+                    {
+                        $project: {
+                            sender: 1,
+                            receiver: 1,
+                            message: 1,
+                            type: 1,
+                            media: 1,
+                            image: 1,
+                            status: 1,
+                            isRead: 1,
+                            createdAt: 1,
+                            editedAt: 1,
+                            otherUser: {
+                                $cond: {
+                                    if: { $eq: ["$sender", userObjectId] },
+                                    then: "$receiver",
+                                    else: "$sender",
+                                },
+                            },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: "$otherUser",
+                            lastMsg: { $first: "$$ROOT" },
+                        },
+                    },
+                ]),
             ]);
 
             const unreadMap = {};
             unreadAgg.forEach((item) => {
                 unreadMap[item._id.toString()] = item.count;
             });
-
-            // 2. Fetch the latest message for each pairwise conversation
-            const lastMsgAgg = await Messages.aggregate([
-                {
-                    $match: {
-                        $or: [
-                            { sender: userObjectId, receiver: { $in: friendObjectIds } },
-                            { receiver: userObjectId, sender: { $in: friendObjectIds } },
-                        ],
-                    },
-                },
-                {
-                    $sort: { createdAt: -1 },
-                },
-                {
-                    $project: {
-                        sender: 1,
-                        receiver: 1,
-                        message: 1,
-                        type: 1,
-                        media: 1,
-                        image: 1,
-                        status: 1,
-                        isRead: 1,
-                        createdAt: 1,
-                        editedAt: 1,
-                        otherUser: {
-                            $cond: {
-                                if: { $eq: ["$sender", userObjectId] },
-                                then: "$receiver",
-                                else: "$sender",
-                            },
-                        },
-                    },
-                },
-                {
-                    $group: {
-                        _id: "$otherUser",
-                        lastMsg: { $first: "$$ROOT" },
-                    },
-                },
-            ]);
 
             const lastMsgMap = {};
             lastMsgAgg.forEach((item) => {
