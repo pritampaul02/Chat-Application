@@ -27,6 +27,7 @@ import {
     saveDeviceToken,
     getVapidPublicKeyHandler,
     subscribePush,
+    unsubscribePush,
 } from "../controller/user.controller.js";
 
 import { isAuthenticate } from "../middlewares/authentication.middleware.js";
@@ -160,6 +161,7 @@ router
     )
     .post("/device-token", isAuthenticate, saveDeviceToken)
     .get("/push/vapid-key", getVapidPublicKeyHandler)
-    .post("/push/subscribe", isAuthenticate, subscribePush);
+    .post("/push/subscribe", isAuthenticate, subscribePush)
+    .post("/push/unsubscribe", isAuthenticate, unsubscribePush);
 
 export const userRouter = router;

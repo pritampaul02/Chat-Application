@@ -184,40 +184,64 @@ class NotificationService {
                 return null;
             }
 
-            // Check if already subscribed
+            // Fetch public VAPID key from backend
+            let vapidPublicKey = null;
+            try {
+                const res = await apiClient.get("/user/push/vapid-key");
+                vapidPublicKey = res.data?.data?.publicKey;
+            } catch (keyErr) {
+                console.debug("Push VAPID key not available:", keyErr);
+                return null;
+            }
+
+            if (!vapidPublicKey) {
+                return null;
+            }
+
+            const convertedVapidKey = this.urlBase64ToUint8Array(vapidPublicKey);
+
+            // Check existing subscription
             let subscription = await reg.pushManager.getSubscription();
 
+            // If subscription exists, verify if it matches the current server VAPID key
+            if (subscription) {
+                const existingKeyBuffer = subscription.options?.applicationServerKey;
+                if (existingKeyBuffer) {
+                    const existingKeyArr = new Uint8Array(existingKeyBuffer);
+                    let keysMatch = existingKeyArr.length === convertedVapidKey.length;
+                    if (keysMatch) {
+                        for (let i = 0; i < existingKeyArr.length; i++) {
+                            if (existingKeyArr[i] !== convertedVapidKey[i]) {
+                                keysMatch = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (!keysMatch) {
+                        console.log("🔄 Existing push subscription key mismatch, renewing subscription...");
+                        await subscription.unsubscribe();
+                        subscription = null;
+                    }
+                }
+            }
+
+            // Create new subscription if needed
             if (!subscription) {
-                // Fetch public VAPID key from backend
-                let vapidPublicKey = null;
-                try {
-                    const res = await apiClient.get("/user/push/vapid-key");
-                    vapidPublicKey = res.data?.data?.publicKey;
-                } catch (keyErr) {
-                    // Push not enabled on this backend deployment
-                    return null;
-                }
-
-                if (!vapidPublicKey) {
-                    return null;
-                }
-
-                const convertedVapidKey = this.urlBase64ToUint8Array(vapidPublicKey);
                 subscription = await reg.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: convertedVapidKey,
                 });
             }
 
+            // Always sync current valid subscription to server
             if (subscription) {
-                // Send subscription to server
                 try {
                     await apiClient.post("/user/push/subscribe", {
                         subscription: subscription.toJSON(),
                     });
-                    console.log("✅ Successfully registered push notification subscription");
+                    console.log("✅ Successfully registered push notification subscription with server");
                 } catch (pushErr) {
-                    // Push route may not be deployed yet on remote server
+                    console.warn("Failed to sync push subscription to server:", pushErr);
                 }
             }
 
@@ -225,6 +249,29 @@ class NotificationService {
         } catch (err) {
             console.debug("Error subscribing to push notifications:", err);
             return null;
+        }
+    }
+
+    async unsubscribeUserFromPush(apiClient) {
+        try {
+            const reg = this.swRegistration || (await this.registerServiceWorker());
+            if (!reg || !reg.pushManager) return false;
+
+            const subscription = await reg.pushManager.getSubscription();
+            if (subscription) {
+                const endpoint = subscription.endpoint;
+                await subscription.unsubscribe();
+                try {
+                    await apiClient.post("/user/push/unsubscribe", { endpoint });
+                } catch (err) {
+                    // Non-blocking
+                }
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.debug("Error unsubscribing from push notifications:", err);
+            return false;
         }
     }
 
